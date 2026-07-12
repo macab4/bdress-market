@@ -1,0 +1,65 @@
+export type ListingCondition = 'nuevo' | 'muy_bueno' | 'bueno'
+export type ListingStatus = 'active' | 'sold' | 'paused'
+export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled'
+
+export interface Profile {
+  id: string
+  email: string
+  name: string
+  avatar_url: string | null
+  city: string | null
+  bio: string | null
+  created_at: string
+}
+
+export interface Listing {
+  id: string
+  seller_id: string
+  title: string
+  description: string
+  size: string
+  brand: string
+  condition: ListingCondition
+  price: number
+  photos: string[]
+  status: ListingStatus
+  created_at: string
+  seller?: Profile
+}
+
+export interface Order {
+  id: string
+  listing_id: string
+  buyer_id: string
+  seller_id: string
+  amount: number
+  commission: number
+  status: OrderStatus
+  tracking_number: string | null
+  flow_order_id: string | null
+  created_at: string
+  listing?: Listing
+  buyer?: Profile
+  seller?: Profile
+}
+
+export interface Message {
+  id: string
+  sender_id: string
+  receiver_id: string
+  listing_id: string
+  content: string
+  created_at: string
+  sender?: Profile
+}
+
+export interface Review {
+  id: string
+  reviewer_id: string
+  reviewed_id: string
+  order_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  reviewer?: Profile
+}

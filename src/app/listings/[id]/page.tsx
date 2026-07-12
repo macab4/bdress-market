@@ -1,0 +1,163 @@
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { Listing } from '@/types'
+import PhotoGallery from '@/components/listings/PhotoGallery'
+import BuyButton from '@/components/listings/BuyButton'
+
+const CONDITION_LABELS: Record<string, { label: string; color: string }> = {
+  nuevo:     { label: 'Nuevo',      color: 'bg-[#8DA988] text-white' },
+  muy_bueno: { label: 'Muy bueno',  color: 'bg-gray-200 text-gray-700' },
+  bueno:     { label: 'Bueno',      color: 'bg-gray-100 text-gray-600' },
+}
+
+export default async function ListingPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const supabase = await createClient()
+
+  type ListingWithSeller = Listing & {
+    seller: { id: string; name: string; city: string | null; avatar_url: string | null; bio: string | null }
+  }
+
+  const [{ data: listing }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('listings')
+      .select('*, seller:profiles(id, name, city, avatar_url, bio)')
+      .eq('id', id)
+      .single() as unknown as Promise<{ data: ListingWithSeller | null }>,
+    supabase.auth.getUser(),
+  ])
+
+  if (!listing) notFound()
+
+  const commission = Math.round(listing.price * 0.12)
+  const sellerReceives = listing.price - commission
+
+  const canBuy =
+    listing.status === 'active' &&
+    user !== null &&
+    user.id !== listing.seller_id
+
+  const condition = CONDITION_LABELS[listing.condition] ?? { label: listing.condition, color: 'bg-gray-100 text-gray-600' }
+
+  return (
+    <div className="min-h-screen bg-[#EBEBEB]">
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-6">
+          <Link href="/" className="hover:text-black">Inicio</Link>
+          {' · '}
+          <span>{listing.title}</span>
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {/* Galería */}
+          <div>
+            <PhotoGallery photos={listing.photos} title={listing.title} />
+          </div>
+
+          {/* Detalle */}
+          <div className="space-y-6">
+            {listing.status === 'sold' && (
+              <div className="bg-gray-900 text-white text-center text-xs tracking-widest uppercase py-2">
+                Prenda vendida
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] tracking-widest uppercase text-gray-400">{listing.brand || 'Sin marca'}</p>
+                  <h1 className="text-xl font-light tracking-wide mt-0.5">{listing.title}</h1>
+                </div>
+                <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${condition.color}`}>
+                  {condition.label}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4 mt-3">
+                <p className="text-2xl font-semibold">${listing.price.toLocaleString('es-CL')}</p>
+                <p className="text-xs text-gray-400">Talla {listing.size}</p>
+              </div>
+            </div>
+
+            {/* Descripción */}
+            {listing.description && (
+              <div>
+                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Descripción</p>
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{listing.description}</p>
+              </div>
+            )}
+
+            {/* Desglose comisión */}
+            <div className="bg-white p-4 text-xs text-gray-500 space-y-1">
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Detalle del precio</p>
+              <div className="flex justify-between">
+                <span>Precio</span>
+                <span>${listing.price.toLocaleString('es-CL')}</span>
+              </div>
+              <div className="flex justify-between text-gray-400">
+                <span>Comisión Bdress (12%)</span>
+                <span>− ${commission.toLocaleString('es-CL')}</span>
+              </div>
+              <div className="flex justify-between font-medium text-gray-700 border-t border-gray-100 pt-1 mt-1">
+                <span>Vendedora recibe</span>
+                <span>${sellerReceives.toLocaleString('es-CL')}</span>
+              </div>
+            </div>
+
+            {/* Botón comprar */}
+            {listing.status === 'active' && (
+              canBuy ? (
+                <BuyButton listingId={listing.id} price={listing.price} />
+              ) : user === null ? (
+                <div className="space-y-2">
+                  <Link href="/auth/login"
+                    className="block w-full bg-black text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-gray-800 transition">
+                    Ingresar para comprar
+                  </Link>
+                  <p className="text-[10px] text-gray-400 text-center">
+                    Pago seguro vía Flow · Bdress retiene hasta confirmar recepción
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
+                  Esta es tu prenda publicada
+                </p>
+              )
+            )}
+
+            {/* Card vendedora */}
+            <div className="border-t border-gray-200 pt-6">
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">Vendedora</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 overflow-hidden flex-shrink-0">
+                  {listing.seller?.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={listing.seller.avatar_url} alt={listing.seller.name} className="w-full h-full object-cover" />
+                  ) : (
+                    listing.seller?.name?.[0]?.toUpperCase() ?? '?'
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{listing.seller?.name}</p>
+                  {listing.seller?.city && (
+                    <p className="text-xs text-gray-400">{listing.seller.city}</p>
+                  )}
+                </div>
+                <Link href={`/profile/${listing.seller_id}`}
+                  className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
+                  Ver perfil
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
