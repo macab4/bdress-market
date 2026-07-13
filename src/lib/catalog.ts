@@ -9,6 +9,7 @@ export const CATEGORIES = [
       'Vestidos de novia',
       'Vestidos largos',
       'Vestidos cortos',
+      'Conjuntos',
       'Tops y blusas',
       'Pantalones y jeans',
       'Faldas',
@@ -25,6 +26,7 @@ export const CATEGORIES = [
     subcategories: [
       'Camisas',
       'Poleras y camisetas',
+      'Conjuntos',
       'Pantalones y jeans',
       'Trajes y chaquetas de vestir',
       'Chaquetas y abrigos',
