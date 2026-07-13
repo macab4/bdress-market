@@ -19,6 +19,7 @@ export default function GenerateLabelButton({ orderId }: { orderId: string }) {
       setLoading(false)
       return
     }
+    alert('¡Etiqueta generada! Te la mandamos a tu correo para que la imprimas.')
     router.refresh()
   }
 

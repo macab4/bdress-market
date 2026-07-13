@@ -112,14 +112,14 @@ export async function POST(
     })
   }
 
-  // Email a la compradora avisando el despacho
+  // Email a la compradora avisando que se generó la etiqueta (todavía no significa que Chilexpress ya la retiró)
   if (buyer?.email) {
     await sendEmail({
       to: buyer.email,
-      subject: `Tu prenda va en camino — ${listing.title}`,
-      html: emailLayout('Prenda despachada', `
+      subject: `Tu compra está por ser despachada — ${listing.title}`,
+      html: emailLayout('Etiqueta de envío generada', `
         <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Hola ${buyer.name ?? ''}, tu compra <strong>${listing.title}</strong> ya fue despachada.
+          Hola ${buyer.name ?? ''}, la vendedora generó la etiqueta de envío de <strong>${listing.title}</strong> y la va a despachar en los próximos días.
         </p>
         <p style="font-size: 14px; color: #444; line-height: 1.6;">
           Número de seguimiento: <strong style="font-family: monospace;">${shipment.trackingNumber}</strong>

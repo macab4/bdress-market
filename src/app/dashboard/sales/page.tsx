@@ -112,11 +112,11 @@ export default async function SalesPage() {
           </section>
         )}
 
-        {/* Enviadas, esperando confirmación de la compradora */}
+        {/* Etiqueta generada, falta despachar en sucursal */}
         {shippedOrders.length > 0 && (
           <section>
             <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
-              Enviadas, esperando recepción ({shippedOrders.length})
+              Con etiqueta, falta despachar ({shippedOrders.length})
             </h2>
             <div className="space-y-3">
               {shippedOrders.map(order => {
