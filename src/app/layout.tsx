@@ -19,6 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <p className="space-x-4">
             <Link href="/nosotros" className="hover:text-white">Quiénes somos</Link>
             <Link href="/terminos" className="hover:text-white">Términos y condiciones</Link>
+            <a href="https://www.bdress.cl" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              Arriendo de Vestidos
+            </a>
           </p>
         </footer>
       </body>
