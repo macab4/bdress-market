@@ -58,7 +58,15 @@ create table public.listings (
 alter table public.listings enable row level security;
 
 create policy "Prendas activas visibles para todos" on public.listings
-  for select using (status = 'active' or seller_id = auth.uid());
+  for select using (
+    status = 'active'
+    or seller_id = auth.uid()
+    or exists (
+      select 1 from public.orders
+      where orders.listing_id = listings.id
+      and orders.buyer_id = auth.uid()
+    )
+  );
 
 create policy "Vendedora crea sus prendas" on public.listings
   for insert with check (auth.uid() = seller_id);
