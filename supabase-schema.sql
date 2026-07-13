@@ -82,6 +82,8 @@ create table public.orders (
   shipping_address_extra text not null default '',
   shipping_comuna       text not null,
   shipping_city         text not null,
+  paid_at               timestamptz,
+  shipped_at            timestamptz,
   created_at            timestamptz default now()
 );
 alter table public.orders enable row level security;

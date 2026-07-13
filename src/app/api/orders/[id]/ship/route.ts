@@ -31,7 +31,7 @@ export async function PATCH(
 
   const { error } = await supabase
     .from('orders')
-    .update({ tracking_number, status: 'shipped' })
+    .update({ tracking_number, status: 'shipped', shipped_at: new Date().toISOString() })
     .eq('id', id)
 
   if (error) return Response.json({ error: error.message }, { status: 500 })

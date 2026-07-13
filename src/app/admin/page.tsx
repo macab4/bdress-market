@@ -3,6 +3,13 @@ import { requireAdminUser } from '@/lib/admin-auth'
 import { Order } from '@/types'
 import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
+import RefundOrderButton from '@/components/admin/RefundOrderButton'
+
+const OVERDUE_SHIP_DAYS = 7
+
+function daysAgoISOString(days: number): string {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString()
+}
 
 type AdminOrder = Order & {
   listing: { title: string } | null
@@ -14,8 +21,9 @@ export default async function AdminPage() {
   await requireAdminUser()
 
   const admin = createAdminClient()
+  const overdueCutoff = daysAgoISOString(OVERDUE_SHIP_DAYS)
 
-  const [{ count: userCount }, { data: listings }, { data: orders }] = await Promise.all([
+  const [{ count: userCount }, { data: listings }, { data: orders }, { data: overdueOrders }] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
     admin.from('listings').select('status'),
     admin
@@ -23,10 +31,17 @@ export default async function AdminPage() {
       .select('*, listing:listings(title), buyer:profiles!orders_buyer_id_fkey(name), seller:profiles!orders_seller_id_fkey(name)')
       .order('created_at', { ascending: false })
       .limit(100) as unknown as Promise<{ data: AdminOrder[] | null }>,
+    admin
+      .from('orders')
+      .select('*, listing:listings(title), seller:profiles!orders_seller_id_fkey(name)')
+      .eq('status', 'paid')
+      .lt('paid_at', overdueCutoff)
+      .order('paid_at', { ascending: true }) as unknown as Promise<{ data: AdminOrder[] | null }>,
   ])
 
   const allListings = listings ?? []
   const allOrders = orders ?? []
+  const overdue = overdueOrders ?? []
 
   const activeListings = allListings.filter(l => l.status === 'active').length
   const soldListings = allListings.filter(l => l.status === 'sold').length
@@ -62,6 +77,30 @@ export default async function AdminPage() {
             </div>
           ))}
         </div>
+
+        {/* Envíos atrasados */}
+        {overdue.length > 0 && (
+          <section>
+            <h2 className="text-[10px] tracking-widest uppercase text-red-500 mb-4">
+              Envíos atrasados — más de {OVERDUE_SHIP_DAYS} días sin despachar ({overdue.length})
+            </h2>
+            <div className="space-y-3">
+              {overdue.map(order => (
+                <div key={order.id} className="bg-white p-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{order.listing?.title ?? 'Prenda eliminada'}</p>
+                    <p className="text-xs text-gray-400">
+                      Vendedora: {order.seller?.name ?? '—'} · Pagado el{' '}
+                      {order.paid_at && new Date(order.paid_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                    </p>
+                    <p className="text-sm font-semibold mt-0.5">${order.amount.toLocaleString('es-CL')}</p>
+                  </div>
+                  <RefundOrderButton orderId={order.id} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Órdenes */}
         <section>

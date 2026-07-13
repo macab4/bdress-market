@@ -33,7 +33,15 @@ export async function POST(
     .single()
 
   if (!order) return Response.json({ error: 'Orden no encontrada' }, { status: 404 })
-  if (order.status !== 'disputed') return Response.json({ error: 'Esta orden no está en disputa' }, { status: 409 })
+
+  // "release" solo tiene sentido resolviendo una disputa.
+  // "refund" también se usa para cancelar envíos atrasados que nunca se disputaron.
+  if (action === 'release' && order.status !== 'disputed') {
+    return Response.json({ error: 'Esta orden no está en disputa' }, { status: 409 })
+  }
+  if (action === 'refund' && !['disputed', 'paid'].includes(order.status)) {
+    return Response.json({ error: 'Esta orden no se puede reembolsar en su estado actual' }, { status: 409 })
+  }
 
   if (action === 'release') {
     const { error } = await admin.from('orders').update({ status: 'completed' }).eq('id', id)

@@ -49,6 +49,8 @@ export interface Order {
   shipping_address_extra: string
   shipping_comuna: string
   shipping_city: string
+  paid_at: string | null
+  shipped_at: string | null
   created_at: string
   listing?: Listing
   buyer?: Profile

@@ -41,7 +41,7 @@ async function handleNotification(request: Request) {
     const supabase = createAdminClient()
     const { data: updatedOrder } = await supabase
       .from('orders')
-      .update({ status: 'paid', payment_ref: String(payment.id) })
+      .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', orderId)
       .eq('status', 'pending_payment')
       .select('listing_id')
