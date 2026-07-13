@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getShippingQuote } from '@/lib/chilexpress'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -45,13 +46,35 @@ export async function POST(request: Request) {
 
   const { data: listing } = await supabase
     .from('listings')
-    .select('id, title, price, status, seller_id')
+    .select('id, title, price, status, seller_id, shipping_size')
     .eq('id', listing_id)
     .single()
 
   if (!listing) return Response.json({ error: 'Prenda no encontrada' }, { status: 404 })
   if (listing.status !== 'active') return Response.json({ error: 'Esta prenda ya no está disponible' }, { status: 409 })
   if (listing.seller_id === user.id) return Response.json({ error: 'No puedes comprar tu propia prenda' }, { status: 403 })
+
+  // Nunca confiamos en el costo de envío que manda el cliente — se recotiza acá
+  const { data: seller } = await supabase
+    .from('profiles')
+    .select('comuna')
+    .eq('id', listing.seller_id)
+    .single()
+
+  if (!seller?.comuna) {
+    return Response.json({ error: 'La vendedora todavía no configuró su dirección de despacho' }, { status: 409 })
+  }
+
+  const quote = await getShippingQuote({
+    originComuna: seller.comuna,
+    destComuna: shipping.shipping_comuna,
+    size: listing.shipping_size,
+    declaredValue: listing.price,
+  })
+
+  if (!quote) {
+    return Response.json({ error: 'No pudimos cotizar el envío a esa comuna' }, { status: 502 })
+  }
 
   // Evitar órdenes duplicadas activas
   const { data: existing } = await supabase
@@ -66,7 +89,11 @@ export async function POST(request: Request) {
 
   if (existing) {
     orderId = existing.id
-    await supabase.from('orders').update(shipping).eq('id', orderId)
+    await supabase.from('orders').update({
+      ...shipping,
+      shipping_cost: quote.price,
+      courier_service_code: quote.serviceCode,
+    }).eq('id', orderId)
   } else {
     const commission = Math.round(listing.price * COMMISSION_PCT)
     const { data: order, error: orderErr } = await supabase
@@ -77,6 +104,8 @@ export async function POST(request: Request) {
         seller_id: listing.seller_id,
         amount: listing.price,
         commission,
+        shipping_cost: quote.price,
+        courier_service_code: quote.serviceCode,
         status: 'pending_payment',
         ...shipping,
       })
@@ -97,12 +126,20 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
     },
     body: JSON.stringify({
-      items: [{
-        title: listing.title,
-        quantity: 1,
-        unit_price: listing.price,
-        currency_id: 'CLP',
-      }],
+      items: [
+        {
+          title: listing.title,
+          quantity: 1,
+          unit_price: listing.price,
+          currency_id: 'CLP',
+        },
+        {
+          title: 'Envío',
+          quantity: 1,
+          unit_price: quote.price,
+          currency_id: 'CLP',
+        },
+      ],
       payer: { email: user.email },
       external_reference: orderId,
       back_urls: {

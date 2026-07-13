@@ -11,6 +11,9 @@ create table public.profiles (
   avatar_url  text,
   city        text,
   bio         text,
+  phone       text,
+  address     text,
+  comuna      text,
   created_at  timestamptz default now()
 );
 alter table public.profiles enable row level security;
@@ -71,6 +74,7 @@ create table public.orders (
   seller_id             uuid references public.profiles(id) not null,
   amount                integer not null,
   commission            integer not null,
+  shipping_cost         integer not null default 0,
   status                text not null default 'pending_payment'
                           check (status in ('pending_payment','paid','shipped','delivered','completed','disputed','cancelled')),
   tracking_number       text,
@@ -82,6 +86,10 @@ create table public.orders (
   shipping_address_extra text not null default '',
   shipping_comuna       text not null,
   shipping_city         text not null,
+  courier_service_code  text,
+  courier_tracking_number text,
+  courier_barcode       text,
+  label_url             text,
   paid_at               timestamptz,
   shipped_at            timestamptz,
   created_at            timestamptz default now()

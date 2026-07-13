@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Listing, Order } from '@/types'
 import PauseListingButton from '@/components/dashboard/PauseListingButton'
-import AddTrackingForm from '@/components/dashboard/AddTrackingForm'
+import GenerateLabelButton from '@/components/dashboard/GenerateLabelButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
 
 type OrderWithRelations = Order & {
@@ -101,7 +101,7 @@ export default async function SalesPage() {
                           <p>{order.shipping_comuna}, {order.shipping_city}</p>
                         </div>
 
-                        <AddTrackingForm orderId={order.id} />
+                        <GenerateLabelButton orderId={order.id} />
                       </div>
                     </div>
                   </div>

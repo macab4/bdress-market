@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Profile } from '@/types'
+import ComunaSelect from '@/components/ComunaSelect'
 
 export default function EditProfileForm({ profile }: { profile: Profile }) {
   const router = useRouter()
@@ -13,6 +14,9 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
     name: profile.name,
     city: profile.city ?? '',
     bio: profile.bio ?? '',
+    phone: profile.phone ?? '',
+    address: profile.address ?? '',
+    comuna: profile.comuna ?? '',
   })
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url)
@@ -58,6 +62,9 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
         name: form.name.trim(),
         city: form.city.trim() || null,
         bio: form.bio.trim() || null,
+        phone: form.phone.trim() || null,
+        address: form.address.trim() || null,
+        comuna: form.comuna.trim() || null,
         avatar_url,
       })
       .eq('id', profile.id)
@@ -117,6 +124,36 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
         <textarea value={form.bio} onChange={e => set('bio', e.target.value)}
           rows={3} placeholder="Cuéntales algo a las compradoras sobre ti o tu estilo..."
           className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none" />
+      </div>
+
+      {/* Dirección de despacho */}
+      <div className="border-t border-gray-100 pt-6">
+        <p className="text-xs tracking-widest uppercase text-gray-500 mb-1">Dirección de despacho</p>
+        <p className="text-[10px] text-gray-400 mb-4">
+          La usamos para generar las etiquetas de envío cuando vendas una prenda.
+        </p>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Teléfono</label>
+            <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
+              placeholder="+56 9 1234 5678"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+          </div>
+
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Dirección</label>
+            <input value={form.address} onChange={e => set('address', e.target.value)}
+              placeholder="Calle y número"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+          </div>
+
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Comuna</label>
+            <ComunaSelect value={form.comuna} onChange={v => set('comuna', v)}
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white" />
+          </div>
+        </div>
       </div>
 
       {error && <p className="text-red-500 text-xs">{error}</p>}

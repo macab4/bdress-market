@@ -45,7 +45,7 @@ export default async function CheckoutPage({
           </div>
         </div>
 
-        <CheckoutForm listingId={listing.id} />
+        <CheckoutForm listingId={listing.id} price={listing.price} />
       </div>
     </div>
   )

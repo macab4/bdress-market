@@ -1,0 +1,1727 @@
+[
+  {
+    "code": "AHOS",
+    "name": "ALTO HOSPICIO",
+    "region": "R1"
+  },
+  {
+    "code": "CAMI",
+    "name": "CAMINA",
+    "region": "R1"
+  },
+  {
+    "code": "COLC",
+    "name": "COLCHANE",
+    "region": "R1"
+  },
+  {
+    "code": "HUAR",
+    "name": "HUARA",
+    "region": "R1"
+  },
+  {
+    "code": "IQUI",
+    "name": "IQUIQUE",
+    "region": "R1"
+  },
+  {
+    "code": "PICA",
+    "name": "PICA",
+    "region": "R1"
+  },
+  {
+    "code": "POZO",
+    "name": "POZO ALMONTE",
+    "region": "R1"
+  },
+  {
+    "code": "ANTO",
+    "name": "ANTOFAGASTA",
+    "region": "R2"
+  },
+  {
+    "code": "CALA",
+    "name": "CALAMA",
+    "region": "R2"
+  },
+  {
+    "code": "MARI",
+    "name": "MARIA ELENA",
+    "region": "R2"
+  },
+  {
+    "code": "MEJI",
+    "name": "MEJILLONES",
+    "region": "R2"
+  },
+  {
+    "code": "OLLA",
+    "name": "OLLAGUE",
+    "region": "R2"
+  },
+  {
+    "code": "SPAT",
+    "name": "SAN PEDRO DE ATACAMA",
+    "region": "R2"
+  },
+  {
+    "code": "SGOR",
+    "name": "SIERRA GORDA",
+    "region": "R2"
+  },
+  {
+    "code": "TALT",
+    "name": "TALTAL",
+    "region": "R2"
+  },
+  {
+    "code": "TOCO",
+    "name": "TOCOPILLA",
+    "region": "R2"
+  },
+  {
+    "code": "ACAR",
+    "name": "ALTO DEL CARMEN",
+    "region": "R3"
+  },
+  {
+    "code": "CALD",
+    "name": "CALDERA",
+    "region": "R3"
+  },
+  {
+    "code": "CHAN",
+    "name": "CHANARAL",
+    "region": "R3"
+  },
+  {
+    "code": "COPI",
+    "name": "COPIAPO",
+    "region": "R3"
+  },
+  {
+    "code": "DIEG",
+    "name": "DIEGO DE ALMAGRO",
+    "region": "R3"
+  },
+  {
+    "code": "FREI",
+    "name": "FREIRINA",
+    "region": "R3"
+  },
+  {
+    "code": "HUAS",
+    "name": "HUASCO",
+    "region": "R3"
+  },
+  {
+    "code": "TAMA",
+    "name": "TIERRA AMARILLA",
+    "region": "R3"
+  },
+  {
+    "code": "VALL",
+    "name": "VALLENAR",
+    "region": "R3"
+  },
+  {
+    "code": "ANDA",
+    "name": "ANDACOLLO",
+    "region": "R4"
+  },
+  {
+    "code": "CANL",
+    "name": "CANELA",
+    "region": "R4"
+  },
+  {
+    "code": "COMB",
+    "name": "COMBARBALA",
+    "region": "R4"
+  },
+  {
+    "code": "COQU",
+    "name": "COQUIMBO",
+    "region": "R4"
+  },
+  {
+    "code": "ILLA",
+    "name": "ILLAPEL",
+    "region": "R4"
+  },
+  {
+    "code": "LAHI",
+    "name": "LA HIGUERA",
+    "region": "R4"
+  },
+  {
+    "code": "LASE",
+    "name": "LA SERENA",
+    "region": "R4"
+  },
+  {
+    "code": "LVIL",
+    "name": "LOS VILOS",
+    "region": "R4"
+  },
+  {
+    "code": "MOPA",
+    "name": "MONTE PATRIA",
+    "region": "R4"
+  },
+  {
+    "code": "OVAL",
+    "name": "OVALLE",
+    "region": "R4"
+  },
+  {
+    "code": "PAIG",
+    "name": "PAIGUANO",
+    "region": "R4"
+  },
+  {
+    "code": "PUNI",
+    "name": "PUNITAQUI",
+    "region": "R4"
+  },
+  {
+    "code": "RHUR",
+    "name": "RIO HURTADO",
+    "region": "R4"
+  },
+  {
+    "code": "SALA",
+    "name": "SALAMANCA",
+    "region": "R4"
+  },
+  {
+    "code": "VICU",
+    "name": "VICUNA",
+    "region": "R4"
+  },
+  {
+    "code": "ALGA",
+    "name": "ALGARROBO",
+    "region": "R5"
+  },
+  {
+    "code": "CABI",
+    "name": "CABILDO",
+    "region": "R5"
+  },
+  {
+    "code": "CALL",
+    "name": "CALLE LARGA",
+    "region": "R5"
+  },
+  {
+    "code": "CART",
+    "name": "CARTAGENA",
+    "region": "R5"
+  },
+  {
+    "code": "CASA",
+    "name": "CASABLANCA",
+    "region": "R5"
+  },
+  {
+    "code": "CATE",
+    "name": "CATEMU",
+    "region": "R5"
+  },
+  {
+    "code": "CCON",
+    "name": "CONCON",
+    "region": "R5"
+  },
+  {
+    "code": "QSCO",
+    "name": "EL QUISCO",
+    "region": "R5"
+  },
+  {
+    "code": "TABO",
+    "name": "EL TABO",
+    "region": "R5"
+  },
+  {
+    "code": "HIJU",
+    "name": "HIJUELAS",
+    "region": "R5"
+  },
+  {
+    "code": "PASC",
+    "name": "ISLA DE PASCUA",
+    "region": "R5"
+  },
+  {
+    "code": "JFER",
+    "name": "JUAN FERNANDEZ",
+    "region": "R5"
+  },
+  {
+    "code": "LACA",
+    "name": "LA CALERA",
+    "region": "R5"
+  },
+  {
+    "code": "LACR",
+    "name": "LA CRUZ",
+    "region": "R5"
+  },
+  {
+    "code": "LALI",
+    "name": "LA LIGUA",
+    "region": "R5"
+  },
+  {
+    "code": "LIMA",
+    "name": "LIMACHE",
+    "region": "R5"
+  },
+  {
+    "code": "LLAY",
+    "name": "LLAY-LLAY",
+    "region": "R5"
+  },
+  {
+    "code": "LAND",
+    "name": "LOS ANDES",
+    "region": "R5"
+  },
+  {
+    "code": "NOGA",
+    "name": "NOGALES",
+    "region": "R5"
+  },
+  {
+    "code": "OLMU",
+    "name": "OLMUE",
+    "region": "R5"
+  },
+  {
+    "code": "PANQ",
+    "name": "PANQUEHUE",
+    "region": "R5"
+  },
+  {
+    "code": "PAPU",
+    "name": "PAPUDO",
+    "region": "R5"
+  },
+  {
+    "code": "PETO",
+    "name": "PETORCA",
+    "region": "R5"
+  },
+  {
+    "code": "PUCH",
+    "name": "PUCHUNCAVI",
+    "region": "R5"
+  },
+  {
+    "code": "PUTA",
+    "name": "PUTAENDO",
+    "region": "R5"
+  },
+  {
+    "code": "QLTA",
+    "name": "QUILLOTA",
+    "region": "R5"
+  },
+  {
+    "code": "QUIL",
+    "name": "QUILPUE",
+    "region": "R5"
+  },
+  {
+    "code": "QUIN",
+    "name": "QUINTERO",
+    "region": "R5"
+  },
+  {
+    "code": "RINC",
+    "name": "RINCONADA",
+    "region": "R5"
+  },
+  {
+    "code": "SANT",
+    "name": "SAN ANTONIO",
+    "region": "R5"
+  },
+  {
+    "code": "SEST",
+    "name": "SAN ESTEBAN",
+    "region": "R5"
+  },
+  {
+    "code": "SFEL",
+    "name": "SAN FELIPE",
+    "region": "R5"
+  },
+  {
+    "code": "SMAR",
+    "name": "SANTA MARIA",
+    "region": "R5"
+  },
+  {
+    "code": "SDGO",
+    "name": "SANTO DOMINGO",
+    "region": "R5"
+  },
+  {
+    "code": "VALP",
+    "name": "VALPARAISO",
+    "region": "R5"
+  },
+  {
+    "code": "VALE",
+    "name": "VILLA ALEMANA",
+    "region": "R5"
+  },
+  {
+    "code": "VINA",
+    "name": "VINA DEL MAR",
+    "region": "R5"
+  },
+  {
+    "code": "ZAPA",
+    "name": "ZAPALLAR",
+    "region": "R5"
+  },
+  {
+    "code": "CHEP",
+    "name": "CHEPICA",
+    "region": "R6"
+  },
+  {
+    "code": "CHIM",
+    "name": "CHIMBARONGO",
+    "region": "R6"
+  },
+  {
+    "code": "CODE",
+    "name": "CODEGUA",
+    "region": "R6"
+  },
+  {
+    "code": "COIN",
+    "name": "COINCO",
+    "region": "R6"
+  },
+  {
+    "code": "COLT",
+    "name": "COLTAUCO",
+    "region": "R6"
+  },
+  {
+    "code": "DONI",
+    "name": "DONIHUE",
+    "region": "R6"
+  },
+  {
+    "code": "GRAN",
+    "name": "GRANEROS",
+    "region": "R6"
+  },
+  {
+    "code": "LAES",
+    "name": "LA ESTRELLA",
+    "region": "R6"
+  },
+  {
+    "code": "LCAB",
+    "name": "LAS CABRAS",
+    "region": "R6"
+  },
+  {
+    "code": "LCHE",
+    "name": "LITUECHE",
+    "region": "R6"
+  },
+  {
+    "code": "LOLO",
+    "name": "LOLOL",
+    "region": "R6"
+  },
+  {
+    "code": "MACH",
+    "name": "MACHALI",
+    "region": "R6"
+  },
+  {
+    "code": "MALO",
+    "name": "MALLOA",
+    "region": "R6"
+  },
+  {
+    "code": "MARC",
+    "name": "MARCHIHUE",
+    "region": "R6"
+  },
+  {
+    "code": "NANC",
+    "name": "NANCAGUA",
+    "region": "R6"
+  },
+  {
+    "code": "NAVI",
+    "name": "NAVIDAD",
+    "region": "R6"
+  },
+  {
+    "code": "OLIV",
+    "name": "OLIVAR",
+    "region": "R6"
+  },
+  {
+    "code": "PALM",
+    "name": "PALMILLA",
+    "region": "R6"
+  },
+  {
+    "code": "PARE",
+    "name": "PAREDONES",
+    "region": "R6"
+  },
+  {
+    "code": "PERA",
+    "name": "PERALILLO",
+    "region": "R6"
+  },
+  {
+    "code": "PEUM",
+    "name": "PEUMO",
+    "region": "R6"
+  },
+  {
+    "code": "PICD",
+    "name": "PICHIDEGUA",
+    "region": "R6"
+  },
+  {
+    "code": "PICH",
+    "name": "PICHILEMU",
+    "region": "R6"
+  },
+  {
+    "code": "PLAC",
+    "name": "PLACILLA",
+    "region": "R6"
+  },
+  {
+    "code": "PUMA",
+    "name": "PUMANQUE",
+    "region": "R6"
+  },
+  {
+    "code": "QTIL",
+    "name": "QUINTA DE TILCOCO",
+    "region": "R6"
+  },
+  {
+    "code": "RANC",
+    "name": "RANCAGUA",
+    "region": "R6"
+  },
+  {
+    "code": "RENG",
+    "name": "RENGO",
+    "region": "R6"
+  },
+  {
+    "code": "REQU",
+    "name": "REQUINOA",
+    "region": "R6"
+  },
+  {
+    "code": "SFER",
+    "name": "SAN FERNANDO",
+    "region": "R6"
+  },
+  {
+    "code": "SFRA",
+    "name": "MOSTAZAL",
+    "region": "R6"
+  },
+  {
+    "code": "SVIC",
+    "name": "SAN VICENTE",
+    "region": "R6"
+  },
+  {
+    "code": "SCRU",
+    "name": "SANTA CRUZ",
+    "region": "R6"
+  },
+  {
+    "code": "CAUQ",
+    "name": "CAUQUENES",
+    "region": "R7"
+  },
+  {
+    "code": "CHNC",
+    "name": "CHANCO",
+    "region": "R7"
+  },
+  {
+    "code": "COLB",
+    "name": "COLBUN",
+    "region": "R7"
+  },
+  {
+    "code": "CONS",
+    "name": "CONSTITUCION",
+    "region": "R7"
+  },
+  {
+    "code": "CURE",
+    "name": "CUREPTO",
+    "region": "R7"
+  },
+  {
+    "code": "CURI",
+    "name": "CURICO",
+    "region": "R7"
+  },
+  {
+    "code": "EMPE",
+    "name": "EMPEDRADO",
+    "region": "R7"
+  },
+  {
+    "code": "HUAL",
+    "name": "HUALANE",
+    "region": "R7"
+  },
+  {
+    "code": "LICA",
+    "name": "LICANTEN",
+    "region": "R7"
+  },
+  {
+    "code": "LINA",
+    "name": "LINARES",
+    "region": "R7"
+  },
+  {
+    "code": "LONG",
+    "name": "LONGAVI",
+    "region": "R7"
+  },
+  {
+    "code": "MULE",
+    "name": "MAULE",
+    "region": "R7"
+  },
+  {
+    "code": "MOLI",
+    "name": "MOLINA",
+    "region": "R7"
+  },
+  {
+    "code": "PARR",
+    "name": "PARRAL",
+    "region": "R7"
+  },
+  {
+    "code": "PELA",
+    "name": "PELARCO",
+    "region": "R7"
+  },
+  {
+    "code": "PELL",
+    "name": "PELLUHUE",
+    "region": "R7"
+  },
+  {
+    "code": "PNCH",
+    "name": "PENCAHUE",
+    "region": "R7"
+  },
+  {
+    "code": "RAUC",
+    "name": "RAUCO",
+    "region": "R7"
+  },
+  {
+    "code": "RETI",
+    "name": "RETIRO",
+    "region": "R7"
+  },
+  {
+    "code": "RCLA",
+    "name": "RIO CLARO",
+    "region": "R7"
+  },
+  {
+    "code": "ROME",
+    "name": "ROMERAL",
+    "region": "R7"
+  },
+  {
+    "code": "SAFA",
+    "name": "SAGRADA FAMILIA",
+    "region": "R7"
+  },
+  {
+    "code": "SCLE",
+    "name": "SAN CLEMENTE",
+    "region": "R7"
+  },
+  {
+    "code": "SJAV",
+    "name": "SAN JAVIER",
+    "region": "R7"
+  },
+  {
+    "code": "SRAF",
+    "name": "SAN RAFAEL",
+    "region": "R7"
+  },
+  {
+    "code": "TALC",
+    "name": "TALCA",
+    "region": "R7"
+  },
+  {
+    "code": "TENO",
+    "name": "TENO",
+    "region": "R7"
+  },
+  {
+    "code": "VICH",
+    "name": "VICHUQUEN",
+    "region": "R7"
+  },
+  {
+    "code": "VALG",
+    "name": "VILLA ALEGRE",
+    "region": "R7"
+  },
+  {
+    "code": "YBNS",
+    "name": "YERBAS BUENAS",
+    "region": "R7"
+  },
+  {
+    "code": "ALBB",
+    "name": "ALTO BIOBIO",
+    "region": "R8"
+  },
+  {
+    "code": "ANTU",
+    "name": "ANTUCO",
+    "region": "R8"
+  },
+  {
+    "code": "ARAU",
+    "name": "ARAUCO",
+    "region": "R8"
+  },
+  {
+    "code": "CABR",
+    "name": "CABRERO",
+    "region": "R8"
+  },
+  {
+    "code": "CANE",
+    "name": "CANETE",
+    "region": "R8"
+  },
+  {
+    "code": "CHIG",
+    "name": "CHIGUAYANTE",
+    "region": "R8"
+  },
+  {
+    "code": "CONC",
+    "name": "CONCEPCION",
+    "region": "R8"
+  },
+  {
+    "code": "CONT",
+    "name": "CONTULMO",
+    "region": "R8"
+  },
+  {
+    "code": "CORO",
+    "name": "CORONEL",
+    "region": "R8"
+  },
+  {
+    "code": "CURA",
+    "name": "CURANILAHUE",
+    "region": "R8"
+  },
+  {
+    "code": "FLOR",
+    "name": "FLORIDA",
+    "region": "R8"
+  },
+  {
+    "code": "HPEN",
+    "name": "HUALPEN",
+    "region": "R8"
+  },
+  {
+    "code": "HAQI",
+    "name": "HUALQUI",
+    "region": "R8"
+  },
+  {
+    "code": "LAJA",
+    "name": "LAJA",
+    "region": "R8"
+  },
+  {
+    "code": "LEBU",
+    "name": "LEBU",
+    "region": "R8"
+  },
+  {
+    "code": "ALAM",
+    "name": "LOS ALAMOS",
+    "region": "R8"
+  },
+  {
+    "code": "LANG",
+    "name": "LOS ANGELES",
+    "region": "R8"
+  },
+  {
+    "code": "LOTA",
+    "name": "LOTA",
+    "region": "R8"
+  },
+  {
+    "code": "MULC",
+    "name": "MULCHEN",
+    "region": "R8"
+  },
+  {
+    "code": "NACI",
+    "name": "NACIMIENTO",
+    "region": "R8"
+  },
+  {
+    "code": "NEGR",
+    "name": "NEGRETE",
+    "region": "R8"
+  },
+  {
+    "code": "PENC",
+    "name": "PENCO",
+    "region": "R8"
+  },
+  {
+    "code": "QLAC",
+    "name": "QUILACO",
+    "region": "R8"
+  },
+  {
+    "code": "QLLC",
+    "name": "QUILLECO",
+    "region": "R8"
+  },
+  {
+    "code": "SPED",
+    "name": "SAN PEDRO DE LA PAZ",
+    "region": "R8"
+  },
+  {
+    "code": "SANR",
+    "name": "SAN ROSENDO",
+    "region": "R8"
+  },
+  {
+    "code": "SBAR",
+    "name": "SANTA BARBARA",
+    "region": "R8"
+  },
+  {
+    "code": "SJUN",
+    "name": "SANTA JUANA",
+    "region": "R8"
+  },
+  {
+    "code": "THNO",
+    "name": "TALCAHUANO",
+    "region": "R8"
+  },
+  {
+    "code": "TIRU",
+    "name": "TIRUA",
+    "region": "R8"
+  },
+  {
+    "code": "TOME",
+    "name": "TOME",
+    "region": "R8"
+  },
+  {
+    "code": "TUCA",
+    "name": "TUCAPEL",
+    "region": "R8"
+  },
+  {
+    "code": "YUMB",
+    "name": "YUMBEL",
+    "region": "R8"
+  },
+  {
+    "code": "ANGO",
+    "name": "ANGOL",
+    "region": "R9"
+  },
+  {
+    "code": "CARA",
+    "name": "CARAHUE",
+    "region": "R9"
+  },
+  {
+    "code": "CHLC",
+    "name": "CHOLCHOL",
+    "region": "R9"
+  },
+  {
+    "code": "COLL",
+    "name": "COLLIPULLI",
+    "region": "R9"
+  },
+  {
+    "code": "CUNC",
+    "name": "CUNCO",
+    "region": "R9"
+  },
+  {
+    "code": "CURC",
+    "name": "CURACAUTIN",
+    "region": "R9"
+  },
+  {
+    "code": "CRHU",
+    "name": "CURARREHUE",
+    "region": "R9"
+  },
+  {
+    "code": "ERCI",
+    "name": "ERCILLA",
+    "region": "R9"
+  },
+  {
+    "code": "FRER",
+    "name": "FREIRE",
+    "region": "R9"
+  },
+  {
+    "code": "GALV",
+    "name": "GALVARINO",
+    "region": "R9"
+  },
+  {
+    "code": "GORB",
+    "name": "GORBEA",
+    "region": "R9"
+  },
+  {
+    "code": "LAUT",
+    "name": "LAUTARO",
+    "region": "R9"
+  },
+  {
+    "code": "LONC",
+    "name": "LONCOCHE",
+    "region": "R9"
+  },
+  {
+    "code": "LNQY",
+    "name": "LONQUIMAY",
+    "region": "R9"
+  },
+  {
+    "code": "SAUC",
+    "name": "LOS SAUCES",
+    "region": "R9"
+  },
+  {
+    "code": "LUMA",
+    "name": "LUMACO",
+    "region": "R9"
+  },
+  {
+    "code": "MLPC",
+    "name": "MELIPEUCO",
+    "region": "R9"
+  },
+  {
+    "code": "NVAI",
+    "name": "NUEVA IMPERIAL",
+    "region": "R9"
+  },
+  {
+    "code": "PLCA",
+    "name": "PADRE LAS CASAS",
+    "region": "R9"
+  },
+  {
+    "code": "PERQ",
+    "name": "PERQUENCO",
+    "region": "R9"
+  },
+  {
+    "code": "PITR",
+    "name": "PITRUFQUEN",
+    "region": "R9"
+  },
+  {
+    "code": "PUCO",
+    "name": "PUCON",
+    "region": "R9"
+  },
+  {
+    "code": "PURE",
+    "name": "PUREN",
+    "region": "R9"
+  },
+  {
+    "code": "RNCO",
+    "name": "RENAICO",
+    "region": "R9"
+  },
+  {
+    "code": "SVDR",
+    "name": "SAAVEDRA",
+    "region": "R9"
+  },
+  {
+    "code": "TEMU",
+    "name": "TEMUCO",
+    "region": "R9"
+  },
+  {
+    "code": "TSCH",
+    "name": "TEODORO SCHMIDT",
+    "region": "R9"
+  },
+  {
+    "code": "TOLT",
+    "name": "TOLTEN",
+    "region": "R9"
+  },
+  {
+    "code": "TRAI",
+    "name": "TRAIGUEN",
+    "region": "R9"
+  },
+  {
+    "code": "VICT",
+    "name": "VICTORIA",
+    "region": "R9"
+  },
+  {
+    "code": "VILC",
+    "name": "VILCUN",
+    "region": "R9"
+  },
+  {
+    "code": "VILL",
+    "name": "VILLARRICA",
+    "region": "R9"
+  },
+  {
+    "code": "ALHU",
+    "name": "ALHUE",
+    "region": "RM"
+  },
+  {
+    "code": "BUIN",
+    "name": "BUIN",
+    "region": "RM"
+  },
+  {
+    "code": "CTAN",
+    "name": "CALERA DE TANGO",
+    "region": "RM"
+  },
+  {
+    "code": "LOSC",
+    "name": "CERRILLOS",
+    "region": "RM"
+  },
+  {
+    "code": "CNAV",
+    "name": "CERRO NAVIA",
+    "region": "RM"
+  },
+  {
+    "code": "COLI",
+    "name": "COLINA",
+    "region": "RM"
+  },
+  {
+    "code": "CCHA",
+    "name": "CONCHALI",
+    "region": "RM"
+  },
+  {
+    "code": "CRCV",
+    "name": "CURACAVI",
+    "region": "RM"
+  },
+  {
+    "code": "ELBO",
+    "name": "EL BOSQUE",
+    "region": "RM"
+  },
+  {
+    "code": "ELMO",
+    "name": "EL MONTE",
+    "region": "RM"
+  },
+  {
+    "code": "ECEN",
+    "name": "ESTACION CENTRAL",
+    "region": "RM"
+  },
+  {
+    "code": "HUEC",
+    "name": "HUECHURABA",
+    "region": "RM"
+  },
+  {
+    "code": "INDE",
+    "name": "INDEPENDENCIA",
+    "region": "RM"
+  },
+  {
+    "code": "IMAI",
+    "name": "ISLA DE MAIPO",
+    "region": "RM"
+  },
+  {
+    "code": "LACI",
+    "name": "LA CISTERNA",
+    "region": "RM"
+  },
+  {
+    "code": "LAFL",
+    "name": "LA FLORIDA",
+    "region": "RM"
+  },
+  {
+    "code": "LAGR",
+    "name": "LA GRANJA",
+    "region": "RM"
+  },
+  {
+    "code": "LAPI",
+    "name": "LA PINTANA",
+    "region": "RM"
+  },
+  {
+    "code": "LARE",
+    "name": "LA REINA",
+    "region": "RM"
+  },
+  {
+    "code": "LAMP",
+    "name": "LAMPA",
+    "region": "RM"
+  },
+  {
+    "code": "LCON",
+    "name": "LAS CONDES",
+    "region": "RM"
+  },
+  {
+    "code": "LOBA",
+    "name": "LO BARNECHEA",
+    "region": "RM"
+  },
+  {
+    "code": "LOES",
+    "name": "LO ESPEJO",
+    "region": "RM"
+  },
+  {
+    "code": "LOPR",
+    "name": "LO PRADO",
+    "region": "RM"
+  },
+  {
+    "code": "MACU",
+    "name": "MACUL",
+    "region": "RM"
+  },
+  {
+    "code": "MIPU",
+    "name": "MAIPU",
+    "region": "RM"
+  },
+  {
+    "code": "MAPI",
+    "name": "MARIA PINTO",
+    "region": "RM"
+  },
+  {
+    "code": "MELI",
+    "name": "MELIPILLA",
+    "region": "RM"
+  },
+  {
+    "code": "NUNO",
+    "name": "NUNOA",
+    "region": "RM"
+  },
+  {
+    "code": "PHUR",
+    "name": "PADRE HURTADO",
+    "region": "RM"
+  },
+  {
+    "code": "PAIN",
+    "name": "PAINE",
+    "region": "RM"
+  },
+  {
+    "code": "PEDR",
+    "name": "PEDRO AGUIRRE CERDA",
+    "region": "RM"
+  },
+  {
+    "code": "PENA",
+    "name": "PENAFLOR",
+    "region": "RM"
+  },
+  {
+    "code": "PLOL",
+    "name": "PENALOLEN",
+    "region": "RM"
+  },
+  {
+    "code": "PIRQ",
+    "name": "PIRQUE",
+    "region": "RM"
+  },
+  {
+    "code": "PROV",
+    "name": "PROVIDENCIA",
+    "region": "RM"
+  },
+  {
+    "code": "PUDA",
+    "name": "PUDAHUEL",
+    "region": "RM"
+  },
+  {
+    "code": "PALT",
+    "name": "PUENTE ALTO",
+    "region": "RM"
+  },
+  {
+    "code": "QILI",
+    "name": "QUILICURA",
+    "region": "RM"
+  },
+  {
+    "code": "QNOR",
+    "name": "QUINTA NORMAL",
+    "region": "RM"
+  },
+  {
+    "code": "RECO",
+    "name": "RECOLETA",
+    "region": "RM"
+  },
+  {
+    "code": "RENC",
+    "name": "RENCA",
+    "region": "RM"
+  },
+  {
+    "code": "SBER",
+    "name": "SAN BERNARDO",
+    "region": "RM"
+  },
+  {
+    "code": "SJOA",
+    "name": "SAN JOAQUIN",
+    "region": "RM"
+  },
+  {
+    "code": "SJOS",
+    "name": "SAN JOSE DE MAIPO",
+    "region": "RM"
+  },
+  {
+    "code": "SMIG",
+    "name": "SAN MIGUEL",
+    "region": "RM"
+  },
+  {
+    "code": "SNPD",
+    "name": "SAN PEDRO",
+    "region": "RM"
+  },
+  {
+    "code": "SRAM",
+    "name": "SAN RAMON",
+    "region": "RM"
+  },
+  {
+    "code": "STGO",
+    "name": "SANTIAGO CENTRO",
+    "region": "RM"
+  },
+  {
+    "code": "TALA",
+    "name": "TALAGANTE",
+    "region": "RM"
+  },
+  {
+    "code": "TILT",
+    "name": "TIL TIL",
+    "region": "RM"
+  },
+  {
+    "code": "VITA",
+    "name": "VITACURA",
+    "region": "RM"
+  },
+  {
+    "code": "ACHA",
+    "name": "QUINCHAO",
+    "region": "R10"
+  },
+  {
+    "code": "ANCU",
+    "name": "ANCUD",
+    "region": "R10"
+  },
+  {
+    "code": "CALB",
+    "name": "CALBUCO",
+    "region": "R10"
+  },
+  {
+    "code": "CAST",
+    "name": "CASTRO",
+    "region": "R10"
+  },
+  {
+    "code": "CHAI",
+    "name": "CHAITEN",
+    "region": "R10"
+  },
+  {
+    "code": "CHON",
+    "name": "CHONCHI",
+    "region": "R10"
+  },
+  {
+    "code": "CCHM",
+    "name": "COCHAMO",
+    "region": "R10"
+  },
+  {
+    "code": "CUVE",
+    "name": "CURACO DE VELEZ",
+    "region": "R10"
+  },
+  {
+    "code": "DALC",
+    "name": "DALCAHUE",
+    "region": "R10"
+  },
+  {
+    "code": "FRES",
+    "name": "FRESIA",
+    "region": "R10"
+  },
+  {
+    "code": "FRUT",
+    "name": "FRUTILLAR",
+    "region": "R10"
+  },
+  {
+    "code": "FUTA",
+    "name": "FUTALEUFU",
+    "region": "R10"
+  },
+  {
+    "code": "HULA",
+    "name": "HUALAIHUE",
+    "region": "R10"
+  },
+  {
+    "code": "LLAN",
+    "name": "LLANQUIHUE",
+    "region": "R10"
+  },
+  {
+    "code": "LMUE",
+    "name": "LOS MUERMOS",
+    "region": "R10"
+  },
+  {
+    "code": "MAUL",
+    "name": "MAULLIN",
+    "region": "R10"
+  },
+  {
+    "code": "OSOR",
+    "name": "OSORNO",
+    "region": "R10"
+  },
+  {
+    "code": "PALE",
+    "name": "PALENA",
+    "region": "R10"
+  },
+  {
+    "code": "PMON",
+    "name": "PUERTO MONTT",
+    "region": "R10"
+  },
+  {
+    "code": "POCT",
+    "name": "PUERTO OCTAY",
+    "region": "R10"
+  },
+  {
+    "code": "PVAR",
+    "name": "PUERTO VARAS",
+    "region": "R10"
+  },
+  {
+    "code": "PUQU",
+    "name": "PUQUELDON",
+    "region": "R10"
+  },
+  {
+    "code": "PURR",
+    "name": "PURRANQUE",
+    "region": "R10"
+  },
+  {
+    "code": "PUYG",
+    "name": "PUYEHUE",
+    "region": "R10"
+  },
+  {
+    "code": "QUEI",
+    "name": "QUEILEN",
+    "region": "R10"
+  },
+  {
+    "code": "QUEL",
+    "name": "QUELLON",
+    "region": "R10"
+  },
+  {
+    "code": "QUEM",
+    "name": "QUEMCHI",
+    "region": "R10"
+  },
+  {
+    "code": "RNEG",
+    "name": "RIO NEGRO",
+    "region": "R10"
+  },
+  {
+    "code": "SJCO",
+    "name": "SAN JUAN DE LA COSTA",
+    "region": "R10"
+  },
+  {
+    "code": "SPAB",
+    "name": "SAN PABLO",
+    "region": "R10"
+  },
+  {
+    "code": "CHCH",
+    "name": "CHILE CHICO",
+    "region": "R11"
+  },
+  {
+    "code": "COCH",
+    "name": "COCHRANE",
+    "region": "R11"
+  },
+  {
+    "code": "COYH",
+    "name": "COYHAIQUE",
+    "region": "R11"
+  },
+  {
+    "code": "GUAI",
+    "name": "GUAITECAS",
+    "region": "R11"
+  },
+  {
+    "code": "LAVE",
+    "name": "LAGO VERDE",
+    "region": "R11"
+  },
+  {
+    "code": "PAYS",
+    "name": "AISEN",
+    "region": "R11"
+  },
+  {
+    "code": "PCIS",
+    "name": "CISNES",
+    "region": "R11"
+  },
+  {
+    "code": "RIBA",
+    "name": "RIO IBANEZ",
+    "region": "R11"
+  },
+  {
+    "code": "TRTL",
+    "name": "TORTEL",
+    "region": "R11"
+  },
+  {
+    "code": "ANTA",
+    "name": "ANTARTICA",
+    "region": "R12"
+  },
+  {
+    "code": "CAHO",
+    "name": "CABO DE HORNOS",
+    "region": "R12"
+  },
+  {
+    "code": "LABL",
+    "name": "LAGUNA BLANCA",
+    "region": "R12"
+  },
+  {
+    "code": "PNAT",
+    "name": "NATALES",
+    "region": "R12"
+  },
+  {
+    "code": "PORV",
+    "name": "PORVENIR",
+    "region": "R12"
+  },
+  {
+    "code": "PRIM",
+    "name": "PRIMAVERA",
+    "region": "R12"
+  },
+  {
+    "code": "PUNT",
+    "name": "PUNTA ARENAS",
+    "region": "R12"
+  },
+  {
+    "code": "RVER",
+    "name": "RIO VERDE",
+    "region": "R12"
+  },
+  {
+    "code": "SGRE",
+    "name": "SAN GREGORIO",
+    "region": "R12"
+  },
+  {
+    "code": "TMKL",
+    "name": "TIMAUKEL",
+    "region": "R12"
+  },
+  {
+    "code": "TPAI",
+    "name": "TORRES DEL PAINE",
+    "region": "R12"
+  },
+  {
+    "code": "CORR",
+    "name": "CORRAL",
+    "region": "R14"
+  },
+  {
+    "code": "FUTR",
+    "name": "FUTRONO",
+    "region": "R14"
+  },
+  {
+    "code": "LAUN",
+    "name": "LA UNION",
+    "region": "R14"
+  },
+  {
+    "code": "LRAN",
+    "name": "LAGO RANCO",
+    "region": "R14"
+  },
+  {
+    "code": "LANC",
+    "name": "LANCO",
+    "region": "R14"
+  },
+  {
+    "code": "LLAG",
+    "name": "LOS LAGOS",
+    "region": "R14"
+  },
+  {
+    "code": "MAFI",
+    "name": "MAFIL",
+    "region": "R14"
+  },
+  {
+    "code": "MRQN",
+    "name": "MARIQUINA",
+    "region": "R14"
+  },
+  {
+    "code": "PAIL",
+    "name": "PAILLACO",
+    "region": "R14"
+  },
+  {
+    "code": "PANG",
+    "name": "PANGUIPULLI",
+    "region": "R14"
+  },
+  {
+    "code": "RIOB",
+    "name": "RIO BUENO",
+    "region": "R14"
+  },
+  {
+    "code": "VALD",
+    "name": "VALDIVIA",
+    "region": "R14"
+  },
+  {
+    "code": "ARIC",
+    "name": "ARICA",
+    "region": "R15"
+  },
+  {
+    "code": "CAMA",
+    "name": "CAMARONES",
+    "region": "R15"
+  },
+  {
+    "code": "GLAG",
+    "name": "GENERAL LAGOS",
+    "region": "R15"
+  },
+  {
+    "code": "PUTR",
+    "name": "PUTRE",
+    "region": "R15"
+  },
+  {
+    "code": "BULN",
+    "name": "BULNES",
+    "region": "R16"
+  },
+  {
+    "code": "CHIL",
+    "name": "CHILLAN",
+    "region": "R16"
+  },
+  {
+    "code": "CHIL",
+    "name": "NUEVA ALDEA",
+    "region": "R16"
+  },
+  {
+    "code": "CHVJ",
+    "name": "CHILLAN VIEJO",
+    "region": "R16"
+  },
+  {
+    "code": "COBQ",
+    "name": "COBQUECURA",
+    "region": "R16"
+  },
+  {
+    "code": "COEL",
+    "name": "COELEMU",
+    "region": "R16"
+  },
+  {
+    "code": "COIC",
+    "name": "COIHUECO",
+    "region": "R16"
+  },
+  {
+    "code": "ECAR",
+    "name": "EL CARMEN",
+    "region": "R16"
+  },
+  {
+    "code": "NINH",
+    "name": "NINHUE",
+    "region": "R16"
+  },
+  {
+    "code": "NIQU",
+    "name": "NIQUEN",
+    "region": "R16"
+  },
+  {
+    "code": "PEMU",
+    "name": "PEMUCO",
+    "region": "R16"
+  },
+  {
+    "code": "PINT",
+    "name": "PINTO",
+    "region": "R16"
+  },
+  {
+    "code": "PORT",
+    "name": "PORTEZUELO",
+    "region": "R16"
+  },
+  {
+    "code": "QULL",
+    "name": "QUILLON",
+    "region": "R16"
+  },
+  {
+    "code": "QUIR",
+    "name": "QUIRIHUE",
+    "region": "R16"
+  },
+  {
+    "code": "RANQ",
+    "name": "RANQUIL",
+    "region": "R16"
+  },
+  {
+    "code": "SCAR",
+    "name": "SAN CARLOS",
+    "region": "R16"
+  },
+  {
+    "code": "SIGN",
+    "name": "SAN IGNACIO",
+    "region": "R16"
+  },
+  {
+    "code": "SNIC",
+    "name": "SAN NICOLAS",
+    "region": "R16"
+  },
+  {
+    "code": "TREG",
+    "name": "TREGUACO",
+    "region": "R16"
+  },
+  {
+    "code": "YUNG",
+    "name": "YUNGAY",
+    "region": "R16"
+  }
+]

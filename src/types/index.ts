@@ -11,6 +11,9 @@ export interface Profile {
   avatar_url: string | null
   city: string | null
   bio: string | null
+  phone: string | null
+  address: string | null
+  comuna: string | null
   created_at: string
 }
 
@@ -39,6 +42,7 @@ export interface Order {
   seller_id: string
   amount: number
   commission: number
+  shipping_cost: number
   status: OrderStatus
   tracking_number: string | null
   payment_ref: string | null
@@ -49,6 +53,10 @@ export interface Order {
   shipping_address_extra: string
   shipping_comuna: string
   shipping_city: string
+  courier_service_code: string | null
+  courier_tracking_number: string | null
+  courier_barcode: string | null
+  label_url: string | null
   paid_at: string | null
   shipped_at: string | null
   created_at: string
