@@ -145,6 +145,10 @@ export default async function SalesPage() {
                         {listing.status === 'active' ? 'Activa' : 'Pausada'}
                       </span>
                       <PauseListingButton listingId={listing.id} currentStatus={listing.status as 'active' | 'paused'} />
+                      <Link href={`/listings/${listing.id}/edit`}
+                        className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
+                        Editar
+                      </Link>
                       <Link href={`/listings/${listing.id}`}
                         className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
                         Ver

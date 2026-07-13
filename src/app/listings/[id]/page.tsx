@@ -126,9 +126,15 @@ export default async function ListingPage({
                   </p>
                 </div>
               ) : (
-                <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
-                  Esta es tu prenda publicada
-                </p>
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
+                    Esta es tu prenda publicada
+                  </p>
+                  <Link href={`/listings/${listing.id}/edit`}
+                    className="block w-full text-center text-xs tracking-widest uppercase text-gray-500 hover:text-black border border-gray-200 py-3 transition">
+                    Editar prenda
+                  </Link>
+                </div>
               )
             )}
 
