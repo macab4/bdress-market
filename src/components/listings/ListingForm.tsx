@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, SHIPPING_SIZES, CategoryValue } from '@/lib/catalog'
+import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, SHIPPING_SIZES, CategoryValue, sellerPayout } from '@/lib/catalog'
 import { Listing } from '@/types'
 
 interface ListingFormProps {
@@ -264,8 +264,9 @@ export default function ListingForm({ listing }: ListingFormProps) {
                 className="w-full border border-gray-200 pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
             </div>
             <p className="text-[10px] text-gray-400 mt-1">
-              Bdress descuenta 12% de comisión al completarse la venta.
-              {form.price && ` Recibirás $${Math.round(parseInt(form.price) * 0.88).toLocaleString('es-CL')}.`}
+              Publicar y vender es gratis — no te cobramos comisión. Solo se descuenta el costo de
+              procesamiento del pago (3,5% + $450).
+              {form.price && ` Recibirás $${sellerPayout(parseInt(form.price)).toLocaleString('es-CL')}.`}
             </p>
           </div>
 

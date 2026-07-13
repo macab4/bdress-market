@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getShippingQuote } from '@/lib/chilexpress'
-import { buyerProtectionFee } from '@/lib/catalog'
+import { buyerProtectionFee, paymentProcessingFee } from '@/lib/catalog'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -96,6 +96,7 @@ export async function POST(request: Request) {
     }).eq('id', orderId)
   } else {
     const commission = buyerProtectionFee(listing.price)
+    const processingFee = paymentProcessingFee(listing.price)
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert({
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
         seller_id: listing.seller_id,
         amount: listing.price + commission,
         commission,
+        processing_fee: processingFee,
         shipping_cost: quote.price,
         courier_service_code: quote.serviceCode,
         status: 'pending_payment',
@@ -135,7 +137,7 @@ export async function POST(request: Request) {
           currency_id: 'CLP',
         },
         {
-          title: 'Protección al comprador',
+          title: 'Protección BDress',
           quantity: 1,
           unit_price: commissionForMp,
           currency_id: 'CLP',

@@ -120,12 +120,25 @@ export const SHIPPING_SIZES = [
 
 export type ShippingSizeValue = (typeof SHIPPING_SIZES)[number]['value']
 
-// Comisión de servicio (protección al comprador) — se suma al precio de la
-// prenda y la paga la compradora. La vendedora recibe el 100% del precio publicado.
+// Protección BDress — se suma al precio de la prenda y la paga la compradora.
+// Publicar y vender es gratis: a la vendedora no se le descuenta comisión.
 export const COMMISSION_PCT = 0.10
 
 export function buyerProtectionFee(price: number): number {
   return Math.round(price * COMMISSION_PCT)
+}
+
+// Costo de procesamiento del pago (no es una comisión de Bdress) — se descuenta
+// del monto que recibe la vendedora, igual que cobra cualquier pasarela de pago.
+export const PROCESSING_FEE_PCT = 0.035
+export const PROCESSING_FEE_FIXED = 450
+
+export function paymentProcessingFee(price: number): number {
+  return Math.round(price * PROCESSING_FEE_PCT) + PROCESSING_FEE_FIXED
+}
+
+export function sellerPayout(price: number): number {
+  return price - paymentProcessingFee(price)
 }
 
 export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string }> = {

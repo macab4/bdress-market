@@ -42,6 +42,7 @@ export interface Order {
   seller_id: string
   amount: number
   commission: number
+  processing_fee: number
   shipping_cost: number
   status: OrderStatus
   tracking_number: string | null

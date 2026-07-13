@@ -50,6 +50,8 @@ export default async function AdminPage() {
   const realOrders = allOrders.filter(o => o.status !== 'pending_payment' && o.status !== 'cancelled')
   const totalGMV = realOrders.reduce((sum, o) => sum + o.amount, 0)
   const totalCommission = realOrders.reduce((sum, o) => sum + o.commission, 0)
+  const totalProcessingFee = realOrders.reduce((sum, o) => sum + o.processing_fee, 0)
+  const netRevenue = totalCommission - totalProcessingFee
 
   const stats = [
     { label: 'Usuarias', value: userCount ?? 0 },
@@ -57,7 +59,9 @@ export default async function AdminPage() {
     { label: 'Prendas vendidas', value: soldListings },
     { label: 'Prendas pausadas', value: pausedListings },
     { label: 'GMV total', value: `$${totalGMV.toLocaleString('es-CL')}` },
-    { label: 'Comisión Bdress', value: `$${totalCommission.toLocaleString('es-CL')}` },
+    { label: 'Protección BDress cobrada', value: `$${totalCommission.toLocaleString('es-CL')}` },
+    { label: 'Procesamiento (a vendedoras)', value: `$${totalProcessingFee.toLocaleString('es-CL')}` },
+    { label: 'Ingreso neto Bdress', value: `$${netRevenue.toLocaleString('es-CL')}` },
   ]
 
   return (

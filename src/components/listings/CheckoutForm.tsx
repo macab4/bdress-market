@@ -135,7 +135,7 @@ export default function CheckoutForm({ listingId, price }: CheckoutFormProps) {
           <span>${price.toLocaleString('es-CL')}</span>
         </div>
         <div className="flex justify-between">
-          <span>Protección al comprador ({Math.round(COMMISSION_PCT * 100)}%)</span>
+          <span>Protección BDress ({Math.round(COMMISSION_PCT * 100)}%)</span>
           <span>${commission.toLocaleString('es-CL')}</span>
         </div>
         <div className="flex justify-between">

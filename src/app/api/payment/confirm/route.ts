@@ -46,7 +46,7 @@ async function handleNotification(request: Request) {
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', orderId)
       .eq('status', 'pending_payment')
-      .select('listing_id, buyer_id, seller_id, amount, commission')
+      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee')
       .maybeSingle()
 
     // Solo marcamos la prenda vendida la primera vez que la orden pasa a pagada
@@ -60,7 +60,7 @@ async function handleNotification(request: Request) {
 
       const listingTitle = listing?.title ?? 'tu prenda'
       const amountFmt = `$${updatedOrder.amount.toLocaleString('es-CL')}`
-      const sellerNetFmt = `$${(updatedOrder.amount - updatedOrder.commission).toLocaleString('es-CL')}`
+      const sellerNetFmt = `$${(updatedOrder.amount - updatedOrder.commission - updatedOrder.processing_fee).toLocaleString('es-CL')}`
 
       if (buyer?.email) {
         await sendEmail({
@@ -92,6 +92,10 @@ async function handleNotification(request: Request) {
             <p style="font-size: 14px; color: #444; line-height: 1.6;">
               Hola ${seller.name ?? ''}, ¡vendiste <strong>${listingTitle}</strong>! Vas a recibir <strong>${sellerNetFmt}</strong>.
               Tenés 5 días hábiles para despacharla.
+            </p>
+            <p style="font-size: 13px; color: #888; line-height: 1.6;">
+              Publicar y vender en Bdress Market es gratis — no te cobramos comisión. Al monto de tu prenda solo se
+              le descuenta el costo de procesamiento del pago (3,5% + $450).
             </p>
             <p style="font-size: 13px; color: #888; line-height: 1.6;">
               Andá a <strong>Mis ventas</strong> y generá la etiqueta de envío — te la mandamos por correo lista para imprimir.

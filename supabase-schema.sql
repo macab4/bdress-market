@@ -82,6 +82,7 @@ create table public.orders (
   seller_id             uuid references public.profiles(id) not null,
   amount                integer not null,
   commission            integer not null,
+  processing_fee        integer not null default 0,
   shipping_cost         integer not null default 0,
   status                text not null default 'pending_payment'
                           check (status in ('pending_payment','paid','shipped','delivered','completed','disputed','cancelled')),

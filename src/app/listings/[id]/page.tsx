@@ -130,7 +130,7 @@ export default async function ListingPage({
                 <span>${listing.price.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between text-gray-400">
-                <span>Protección al comprador ({Math.round(COMMISSION_PCT * 100)}%)</span>
+                <span>Protección BDress ({Math.round(COMMISSION_PCT * 100)}%)</span>
                 <span>+ ${commission.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-100 pt-1 mt-1">
@@ -138,7 +138,7 @@ export default async function ListingPage({
                 <span>${totalPrice.toLocaleString('es-CL')}</span>
               </div>
               <p className="text-[10px] text-gray-400 pt-1">
-                El envío se calcula en el siguiente paso, según tu dirección. La vendedora recibe el 100% del precio de la prenda.
+                El envío se calcula en el siguiente paso, según tu dirección. Publicar y vender en Bdress Market es gratis para la vendedora.
               </p>
             </div>
 

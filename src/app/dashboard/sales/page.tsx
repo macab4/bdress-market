@@ -44,10 +44,10 @@ export default async function SalesPage() {
   const shippedOrders = orders.filter(o => o.status === 'shipped')
   const completedOrders = orders.filter(o => o.status === 'completed')
 
-  const totalEarned = completedOrders.reduce((sum, o) => sum + (o.amount - o.commission), 0)
+  const totalEarned = completedOrders.reduce((sum, o) => sum + (o.amount - o.commission - o.processing_fee), 0)
   const pendingAmount = orders
     .filter(o => o.status === 'paid' || o.status === 'shipped')
-    .reduce((sum, o) => sum + (o.amount - o.commission), 0)
+    .reduce((sum, o) => sum + (o.amount - o.commission - o.processing_fee), 0)
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -91,7 +91,7 @@ export default async function SalesPage() {
                         <p className="text-sm font-medium truncate">{order.listing?.title}</p>
                         <p className="text-xs text-gray-400 mt-0.5">Compradora: {order.buyer?.name ?? '—'}</p>
                         <p className="text-sm font-semibold mt-1">
-                          ${(order.amount - order.commission).toLocaleString('es-CL')}
+                          ${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}
                           <span className="text-xs font-normal text-gray-400 ml-1">(neto)</span>
                         </p>
 
@@ -145,7 +145,7 @@ export default async function SalesPage() {
                           </p>
                         )}
                         <p className="text-sm font-semibold mt-1">
-                          ${(order.amount - order.commission).toLocaleString('es-CL')}
+                          ${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}
                           <span className="text-xs font-normal text-gray-400 ml-1">(neto)</span>
                         </p>
                         {order.label_url && (
@@ -234,7 +234,7 @@ export default async function SalesPage() {
                     <p className="text-xs text-gray-400">{order.buyer?.name ?? '—'}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-semibold">${(order.amount - order.commission).toLocaleString('es-CL')}</p>
+                    <p className="text-sm font-semibold">${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}</p>
                     <p className="text-[10px] text-gray-300">
                       {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
                     </p>

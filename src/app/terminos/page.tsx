@@ -48,7 +48,7 @@ export default function TerminosPage() {
             <ol className="list-decimal list-inside space-y-2">
               <li>Explorá las prendas disponibles y filtrá por categoría, talla, estado o precio, y ordená los resultados de más recientes a más antiguas o por precio.</li>
               <li>Al entrar a una prenda que te interese, hacé clic en «Comprar» e ingresá tu dirección de despacho (comuna, calle, número y depto/casa si corresponde).</li>
-              <li>Antes de pagar vas a ver el precio de la prenda, la protección al comprador y el costo real de envío — se cotiza al momento según tu comuna y la de la vendedora — con el total bien claro.</li>
+              <li>Antes de pagar vas a ver el precio de la prenda, la Protección BDress y el costo real de envío — se cotiza al momento según tu comuna y la de la vendedora — con el total bien claro.</li>
               <li>El pago se realiza a través de Mercado Pago (tarjetas de crédito, débito y otros medios habilitados).</li>
               <li>Una vez confirmado el pago, la vendedora recibe aviso para despachar tu prenda dentro de los próximos días.</li>
               <li>Podés seguir el estado de tu compra en «Mis compras»: pagada → etiqueta generada → despachada → completada.</li>
@@ -60,7 +60,7 @@ export default function TerminosPage() {
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Cómo vender</h2>
             <ol className="list-decimal list-inside space-y-2">
               <li>Creá tu cuenta y completá tu perfil, incluyendo tu dirección de despacho (nombre, teléfono, dirección y comuna) — la vas a necesitar para generar etiquetas de envío.</li>
-              <li>Publicá tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Ese precio es el que vas a recibir completo — no te cobramos comisión a ti.</li>
+              <li>Publicá tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Publicar es gratis y no te cobramos comisión por vender.</li>
               <li>Cuando alguien compra tu prenda, te avisamos por correo. Entrá a «Mis ventas» y generá la etiqueta de envío: se genera automáticamente con Chilexpress y te llega lista para imprimir a tu correo.</li>
               <li>Imprimí la etiqueta, pegala en el paquete y llevalo a cualquier sucursal de Chilexpress.</li>
               <li>Una vez que la compradora confirma la recepción (o pasan 7 días desde el despacho sin disputa), el pago se libera a tu favor.</li>
@@ -83,19 +83,43 @@ export default function TerminosPage() {
 
           <section id="pagos" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Pagos y comisión</h2>
-            <p className="mb-2">
-              Queremos que esto sea simple: la vendedora publica el precio que quiere recibir por su prenda, y ese
-              es exactamente el monto que le pagamos — <strong>sin descuentos ni comisiones para ella</strong>.
+            <p className="mb-4">
+              Queremos que esto sea simple y transparente para las dos partes. Así funciona:
             </p>
-            <p className="mb-2">
-              A ese precio le sumamos un <strong>10% de protección al comprador</strong> al momento de pagar. Ese
-              cargo lo asume la compradora, y es lo que nos permite ofrecer pago seguro (retenemos el dinero hasta
-              que confirmás que todo llegó bien) y resolver cualquier problema si algo sale mal con tu compra.
+
+            <p className="font-medium text-gray-800 mb-1">Si vendés</p>
+            <p className="mb-4">
+              Publicar es gratis y no te cobramos comisión por vender. Cuando se concreta una venta, solo se
+              descuenta de tu pago el <strong>costo de procesamiento de la transacción</strong> (3,5% + $450), que
+              es lo que cobra la pasarela de pago por procesar la compra — no es un cobro de Bdress.
             </p>
-            <p>
-              Todo se paga junto — prenda, protección al comprador y envío — en un solo pago a través de Mercado
-              Pago, con tarjetas de crédito, débito y otros medios habilitados. Vas a ver siempre el desglose
-              completo antes de confirmar.
+
+            <p className="font-medium text-gray-800 mb-1">Si comprás</p>
+            <p className="mb-4">
+              Pagás el precio que fijó la vendedora más un <strong>10% de Protección BDress</strong>, ya con todo
+              incluido. Esta tarifa te permite pagar de forma segura, incluye seguimiento de tu envío y soporte de
+              nuestro equipo si algo sale mal — y siempre la vas a ver reflejada en el precio final antes de pagar,
+              nunca como un cargo sorpresa en el último paso.
+            </p>
+
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Ejemplo con una prenda de $100.000</p>
+            <div className="grid grid-cols-2 gap-4 mb-2">
+              <div className="bg-gray-50 p-3">
+                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Compradora paga</p>
+                <div className="flex justify-between text-xs mb-1"><span>Precio del vestido</span><span>$100.000</span></div>
+                <div className="flex justify-between text-xs mb-1"><span>Protección BDress (10%)</span><span>$10.000</span></div>
+                <div className="flex justify-between text-xs font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1"><span>Total (+ envío)</span><span>$110.000</span></div>
+              </div>
+              <div className="bg-gray-50 p-3">
+                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Vendedora recibe</p>
+                <div className="flex justify-between text-xs mb-1"><span>Precio de venta</span><span>$100.000</span></div>
+                <div className="flex justify-between text-xs mb-1"><span>Procesamiento (3,5% + $450)</span><span>− $3.950</span></div>
+                <div className="flex justify-between text-xs font-medium text-gray-800 border-t border-gray-200 pt-1 mt-1"><span>Recibe</span><span>$96.050</span></div>
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-400">
+              Todo se paga junto en un solo pago con Mercado Pago (tarjetas de crédito, débito y otros medios), y
+              siempre mostramos el desglose completo antes de que confirmes tu compra.
             </p>
           </section>
 
