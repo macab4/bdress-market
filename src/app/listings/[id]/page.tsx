@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
+import FavoriteButton from '@/components/listings/FavoriteButton'
 import { CONDITIONS, CATEGORIES } from '@/lib/catalog'
 
 export default async function ListingPage({
@@ -28,6 +29,17 @@ export default async function ListingPage({
   ])
 
   if (!listing) notFound()
+
+  let isFavorited = false
+  if (user) {
+    const { data: favorite } = await supabase
+      .from('favorites')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('listing_id', id)
+      .maybeSingle()
+    isFavorited = favorite !== null
+  }
 
   const commission = Math.round(listing.price * 0.12)
   const sellerReceives = listing.price - commission
@@ -75,9 +87,17 @@ export default async function ListingPage({
                   <p className="text-[10px] tracking-widest uppercase text-gray-400">{listing.brand || 'Sin marca'}</p>
                   <h1 className="text-xl font-light tracking-wide mt-0.5">{listing.title}</h1>
                 </div>
-                <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${condition.color}`}>
-                  {condition.label}
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${condition.color}`}>
+                    {condition.label}
+                  </span>
+                  <FavoriteButton
+                    listingId={listing.id}
+                    initialFavorited={isFavorited}
+                    isLoggedIn={user !== null}
+                    className="border border-gray-200"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-4 mt-3">

@@ -94,6 +94,25 @@ create policy "Compradora crea orden" on public.orders
 create policy "Vendedora actualiza estado de envío" on public.orders
   for update using (auth.uid() = seller_id or auth.uid() = buyer_id);
 
+-- Favoritos
+create table public.favorites (
+  id          uuid default gen_random_uuid() primary key,
+  user_id     uuid references public.profiles(id) on delete cascade not null,
+  listing_id  uuid references public.listings(id) on delete cascade not null,
+  created_at  timestamptz default now(),
+  unique (user_id, listing_id)
+);
+alter table public.favorites enable row level security;
+
+create policy "Usuaria ve sus favoritos" on public.favorites
+  for select using (auth.uid() = user_id);
+
+create policy "Usuaria agrega favoritos" on public.favorites
+  for insert with check (auth.uid() = user_id);
+
+create policy "Usuaria quita sus favoritos" on public.favorites
+  for delete using (auth.uid() = user_id);
+
 -- Mensajes
 create table public.messages (
   id          uuid default gen_random_uuid() primary key,

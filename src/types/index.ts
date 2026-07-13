@@ -54,6 +54,14 @@ export interface Order {
   seller?: Profile
 }
 
+export interface Favorite {
+  id: string
+  user_id: string
+  listing_id: string
+  created_at: string
+  listing?: Listing
+}
+
 export interface Message {
   id: string
   sender_id: string

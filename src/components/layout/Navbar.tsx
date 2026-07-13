@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Heart } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function Navbar() {
@@ -24,6 +25,9 @@ export default async function Navbar() {
               </Link>
               <Link href="/dashboard/purchases" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis compras
+              </Link>
+              <Link href="/favorites" aria-label="Favoritos" className="text-gray-500 hover:text-black">
+                <Heart size={18} />
               </Link>
               <Link href={`/profile/${user.id}`} className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mi perfil

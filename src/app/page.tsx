@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
 import { CATEGORIES, CONDITIONS, conditionLabel } from '@/lib/catalog'
+import FavoriteButton from '@/components/listings/FavoriteButton'
 
 const SIZES = ['XS','S','M','L','XL','XXL']
 
@@ -27,7 +28,20 @@ export default async function HomePage({
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
 
-  const { data: listings } = await query.limit(48)
+  const [{ data: listings }, { data: { user } }] = await Promise.all([
+    query.limit(48),
+    supabase.auth.getUser(),
+  ])
+
+  let favoritedIds = new Set<string>()
+  if (user && listings && listings.length > 0) {
+    const { data: favorites } = await supabase
+      .from('favorites')
+      .select('listing_id')
+      .eq('user_id', user.id)
+      .in('listing_id', listings.map(l => l.id))
+    favoritedIds = new Set((favorites ?? []).map(f => f.listing_id))
+  }
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -122,6 +136,12 @@ export default async function HomePage({
                     <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
                       {conditionLabel(listing.condition)}
                     </span>
+                    <FavoriteButton
+                      listingId={listing.id}
+                      initialFavorited={favoritedIds.has(listing.id)}
+                      isLoggedIn={user !== null}
+                      className="absolute top-2 right-2"
+                    />
                   </div>
                   <div className="p-3">
                     <p className="text-[10px] tracking-widest text-gray-400 uppercase">{listing.brand || 'Sin marca'}</p>
