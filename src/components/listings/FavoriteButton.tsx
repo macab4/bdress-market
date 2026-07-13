@@ -9,10 +9,10 @@ interface FavoriteButtonProps {
   listingId: string
   initialFavorited: boolean
   isLoggedIn: boolean
-  className?: string
+  buttonClassName?: string
 }
 
-export default function FavoriteButton({ listingId, initialFavorited, isLoggedIn, className = '' }: FavoriteButtonProps) {
+export default function FavoriteButton({ listingId, initialFavorited, isLoggedIn, buttonClassName = '' }: FavoriteButtonProps) {
   const router = useRouter()
   const [favorited, setFavorited] = useState(initialFavorited)
   const [loading, setLoading] = useState(false)
@@ -53,12 +53,12 @@ export default function FavoriteButton({ listingId, initialFavorited, isLoggedIn
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className="relative">
       <button
         type="button"
         onClick={toggle}
         aria-label={favorited ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-        className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition"
+        className={`w-7 h-7 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition ${buttonClassName}`}
       >
         <Heart size={15} className={favorited ? 'fill-black text-black' : 'text-gray-500'} />
       </button>

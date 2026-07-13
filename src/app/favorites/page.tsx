@@ -51,12 +51,13 @@ export default async function FavoritesPage() {
                   <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
                     {conditionLabel(listing.condition)}
                   </span>
-                  <FavoriteButton
-                    listingId={listing.id}
-                    initialFavorited={true}
-                    isLoggedIn={true}
-                    className="absolute bottom-2 right-2"
-                  />
+                  <div className="absolute bottom-2 right-2">
+                    <FavoriteButton
+                      listingId={listing.id}
+                      initialFavorited={true}
+                      isLoggedIn={true}
+                    />
+                  </div>
                 </div>
                 <div className="p-3">
                   <p className="text-[10px] tracking-widest text-gray-400 uppercase">{listing.brand || 'Sin marca'}</p>

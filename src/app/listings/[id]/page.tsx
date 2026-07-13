@@ -95,7 +95,7 @@ export default async function ListingPage({
                     listingId={listing.id}
                     initialFavorited={isFavorited}
                     isLoggedIn={user !== null}
-                    className="border border-gray-200"
+                    buttonClassName="border border-gray-200"
                   />
                 </div>
               </div>
