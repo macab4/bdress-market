@@ -3,12 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Listing, Profile } from '@/types'
-
-const CONDITIONS: Record<string, string> = {
-  nuevo: 'Nuevo',
-  muy_bueno: 'Muy bueno',
-  bueno: 'Bueno',
-}
+import { conditionLabel } from '@/lib/catalog'
 
 export default async function ProfilePage({
   params,
@@ -95,7 +90,7 @@ export default async function ProfilePage({
                     </div>
                   )}
                   <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                    {CONDITIONS[listing.condition]}
+                    {conditionLabel(listing.condition)}
                   </span>
                 </div>
                 <div className="p-3">

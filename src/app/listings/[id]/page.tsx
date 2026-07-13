@@ -4,12 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
-
-const CONDITION_LABELS: Record<string, { label: string; color: string }> = {
-  nuevo:     { label: 'Nuevo',      color: 'bg-[#8DA988] text-white' },
-  muy_bueno: { label: 'Muy bueno',  color: 'bg-gray-200 text-gray-700' },
-  bueno:     { label: 'Bueno',      color: 'bg-gray-100 text-gray-600' },
-}
+import { CONDITIONS, CATEGORIES } from '@/lib/catalog'
 
 export default async function ListingPage({
   params,
@@ -42,7 +37,8 @@ export default async function ListingPage({
     user !== null &&
     user.id !== listing.seller_id
 
-  const condition = CONDITION_LABELS[listing.condition] ?? { label: listing.condition, color: 'bg-gray-100 text-gray-600' }
+  const condition = CONDITIONS.find(c => c.value === listing.condition) ?? { label: listing.condition, color: 'bg-gray-100 text-gray-600' }
+  const categoryLabel = CATEGORIES.find(c => c.value === listing.category)?.label
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -50,8 +46,13 @@ export default async function ListingPage({
         {/* Breadcrumb */}
         <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-6">
           <Link href="/" className="hover:text-black">Inicio</Link>
-          {' · '}
-          <span>{listing.title}</span>
+          {categoryLabel && (
+            <>
+              {' · '}
+              <Link href={`/?category=${listing.category}`} className="hover:text-black">{categoryLabel}</Link>
+            </>
+          )}
+          {listing.subcategory && ` · ${listing.subcategory}`}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

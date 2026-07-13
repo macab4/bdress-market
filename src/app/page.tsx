@@ -2,18 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
+import { CATEGORIES, CONDITIONS, conditionLabel } from '@/lib/catalog'
 
 const SIZES = ['XS','S','M','L','XL','XXL']
-const CONDITIONS: Record<string, string> = {
-  nuevo: 'Nuevo',
-  muy_bueno: 'Muy bueno',
-  bueno: 'Bueno',
-}
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; size?: string; min?: string; max?: string; condition?: string }>
+  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -25,6 +21,7 @@ export default async function HomePage({
     .order('created_at', { ascending: false })
 
   if (params.q) query = query.ilike('title', `%${params.q}%`)
+  if (params.category) query = query.eq('category', params.category)
   if (params.size) query = query.eq('size', params.size)
   if (params.condition) query = query.eq('condition', params.condition)
   if (params.min) query = query.gte('price', parseInt(params.min))
@@ -55,6 +52,14 @@ export default async function HomePage({
           </div>
 
           <div>
+            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Categoría</label>
+            <select name="category" defaultValue={params.category} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+              <option value="">Todas</option>
+              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+
+          <div>
             <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Talla</label>
             <select name="size" defaultValue={params.size} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
               <option value="">Todas</option>
@@ -66,7 +71,7 @@ export default async function HomePage({
             <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Estado</label>
             <select name="condition" defaultValue={params.condition} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
               <option value="">Todos</option>
-              {Object.entries(CONDITIONS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
 
@@ -87,7 +92,7 @@ export default async function HomePage({
             Filtrar
           </button>
 
-          {(params.q || params.size || params.condition || params.min || params.max) && (
+          {(params.q || params.category || params.size || params.condition || params.min || params.max) && (
             <Link href="/" className="text-xs text-gray-400 hover:text-black underline">Limpiar</Link>
           )}
         </div>
@@ -115,7 +120,7 @@ export default async function HomePage({
                       </div>
                     )}
                     <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                      {CONDITIONS[listing.condition]}
+                      {conditionLabel(listing.condition)}
                     </span>
                   </div>
                   <div className="p-3">

@@ -4,27 +4,26 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-
-const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '34', '36', '38', '40', '42', '44']
-const CONDITIONS = [
-  { value: 'nuevo', label: 'Nuevo — con etiqueta o sin usar' },
-  { value: 'muy_bueno', label: 'Muy bueno — usado pocas veces, impecable' },
-  { value: 'bueno', label: 'Bueno — con uso visible pero en buen estado' },
-]
+import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, SHIPPING_SIZES, CategoryValue } from '@/lib/catalog'
 
 export default function NewListingPage() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
-    title: '', description: '', size: '', brand: '', condition: 'muy_bueno', price: '',
+    title: '', description: '', category: '' as CategoryValue | '', subcategory: '',
+    size: '', brand: '', condition: 'muy_bueno', shipping_size: 'mediano', price: '',
   })
   const [photos, setPhotos] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  function set(field: string, value: string) {
+  function set<K extends keyof typeof form>(field: K, value: typeof form[K]) {
     setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  function setCategory(value: CategoryValue) {
+    setForm(prev => ({ ...prev, category: value, subcategory: '', size: '' }))
   }
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -43,6 +42,8 @@ export default function NewListingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (photos.length === 0) { setError('Agrega al menos una foto'); return }
+    if (!form.category) { setError('Selecciona una categoría'); return }
+    if (!form.subcategory) { setError('Selecciona una subcategoría'); return }
     setLoading(true)
     setError('')
 
@@ -72,9 +73,12 @@ export default function NewListingPage() {
         seller_id: user.id,
         title: form.title,
         description: form.description,
+        category: form.category,
+        subcategory: form.subcategory,
         size: form.size,
         brand: form.brand,
         condition: form.condition,
+        shipping_size: form.shipping_size,
         price: parseInt(form.price),
         photos: photoUrls,
         status: 'active',
@@ -86,6 +90,9 @@ export default function NewListingPage() {
 
     router.push(`/listings/${data.id}`)
   }
+
+  const sizeOptions = form.category ? SIZES_BY_CATEGORY[form.category] : []
+  const subcategoryOptions = CATEGORIES.find(c => c.value === form.category)?.subcategories ?? []
 
   return (
     <div className="min-h-screen bg-[#EBEBEB] py-10 px-4">
@@ -122,6 +129,35 @@ export default function NewListingPage() {
             <p className="text-[10px] text-gray-400">La primera foto es la portada. Usa fotos con buena luz.</p>
           </div>
 
+          {/* Categoría */}
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Categoría</label>
+            <div className="grid grid-cols-3 gap-2">
+              {CATEGORIES.map(c => (
+                <button key={c.value} type="button" onClick={() => setCategory(c.value)}
+                  className={`text-sm py-2 border transition ${
+                    form.category === c.value
+                      ? 'border-black bg-black text-white'
+                      : 'border-gray-200 hover:border-gray-400'
+                  }`}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Subcategoría */}
+          {form.category && (
+            <div>
+              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Subcategoría</label>
+              <select value={form.subcategory} onChange={e => set('subcategory', e.target.value)} required
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+                <option value="">Selecciona</option>
+                {subcategoryOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          )}
+
           {/* Título */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Título</label>
@@ -138,29 +174,38 @@ export default function NewListingPage() {
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
           </div>
 
-          {/* Talla y condición */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Talla</label>
-              <select value={form.size} onChange={e => set('size', e.target.value)} required
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-                <option value="">Selecciona</option>
-                {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Estado</label>
-              <select value={form.condition} onChange={e => set('condition', e.target.value)}
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-                {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label.split(' —')[0]}</option>)}
-              </select>
-            </div>
+          {/* Talla */}
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Talla</label>
+            <select value={form.size} onChange={e => set('size', e.target.value)} required
+              disabled={!form.category}
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-300">
+              <option value="">{form.category ? 'Selecciona' : 'Primero elige una categoría'}</option>
+              {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
 
-          {/* Descripción condición */}
-          <p className="text-[11px] text-gray-400 -mt-4">
-            {CONDITIONS.find(c => c.value === form.condition)?.label}
-          </p>
+          {/* Estado */}
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Estado</label>
+            <div className="space-y-2">
+              {CONDITIONS.map(c => (
+                <label key={c.value}
+                  className={`flex items-start gap-3 p-3 border cursor-pointer transition ${
+                    form.condition === c.value ? 'border-black' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                  <input type="radio" name="condition" value={c.value}
+                    checked={form.condition === c.value}
+                    onChange={e => set('condition', e.target.value)}
+                    className="mt-0.5" />
+                  <span>
+                    <span className="block text-sm font-medium">{c.label}</span>
+                    <span className="block text-xs text-gray-400 mt-0.5">{c.description}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
 
           {/* Descripción */}
           <div>
@@ -185,6 +230,35 @@ export default function NewListingPage() {
               Bdress descuenta 12% de comisión al completarse la venta.
               {form.price && ` Recibirás $${Math.round(parseInt(form.price) * 0.88).toLocaleString('es-CL')}.`}
             </p>
+          </div>
+
+          {/* Tamaño de envío */}
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Tamaño de envío</label>
+            <div className="space-y-2">
+              {SHIPPING_SIZES.map(s => (
+                <label key={s.value}
+                  className={`flex items-start gap-3 p-3 border cursor-pointer transition ${
+                    form.shipping_size === s.value ? 'border-black' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                  <input type="radio" name="shipping_size" value={s.value}
+                    checked={form.shipping_size === s.value}
+                    onChange={e => set('shipping_size', e.target.value)}
+                    className="mt-0.5" />
+                  <span>
+                    <span className="block text-sm font-medium">
+                      {s.label}
+                      {'recommended' in s && s.recommended && (
+                        <span className="ml-2 text-[9px] tracking-widest uppercase bg-[#8DA988]/10 text-[#5a7a55] px-1.5 py-0.5">
+                          Recomendado
+                        </span>
+                      )}
+                    </span>
+                    <span className="block text-xs text-gray-400 mt-0.5">{s.description}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {error && <p className="text-red-500 text-xs">{error}</p>}

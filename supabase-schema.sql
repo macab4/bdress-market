@@ -37,17 +37,20 @@ create trigger on_auth_user_created
 
 -- Prendas
 create table public.listings (
-  id          uuid default gen_random_uuid() primary key,
-  seller_id   uuid references public.profiles(id) on delete cascade not null,
-  title       text not null,
-  description text not null default '',
-  size        text not null,
-  brand       text not null default '',
-  condition   text not null check (condition in ('nuevo','muy_bueno','bueno')),
-  price       integer not null check (price > 0),
-  photos      text[] not null default '{}',
-  status      text not null default 'active' check (status in ('active','sold','paused')),
-  created_at  timestamptz default now()
+  id            uuid default gen_random_uuid() primary key,
+  seller_id     uuid references public.profiles(id) on delete cascade not null,
+  title         text not null,
+  description   text not null default '',
+  category      text not null check (category in ('mujer','hombre','ninos')),
+  subcategory   text not null default '',
+  size          text not null,
+  brand         text not null default '',
+  condition     text not null check (condition in ('nuevo_con_etiquetas','nuevo_sin_etiquetas','muy_bueno','bueno','satisfactorio')),
+  shipping_size text not null default 'mediano' check (shipping_size in ('pequeno','mediano','grande')),
+  price         integer not null check (price > 0),
+  photos        text[] not null default '{}',
+  status        text not null default 'active' check (status in ('active','sold','paused')),
+  created_at    timestamptz default now()
 );
 alter table public.listings enable row level security;
 
