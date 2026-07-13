@@ -1,6 +1,6 @@
 import { sendEmail, emailLayout } from '@/lib/email'
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL!
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL!
 
 export async function POST(request: Request) {
   let name: string
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   await sendEmail({
-    to: ADMIN_EMAIL,
+    to: CONTACT_EMAIL,
     subject: `Nuevo mensaje de contacto${name ? ` — ${name}` : ''}`,
     html: emailLayout('Mensaje de contacto', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">

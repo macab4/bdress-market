@@ -41,6 +41,7 @@ export default async function SalesPage() {
 
   const activeListings = listings.filter(l => l.status === 'active' || l.status === 'paused')
   const pendingOrders = orders.filter(o => o.status === 'paid')
+  const shippedOrders = orders.filter(o => o.status === 'shipped')
   const completedOrders = orders.filter(o => o.status === 'completed')
 
   const totalEarned = completedOrders.reduce((sum, o) => sum + (o.amount - o.commission), 0)
@@ -102,6 +103,57 @@ export default async function SalesPage() {
                         </div>
 
                         <GenerateLabelButton orderId={order.id} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Enviadas, esperando confirmación de la compradora */}
+        {shippedOrders.length > 0 && (
+          <section>
+            <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
+              Enviadas, esperando recepción ({shippedOrders.length})
+            </h2>
+            <div className="space-y-3">
+              {shippedOrders.map(order => {
+                const photo = order.listing?.photos?.[0]
+                return (
+                  <div key={order.id} className="bg-white p-5">
+                    <div className="flex gap-4">
+                      <div className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
+                        {photo ? (
+                          <Image src={photo} alt={order.listing?.title ?? ''} fill className="object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium truncate">{order.listing?.title}</p>
+                          <span className="text-[9px] tracking-widest uppercase px-2 py-0.5 bg-amber-50 text-amber-600 whitespace-nowrap flex-shrink-0">
+                            En camino
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-0.5">Compradora: {order.buyer?.name ?? '—'}</p>
+                        {order.courier_tracking_number && (
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            Seguimiento: <span className="font-mono">{order.courier_tracking_number}</span>
+                          </p>
+                        )}
+                        <p className="text-sm font-semibold mt-1">
+                          ${(order.amount - order.commission).toLocaleString('es-CL')}
+                          <span className="text-xs font-normal text-gray-400 ml-1">(neto)</span>
+                        </p>
+                        {order.label_url && (
+                          <a href={order.label_url} target="_blank" rel="noopener noreferrer"
+                            className="inline-block mt-2 text-[10px] tracking-widest uppercase text-gray-500 hover:text-black underline">
+                            Ver / reimprimir etiqueta
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>
