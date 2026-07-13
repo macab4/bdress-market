@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
           Nueva contraseña
         </h1>
         <p className="text-center text-sm text-gray-500 mb-8">
-          Elegí una contraseña nueva para tu cuenta
+          Elige una contraseña nueva para tu cuenta
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

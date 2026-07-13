@@ -115,7 +115,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       <div>
         <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Sobre ti</label>
         <textarea value={form.bio} onChange={e => set('bio', e.target.value)}
-          rows={3} placeholder="Contales algo a las compradoras sobre vos o tu estilo..."
+          rows={3} placeholder="Cuéntales algo a las compradoras sobre ti o tu estilo..."
           className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none" />
       </div>
 

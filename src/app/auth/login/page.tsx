@@ -89,7 +89,7 @@ export default function LoginPage() {
 
           {needsConfirmation && (
             <div className="bg-gray-50 border border-gray-200 p-3 text-xs text-gray-600 space-y-2">
-              <p>Todavía no confirmaste tu correo. Revisá tu bandeja de entrada (y spam) para el link de confirmación.</p>
+              <p>Todavía no confirmaste tu correo. Revisa tu bandeja de entrada (y spam) para el link de confirmación.</p>
               {resendState === 'sent' ? (
                 <p className="text-[#5a7a55]">Te reenviamos el correo de confirmación.</p>
               ) : (

@@ -61,7 +61,7 @@ export default function RegisterPage() {
           <h1 className="text-xl font-light tracking-widest uppercase mb-3">Revisa tu correo</h1>
           <p className="text-sm text-gray-500 mb-6">
             Te enviamos un email a <span className="font-medium text-gray-700">{form.email}</span> para
-            confirmar tu cuenta. Abrí ese correo y hacé clic en el link antes de poder ingresar a Bdress.
+            confirmar tu cuenta. Abre ese correo y haz clic en el link antes de poder ingresar a Bdress.
           </p>
 
           {resendState === 'sent' ? (
@@ -105,7 +105,7 @@ export default function RegisterPage() {
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
             />
             <p className="text-[10px] text-gray-400 mt-1">
-              No tiene que ser tu nombre real — podés cambiarlo después desde tu perfil.
+              No tiene que ser tu nombre real — puedes cambiarlo después desde tu perfil.
             </p>
           </div>
 
