@@ -5,16 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Order } from '@/types'
 import ConfirmDeliveryButton from '@/components/dashboard/ConfirmDeliveryButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
-
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending_payment: { label: 'Pago pendiente',  color: 'bg-gray-100 text-gray-500' },
-  paid:            { label: 'Pagado',           color: 'bg-blue-50 text-blue-600' },
-  shipped:         { label: 'En camino',        color: 'bg-amber-50 text-amber-600' },
-  delivered:       { label: 'Entregado',        color: 'bg-green-50 text-green-700' },
-  completed:       { label: 'Completado',       color: 'bg-[#8DA988]/10 text-[#5a7a55]' },
-  disputed:        { label: 'En disputa',       color: 'bg-red-50 text-red-600' },
-  cancelled:       { label: 'Cancelado',        color: 'bg-gray-100 text-gray-400' },
-}
+import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
 
 type OrderWithRelations = Order & {
   listing: { title: string; photos: string[]; price: number } | null
@@ -55,7 +46,7 @@ export default async function PurchasesPage() {
         ) : (
           <div className="space-y-4">
             {list.map((order) => {
-              const status = STATUS_CONFIG[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-500' }
+              const status = ORDER_STATUS_CONFIG[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-500' }
               const photo = order.listing?.photos?.[0]
 
               return (

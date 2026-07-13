@@ -1,14 +1,6 @@
-import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
-
-// Service role client bypasses RLS — necesario porque Mercado Pago llama sin cookies de usuario
-function getServiceClient() {
-  return createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 async function handleNotification(request: Request) {
   let paymentId: string | null = null
@@ -46,7 +38,7 @@ async function handleNotification(request: Request) {
   const orderId = payment.external_reference
 
   if (payment.status === 'approved' && orderId) {
-    const supabase = getServiceClient()
+    const supabase = createAdminClient()
     const { data: updatedOrder } = await supabase
       .from('orders')
       .update({ status: 'paid' })

@@ -103,3 +103,13 @@ export const SHIPPING_SIZES = [
 ] as const
 
 export type ShippingSizeValue = (typeof SHIPPING_SIZES)[number]['value']
+
+export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  pending_payment: { label: 'Pago pendiente', color: 'bg-gray-100 text-gray-500' },
+  paid:            { label: 'Pagado',         color: 'bg-blue-50 text-blue-600' },
+  shipped:         { label: 'En camino',      color: 'bg-amber-50 text-amber-600' },
+  delivered:       { label: 'Entregado',      color: 'bg-green-50 text-green-700' },
+  completed:       { label: 'Completado',     color: 'bg-[#8DA988]/10 text-[#5a7a55]' },
+  disputed:        { label: 'En disputa',     color: 'bg-red-50 text-red-600' },
+  cancelled:       { label: 'Cancelado',      color: 'bg-gray-100 text-gray-400' },
+}
