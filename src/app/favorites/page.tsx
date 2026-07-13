@@ -55,7 +55,7 @@ export default async function FavoritesPage() {
                     listingId={listing.id}
                     initialFavorited={true}
                     isLoggedIn={true}
-                    className="absolute top-2 right-2"
+                    className="absolute bottom-2 right-2"
                   />
                 </div>
                 <div className="p-3">

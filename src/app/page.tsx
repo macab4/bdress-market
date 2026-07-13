@@ -140,7 +140,7 @@ export default async function HomePage({
                       listingId={listing.id}
                       initialFavorited={favoritedIds.has(listing.id)}
                       isLoggedIn={user !== null}
-                      className="absolute top-2 right-2"
+                      className="absolute bottom-2 right-2"
                     />
                   </div>
                   <div className="p-3">
