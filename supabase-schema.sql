@@ -75,6 +75,7 @@ create table public.orders (
                           check (status in ('pending_payment','paid','shipped','delivered','completed','disputed','cancelled')),
   tracking_number       text,
   payment_ref           text,
+  dispute_reason        text,
   shipping_name         text not null,
   shipping_phone        text not null,
   shipping_address      text not null,

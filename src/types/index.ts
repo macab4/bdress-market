@@ -42,6 +42,7 @@ export interface Order {
   status: OrderStatus
   tracking_number: string | null
   payment_ref: string | null
+  dispute_reason: string | null
   shipping_name: string
   shipping_phone: string
   shipping_address: string

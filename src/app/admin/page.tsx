@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAdminUser } from '@/lib/admin-auth'
 import { Order } from '@/types'
 import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
+import AdminNav from '@/components/admin/AdminNav'
 
 type AdminOrder = Order & {
   listing: { title: string } | null
@@ -11,12 +11,7 @@ type AdminOrder = Order & {
 }
 
 export default async function AdminPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
-    redirect('/')
-  }
+  await requireAdminUser()
 
   const admin = createAdminClient()
 
@@ -53,7 +48,10 @@ export default async function AdminPage() {
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
       <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
-        <h1 className="text-xl font-light tracking-widest uppercase">Panel de administración</h1>
+        <div>
+          <h1 className="text-xl font-light tracking-widest uppercase mb-6">Panel de administración</h1>
+          <AdminNav active="/admin" />
+        </div>
 
         {/* Métricas */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

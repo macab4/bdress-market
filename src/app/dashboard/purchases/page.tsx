@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Order } from '@/types'
 import ConfirmDeliveryButton from '@/components/dashboard/ConfirmDeliveryButton'
+import DisputeButton from '@/components/dashboard/DisputeButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
 
@@ -87,6 +88,18 @@ export default async function PurchasesPage() {
                         <div className="mt-3">
                           <ConfirmDeliveryButton orderId={order.id} />
                         </div>
+                      )}
+
+                      {['paid', 'shipped', 'delivered'].includes(order.status) && (
+                        <div className="mt-3">
+                          <DisputeButton orderId={order.id} />
+                        </div>
+                      )}
+
+                      {order.status === 'disputed' && (
+                        <p className="text-xs text-red-500 mt-3">
+                          Reportaste un problema con esta compra. Bdress lo va a revisar.
+                        </p>
                       )}
 
                       {order.status === 'completed' && (
