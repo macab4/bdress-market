@@ -11,23 +11,37 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle')
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setNeedsConfirmation(false)
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('Email o contraseña incorrectos')
+      if (error.message.toLowerCase().includes('email not confirmed')) {
+        setNeedsConfirmation(true)
+      } else {
+        setError('Email o contraseña incorrectos')
+      }
       setLoading(false)
       return
     }
 
     router.push('/')
     router.refresh()
+  }
+
+  async function handleResend() {
+    setResendState('sending')
+    const supabase = createClient()
+    await supabase.auth.resend({ type: 'signup', email })
+    setResendState('sent')
   }
 
   return (
@@ -52,9 +66,14 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
-              Contraseña
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs tracking-widest uppercase text-gray-500">
+                Contraseña
+              </label>
+              <Link href="/auth/forgot-password" className="text-[10px] text-gray-400 hover:text-black underline">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
             <input
               type="password"
               value={password}
@@ -66,6 +85,20 @@ export default function LoginPage() {
 
           {error && (
             <p className="text-red-500 text-xs">{error}</p>
+          )}
+
+          {needsConfirmation && (
+            <div className="bg-gray-50 border border-gray-200 p-3 text-xs text-gray-600 space-y-2">
+              <p>Todavía no confirmaste tu correo. Revisá tu bandeja de entrada (y spam) para el link de confirmación.</p>
+              {resendState === 'sent' ? (
+                <p className="text-[#5a7a55]">Te reenviamos el correo de confirmación.</p>
+              ) : (
+                <button type="button" onClick={handleResend} disabled={resendState === 'sending'}
+                  className="text-[#8DA988] underline disabled:opacity-50">
+                  {resendState === 'sending' ? 'Enviando...' : 'Reenviar correo de confirmación'}
+                </button>
+              )}
+            </div>
           )}
 
           <button
