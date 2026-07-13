@@ -46,6 +46,19 @@ export const CATEGORIES = [
       'Accesorios',
     ],
   },
+  {
+    value: 'unisex',
+    label: 'Unisex',
+    subcategories: [
+      'Poleras y camisetas',
+      'Buzos y hoodies',
+      'Pantalones y jeans',
+      'Chaquetas y abrigos',
+      'Ropa deportiva',
+      'Zapatillas',
+      'Accesorios',
+    ],
+  },
 ] as const
 
 export type CategoryValue = (typeof CATEGORIES)[number]['value']
@@ -57,6 +70,7 @@ export const SIZES_BY_CATEGORY: Record<CategoryValue, string[]> = {
     '0-3 meses', '3-6 meses', '6-12 meses',
     '1-2 años', '2-4 años', '4-6 años', '6-8 años', '8-10 años', '10-12 años', '12-14 años',
   ],
+  unisex: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Talla única'],
 }
 
 export const CONDITIONS = [

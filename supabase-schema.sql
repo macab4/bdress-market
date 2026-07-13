@@ -44,7 +44,7 @@ create table public.listings (
   seller_id     uuid references public.profiles(id) on delete cascade not null,
   title         text not null,
   description   text not null default '',
-  category      text not null check (category in ('mujer','hombre','ninos')),
+  category      text not null check (category in ('mujer','hombre','ninos','unisex')),
   subcategory   text not null default '',
   size          text not null,
   brand         text not null default '',

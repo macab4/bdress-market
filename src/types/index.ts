@@ -1,4 +1,4 @@
-export type ListingCategory = 'mujer' | 'hombre' | 'ninos'
+export type ListingCategory = 'mujer' | 'hombre' | 'ninos' | 'unisex'
 export type ListingCondition = 'nuevo_con_etiquetas' | 'nuevo_sin_etiquetas' | 'muy_bueno' | 'bueno' | 'satisfactorio'
 export type ListingShippingSize = 'pequeno' | 'mediano' | 'grande'
 export type ListingStatus = 'active' | 'sold' | 'paused'

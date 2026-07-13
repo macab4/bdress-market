@@ -7,10 +7,17 @@ import FavoriteButton from '@/components/listings/FavoriteButton'
 
 const SIZES = ['XS','S','M','L','XL','XXL']
 
+const SORT_OPTIONS = [
+  { value: 'recientes', label: 'Más recientes' },
+  { value: 'antiguas', label: 'Más antiguas' },
+  { value: 'precio_asc', label: 'Precio: menor a mayor' },
+  { value: 'precio_desc', label: 'Precio: mayor a menor' },
+] as const
+
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string }>
+  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string; sort?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -19,7 +26,6 @@ export default async function HomePage({
     .from('listings')
     .select('*, seller:profiles(id, name, city, avatar_url)')
     .eq('status', 'active')
-    .order('created_at', { ascending: false })
 
   if (params.q) query = query.ilike('title', `%${params.q}%`)
   if (params.category) query = query.eq('category', params.category)
@@ -27,6 +33,20 @@ export default async function HomePage({
   if (params.condition) query = query.eq('condition', params.condition)
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
+
+  switch (params.sort) {
+    case 'antiguas':
+      query = query.order('created_at', { ascending: true })
+      break
+    case 'precio_asc':
+      query = query.order('price', { ascending: true })
+      break
+    case 'precio_desc':
+      query = query.order('price', { ascending: false })
+      break
+    default:
+      query = query.order('created_at', { ascending: false })
+  }
 
   const [{ data: listings }, { data: { user } }] = await Promise.all([
     query.limit(48),
@@ -101,12 +121,19 @@ export default async function HomePage({
               className="w-24 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
           </div>
 
+          <div>
+            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Ordenar por</label>
+            <select name="sort" defaultValue={params.sort ?? 'recientes'} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+              {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </div>
+
           <button type="submit"
             className="bg-black text-white text-[10px] tracking-widest uppercase px-5 py-2 hover:bg-gray-800 transition">
             Filtrar
           </button>
 
-          {(params.q || params.category || params.size || params.condition || params.min || params.max) && (
+          {(params.q || params.category || params.size || params.condition || params.min || params.max || params.sort) && (
             <Link href="/" className="text-xs text-gray-400 hover:text-black underline">Limpiar</Link>
           )}
         </div>
