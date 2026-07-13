@@ -80,6 +80,7 @@ export async function getShippingQuote({
 
 interface CreateShipmentParams {
   originComuna: string
+  originStreetName: string
   destComuna: string
   destStreetName: string
   destStreetNumber: string
@@ -133,6 +134,15 @@ export async function createShipment(params: CreateShipmentParams): Promise<Ship
             deliveryOnCommercialOffice: false,
             observation: '',
           },
+          {
+            countyCoverageCode: originCode,
+            streetName: params.originStreetName,
+            streetNumber: '',
+            supplement: '',
+            addressType: 'DEV',
+            deliveryOnCommercialOffice: false,
+            observation: '',
+          },
         ],
         contacts: [
           { name: params.senderName, phoneNumber: params.senderPhone, mail: params.senderEmail, contactType: 'R' },
@@ -155,8 +165,15 @@ export async function createShipment(params: CreateShipmentParams): Promise<Ship
   const data = await res.json()
   const detail = data?.data?.detail?.[0]
 
-  if (!res.ok || !detail) {
-    return { error: data?.statusDescription || 'Error al generar el envío en Chilexpress' }
+  if (
+    !res.ok ||
+    data?.statusCode !== 0 ||
+    !detail ||
+    detail.statusCode !== 0 ||
+    !detail.transportOrderNumber
+  ) {
+    const message = detail?.statusDescription || data?.statusDescription || 'Error al generar el envío en Chilexpress'
+    return { error: message }
   }
 
   return {

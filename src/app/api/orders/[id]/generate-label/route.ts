@@ -26,18 +26,19 @@ export async function POST(
   if (!order.courier_service_code) return Response.json({ error: 'Esta orden no tiene un servicio de envío cotizado' }, { status: 409 })
 
   const [{ data: seller }, { data: buyer }, { data: listing }] = await Promise.all([
-    supabase.from('profiles').select('name, email, phone, comuna').eq('id', order.seller_id).single(),
+    supabase.from('profiles').select('name, email, phone, address, comuna').eq('id', order.seller_id).single(),
     supabase.from('profiles').select('name, email').eq('id', order.buyer_id).single(),
     supabase.from('listings').select('title, price, shipping_size').eq('id', order.listing_id).single(),
   ])
 
-  if (!seller?.comuna || !seller.phone) {
+  if (!seller?.comuna || !seller.phone || !seller.address) {
     return Response.json({ error: 'Completa tu dirección de despacho en tu perfil antes de generar la etiqueta' }, { status: 409 })
   }
   if (!listing) return Response.json({ error: 'Prenda no encontrada' }, { status: 404 })
 
   const shipment = await createShipment({
     originComuna: seller.comuna,
+    originStreetName: seller.address,
     destComuna: order.shipping_comuna,
     destStreetName: order.shipping_address,
     destStreetNumber: '',
