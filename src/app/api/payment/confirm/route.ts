@@ -46,7 +46,7 @@ async function handleNotification(request: Request) {
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', orderId)
       .eq('status', 'pending_payment')
-      .select('listing_id, buyer_id, seller_id, amount')
+      .select('listing_id, buyer_id, seller_id, amount, commission')
       .maybeSingle()
 
     // Solo marcamos la prenda vendida la primera vez que la orden pasa a pagada
@@ -60,6 +60,7 @@ async function handleNotification(request: Request) {
 
       const listingTitle = listing?.title ?? 'tu prenda'
       const amountFmt = `$${updatedOrder.amount.toLocaleString('es-CL')}`
+      const sellerNetFmt = `$${(updatedOrder.amount - updatedOrder.commission).toLocaleString('es-CL')}`
 
       if (buyer?.email) {
         await sendEmail({
@@ -89,7 +90,7 @@ async function handleNotification(request: Request) {
           subject: `¡Vendiste! — ${listingTitle}`,
           html: emailLayout('Nueva venta', `
             <p style="font-size: 14px; color: #444; line-height: 1.6;">
-              Hola ${seller.name ?? ''}, ¡vendiste <strong>${listingTitle}</strong> por <strong>${amountFmt}</strong>!
+              Hola ${seller.name ?? ''}, ¡vendiste <strong>${listingTitle}</strong>! Vas a recibir <strong>${sellerNetFmt}</strong>.
               Tenés 5 días hábiles para despacharla.
             </p>
             <p style="font-size: 13px; color: #888; line-height: 1.6;">

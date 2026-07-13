@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { getShippingQuote } from '@/lib/chilexpress'
+import { buyerProtectionFee } from '@/lib/catalog'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
-const COMMISSION_PCT = parseInt(process.env.BDRESS_COMMISSION_PCT ?? '12') / 100
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -95,14 +95,14 @@ export async function POST(request: Request) {
       courier_service_code: quote.serviceCode,
     }).eq('id', orderId)
   } else {
-    const commission = Math.round(listing.price * COMMISSION_PCT)
+    const commission = buyerProtectionFee(listing.price)
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert({
         listing_id,
         buyer_id: user.id,
         seller_id: listing.seller_id,
-        amount: listing.price,
+        amount: listing.price + commission,
         commission,
         shipping_cost: quote.price,
         courier_service_code: quote.serviceCode,
@@ -119,6 +119,7 @@ export async function POST(request: Request) {
   }
 
   // Crear preferencia de pago en Mercado Pago (Checkout Pro)
+  const commissionForMp = buyerProtectionFee(listing.price)
   const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
     headers: {
@@ -131,6 +132,12 @@ export async function POST(request: Request) {
           title: listing.title,
           quantity: 1,
           unit_price: listing.price,
+          currency_id: 'CLP',
+        },
+        {
+          title: 'Protección al comprador',
+          quantity: 1,
+          unit_price: commissionForMp,
           currency_id: 'CLP',
         },
         {

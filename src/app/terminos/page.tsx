@@ -48,7 +48,7 @@ export default function TerminosPage() {
             <ol className="list-decimal list-inside space-y-2">
               <li>Explorá las prendas disponibles y filtrá por categoría, talla, estado o precio, y ordená los resultados de más recientes a más antiguas o por precio.</li>
               <li>Al entrar a una prenda que te interese, hacé clic en «Comprar» e ingresá tu dirección de despacho (comuna, calle, número y depto/casa si corresponde).</li>
-              <li>Antes de pagar vas a ver el precio de la prenda más el costo real de envío — se cotiza al momento según tu comuna y la de la vendedora — y el total a pagar.</li>
+              <li>Antes de pagar vas a ver el precio de la prenda, la protección al comprador y el costo real de envío — se cotiza al momento según tu comuna y la de la vendedora — con el total bien claro.</li>
               <li>El pago se realiza a través de Mercado Pago (tarjetas de crédito, débito y otros medios habilitados).</li>
               <li>Una vez confirmado el pago, la vendedora recibe aviso para despachar tu prenda dentro de los próximos días.</li>
               <li>Podés seguir el estado de tu compra en «Mis compras»: pagada → etiqueta generada → despachada → completada.</li>
@@ -60,7 +60,7 @@ export default function TerminosPage() {
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Cómo vender</h2>
             <ol className="list-decimal list-inside space-y-2">
               <li>Creá tu cuenta y completá tu perfil, incluyendo tu dirección de despacho (nombre, teléfono, dirección y comuna) — la vas a necesitar para generar etiquetas de envío.</li>
-              <li>Publicá tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio.</li>
+              <li>Publicá tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Ese precio es el que vas a recibir completo — no te cobramos comisión a ti.</li>
               <li>Cuando alguien compra tu prenda, te avisamos por correo. Entrá a «Mis ventas» y generá la etiqueta de envío: se genera automáticamente con Chilexpress y te llega lista para imprimir a tu correo.</li>
               <li>Imprimí la etiqueta, pegala en el paquete y llevalo a cualquier sucursal de Chilexpress.</li>
               <li>Una vez que la compradora confirma la recepción (o pasan 7 días desde el despacho sin disputa), el pago se libera a tu favor.</li>
@@ -83,9 +83,19 @@ export default function TerminosPage() {
 
           <section id="pagos" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Pagos y comisión</h2>
-            <p className="text-gray-400 italic">
-              Estamos terminando de definir el detalle de la comisión de la plataforma. Vas a encontrar esta
-              sección actualizada acá muy pronto.
+            <p className="mb-2">
+              Queremos que esto sea simple: la vendedora publica el precio que quiere recibir por su prenda, y ese
+              es exactamente el monto que le pagamos — <strong>sin descuentos ni comisiones para ella</strong>.
+            </p>
+            <p className="mb-2">
+              A ese precio le sumamos un <strong>10% de protección al comprador</strong> al momento de pagar. Ese
+              cargo lo asume la compradora, y es lo que nos permite ofrecer pago seguro (retenemos el dinero hasta
+              que confirmás que todo llegó bien) y resolver cualquier problema si algo sale mal con tu compra.
+            </p>
+            <p>
+              Todo se paga junto — prenda, protección al comprador y envío — en un solo pago a través de Mercado
+              Pago, con tarjetas de crédito, débito y otros medios habilitados. Vas a ver siempre el desglose
+              completo antes de confirmar.
             </p>
           </section>
 

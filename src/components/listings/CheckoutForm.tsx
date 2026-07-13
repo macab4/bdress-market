@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import ComunaSelect from '@/components/ComunaSelect'
+import { buyerProtectionFee, COMMISSION_PCT } from '@/lib/catalog'
 
 interface CheckoutFormProps {
   listingId: string
@@ -19,6 +20,7 @@ export default function CheckoutForm({ listingId, price }: CheckoutFormProps) {
   const [quote, setQuote] = useState<{ cost: number; serviceCode: string } | null>(null)
   const [quoteError, setQuoteError] = useState('')
   const quoteLoading = form.shipping_comuna !== '' && !quote && !quoteError
+  const commission = buyerProtectionFee(price)
 
   function set(field: keyof typeof form, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -133,6 +135,10 @@ export default function CheckoutForm({ listingId, price }: CheckoutFormProps) {
           <span>${price.toLocaleString('es-CL')}</span>
         </div>
         <div className="flex justify-between">
+          <span>Protección al comprador ({Math.round(COMMISSION_PCT * 100)}%)</span>
+          <span>${commission.toLocaleString('es-CL')}</span>
+        </div>
+        <div className="flex justify-between">
           <span>Envío</span>
           <span>
             {!form.shipping_comuna ? 'Selecciona tu comuna' :
@@ -141,9 +147,9 @@ export default function CheckoutForm({ listingId, price }: CheckoutFormProps) {
               quote ? `$${quote.cost.toLocaleString('es-CL')}` : '—'}
           </span>
         </div>
-        <div className="flex justify-between font-medium text-gray-800 border-t border-gray-200 pt-1 mt-1">
+        <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1">
           <span>Total</span>
-          <span>${(price + (quote?.cost ?? 0)).toLocaleString('es-CL')}</span>
+          <span>${(price + commission + (quote?.cost ?? 0)).toLocaleString('es-CL')}</span>
         </div>
       </div>
 

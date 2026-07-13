@@ -5,7 +5,8 @@ import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
-import { CONDITIONS, CATEGORIES } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, buyerProtectionFee, COMMISSION_PCT } from '@/lib/catalog'
+import { ShieldCheck } from 'lucide-react'
 
 export default async function ListingPage({
   params,
@@ -41,8 +42,8 @@ export default async function ListingPage({
     isFavorited = favorite !== null
   }
 
-  const commission = Math.round(listing.price * 0.12)
-  const sellerReceives = listing.price - commission
+  const commission = buyerProtectionFee(listing.price)
+  const totalPrice = listing.price + commission
 
   const canBuy =
     listing.status === 'active' &&
@@ -100,9 +101,16 @@ export default async function ListingPage({
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 mt-3">
-                <p className="text-2xl font-semibold">${listing.price.toLocaleString('es-CL')}</p>
-                <p className="text-xs text-gray-400">Talla {listing.size}</p>
+              <div className="mt-3">
+                <div className="flex items-center gap-3">
+                  <p className="text-sm text-gray-400">${listing.price.toLocaleString('es-CL')}</p>
+                  <p className="text-xs text-gray-400">Talla {listing.size}</p>
+                </div>
+                <p className="text-2xl font-semibold text-[#5a7a55] flex items-center gap-1.5 mt-0.5">
+                  ${totalPrice.toLocaleString('es-CL')}
+                  <span className="text-xs font-normal">incl.</span>
+                  <ShieldCheck size={18} className="text-[#8DA988]" />
+                </p>
               </div>
             </div>
 
@@ -114,21 +122,24 @@ export default async function ListingPage({
               </div>
             )}
 
-            {/* Desglose comisión */}
+            {/* Desglose de precio */}
             <div className="bg-white p-4 text-xs text-gray-500 space-y-1">
               <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Detalle del precio</p>
               <div className="flex justify-between">
-                <span>Precio</span>
+                <span>Precio de la prenda</span>
                 <span>${listing.price.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between text-gray-400">
-                <span>Comisión Bdress (12%)</span>
-                <span>− ${commission.toLocaleString('es-CL')}</span>
+                <span>Protección al comprador ({Math.round(COMMISSION_PCT * 100)}%)</span>
+                <span>+ ${commission.toLocaleString('es-CL')}</span>
               </div>
-              <div className="flex justify-between font-medium text-gray-700 border-t border-gray-100 pt-1 mt-1">
-                <span>Vendedora recibe</span>
-                <span>${sellerReceives.toLocaleString('es-CL')}</span>
+              <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-100 pt-1 mt-1">
+                <span>Total (sin envío)</span>
+                <span>${totalPrice.toLocaleString('es-CL')}</span>
               </div>
+              <p className="text-[10px] text-gray-400 pt-1">
+                El envío se calcula en el siguiente paso, según tu dirección. La vendedora recibe el 100% del precio de la prenda.
+              </p>
             </div>
 
             {/* Botón comprar */}

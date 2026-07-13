@@ -120,6 +120,14 @@ export const SHIPPING_SIZES = [
 
 export type ShippingSizeValue = (typeof SHIPPING_SIZES)[number]['value']
 
+// Comisión de servicio (protección al comprador) — se suma al precio de la
+// prenda y la paga la compradora. La vendedora recibe el 100% del precio publicado.
+export const COMMISSION_PCT = 0.10
+
+export function buyerProtectionFee(price: number): number {
+  return Math.round(price * COMMISSION_PCT)
+}
+
 export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending_payment: { label: 'Pago pendiente', color: 'bg-gray-100 text-gray-500' },
   paid:            { label: 'Pagado',         color: 'bg-blue-50 text-blue-600' },
