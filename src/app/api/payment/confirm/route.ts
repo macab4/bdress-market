@@ -47,11 +47,22 @@ async function handleNotification(request: Request) {
 
   if (payment.status === 'approved' && orderId) {
     const supabase = getServiceClient()
-    await supabase
+    const { data: updatedOrder } = await supabase
       .from('orders')
       .update({ status: 'paid' })
       .eq('id', orderId)
       .eq('status', 'pending_payment')
+      .select('listing_id')
+      .maybeSingle()
+
+    // Solo marcamos la prenda vendida la primera vez que la orden pasa a pagada
+    // (evita reprocesar si Mercado Pago reenvía el mismo webhook).
+    if (updatedOrder) {
+      await supabase
+        .from('listings')
+        .update({ status: 'sold' })
+        .eq('id', updatedOrder.listing_id)
+    }
   }
 
   return Response.json({ status: 'ok' })
