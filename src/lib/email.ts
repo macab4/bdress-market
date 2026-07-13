@@ -11,10 +11,8 @@ export function emailLayout(title: string, bodyHtml: string): string {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   return `
     <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
-      <a href="${siteUrl}" style="display: block; text-decoration: none; text-align: center; margin: 0 0 8px;">
-        <span style="font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #8DA988;">
-          Bdress Market
-        </span>
+      <a href="${siteUrl}" style="display: block; text-align: center; margin: 0 0 16px;">
+        <img src="${siteUrl}/logo.png" alt="Bdress Market" width="140" style="display: inline-block; height: auto;" />
       </a>
       <h1 style="font-size: 18px; font-weight: 300; letter-spacing: 1px; text-transform: uppercase; text-align: center; margin: 0 0 24px;">
         ${title}
