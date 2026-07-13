@@ -2,8 +2,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
-import { Listing, Profile } from '@/types'
+import { Listing, Profile, Review } from '@/types'
 import { conditionLabel } from '@/lib/catalog'
+import StarRating from '@/components/reviews/StarRating'
+
+type ReviewWithReviewer = Review & { reviewer: { name: string; avatar_url: string | null } | null }
 
 export default async function ProfilePage({
   params,
@@ -13,7 +16,7 @@ export default async function ProfilePage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: profile }, { data: listings }, { data: { user } }] = await Promise.all([
+  const [{ data: profile }, { data: listings }, { data: { user } }, { data: reviews }] = await Promise.all([
     supabase
       .from('profiles')
       .select('*')
@@ -26,9 +29,18 @@ export default async function ProfilePage({
       .eq('status', 'active')
       .order('created_at', { ascending: false }) as unknown as Promise<{ data: Listing[] | null }>,
     supabase.auth.getUser(),
+    supabase
+      .from('reviews')
+      .select('*, reviewer:profiles!reviews_reviewer_id_fkey(name, avatar_url)')
+      .eq('reviewed_id', id)
+      .order('created_at', { ascending: false }) as unknown as Promise<{ data: ReviewWithReviewer[] | null }>,
   ])
 
   const isOwnProfile = user?.id === id
+  const reviewList = reviews ?? []
+  const avgRating = reviewList.length > 0
+    ? reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length
+    : 0
 
   if (!profile) notFound()
 
@@ -60,6 +72,14 @@ export default async function ProfilePage({
             <h1 className="text-lg font-medium">{profile.name}</h1>
             {profile.city && <p className="text-xs text-gray-400">{profile.city}</p>}
             <p className="text-[10px] text-gray-400 mt-1">En Bdress desde {memberSince}</p>
+            {reviewList.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <StarRating rating={avgRating} />
+                <span className="text-xs text-gray-500">
+                  {avgRating.toFixed(1)} ({reviewList.length} {reviewList.length === 1 ? 'reseña' : 'reseñas'})
+                </span>
+              </div>
+            )}
           </div>
           {isOwnProfile && (
             <Link href="/profile/edit"
@@ -118,6 +138,36 @@ export default async function ProfilePage({
             <p className="text-gray-400 text-sm">{profile.name} no tiene prendas publicadas por ahora.</p>
           </div>
         )}
+
+        {/* Valoraciones */}
+        <div className="mt-10">
+          <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
+            Valoraciones {reviewList.length > 0 && `(${reviewList.length})`}
+          </p>
+
+          {reviewList.length > 0 ? (
+            <div className="space-y-3">
+              {reviewList.map(review => (
+                <div key={review.id} className="bg-white p-4">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <p className="text-sm font-medium">{review.reviewer?.name ?? 'Usuaria'}</p>
+                    <StarRating rating={review.rating} size={12} />
+                  </div>
+                  {review.comment && (
+                    <p className="text-sm text-gray-600 mt-1">{review.comment}</p>
+                  )}
+                  <p className="text-[10px] text-gray-300 mt-2">
+                    {new Date(review.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10 bg-white">
+              <p className="text-gray-400 text-sm">{profile.name} todavía no tiene valoraciones.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

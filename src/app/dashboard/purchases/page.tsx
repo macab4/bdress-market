@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Order } from '@/types'
 import ConfirmDeliveryButton from '@/components/dashboard/ConfirmDeliveryButton'
+import ReviewForm from '@/components/reviews/ReviewForm'
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending_payment: { label: 'Pago pendiente',  color: 'bg-gray-100 text-gray-500' },
@@ -32,6 +33,12 @@ export default async function PurchasesPage() {
     .order('created_at', { ascending: false }) as { data: OrderWithRelations[] | null }
 
   const list = orders ?? []
+
+  const { data: myReviews } = await supabase
+    .from('reviews')
+    .select('order_id')
+    .eq('reviewer_id', user.id)
+  const reviewedOrderIds = new Set((myReviews ?? []).map(r => r.order_id))
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -89,6 +96,18 @@ export default async function PurchasesPage() {
                         <div className="mt-3">
                           <ConfirmDeliveryButton orderId={order.id} />
                         </div>
+                      )}
+
+                      {order.status === 'completed' && (
+                        reviewedOrderIds.has(order.id) ? (
+                          <p className="text-xs text-gray-400 mt-3">Ya dejaste tu reseña de esta compra.</p>
+                        ) : (
+                          <ReviewForm
+                            orderId={order.id}
+                            reviewedId={order.seller_id}
+                            reviewedName={order.seller?.name ?? 'la vendedora'}
+                          />
+                        )
                       )}
                     </div>
                   </div>

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Listing, Order } from '@/types'
 import PauseListingButton from '@/components/dashboard/PauseListingButton'
 import AddTrackingForm from '@/components/dashboard/AddTrackingForm'
+import ReviewForm from '@/components/reviews/ReviewForm'
 
 type OrderWithRelations = Order & {
   listing: { title: string; photos: string[] } | null
@@ -31,6 +32,12 @@ export default async function SalesPage() {
 
   const listings = (listingsResult.data ?? []) as Listing[]
   const orders = (ordersResult.data ?? []) as OrderWithRelations[]
+
+  const { data: myReviews } = await supabase
+    .from('reviews')
+    .select('order_id')
+    .eq('reviewer_id', user.id)
+  const reviewedOrderIds = new Set((myReviews ?? []).map(r => r.order_id))
 
   const activeListings = listings.filter(l => l.status === 'active' || l.status === 'paused')
   const pendingOrders = orders.filter(o => o.status === 'paid')
@@ -181,6 +188,18 @@ export default async function SalesPage() {
                     </p>
                   </div>
                 </div>
+              ))}
+              {completedOrders.map(order => (
+                reviewedOrderIds.has(order.id) ? null : (
+                  <div key={`review-${order.id}`} className="bg-white p-4">
+                    <p className="text-xs text-gray-500 mb-1">{order.listing?.title ?? 'Prenda eliminada'}</p>
+                    <ReviewForm
+                      orderId={order.id}
+                      reviewedId={order.buyer_id}
+                      reviewedName={order.buyer?.name ?? 'la compradora'}
+                    />
+                  </div>
+                )
               ))}
             </div>
           </section>

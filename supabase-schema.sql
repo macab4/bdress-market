@@ -135,10 +135,11 @@ create table public.reviews (
   id           uuid default gen_random_uuid() primary key,
   reviewer_id  uuid references public.profiles(id) not null,
   reviewed_id  uuid references public.profiles(id) not null,
-  order_id     uuid references public.orders(id) not null unique,
+  order_id     uuid references public.orders(id) not null,
   rating       integer not null check (rating between 1 and 5),
   comment      text,
-  created_at   timestamptz default now()
+  created_at   timestamptz default now(),
+  unique (order_id, reviewer_id)
 );
 alter table public.reviews enable row level security;
 
