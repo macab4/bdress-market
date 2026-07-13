@@ -70,6 +70,10 @@ async function handleNotification(request: Request) {
               Hola ${buyer.name ?? ''}, confirmamos tu pago de <strong>${amountFmt}</strong> por <strong>${listingTitle}</strong>.
               La vendedora tiene 5 días hábiles para despacharla — te avisamos apenas la envíe.
             </p>
+            <p style="font-size: 13px; color: #888; line-height: 1.6;">
+              Si no la despacha a tiempo, cancelamos la compra y te reembolsamos el pago completo.
+              Bdress retiene el dinero hasta que confirmes que la recibiste — tu compra está protegida.
+            </p>
             <p style="text-align: center; margin-top: 24px;">
               <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
                 Ver mi compra

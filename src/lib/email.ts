@@ -8,6 +8,7 @@ function getClient() {
 }
 
 export function emailLayout(title: string, bodyHtml: string): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   return `
     <div style="font-family: -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
       <p style="font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #8DA988; text-align: center; margin: 0 0 8px;">
@@ -17,6 +18,10 @@ export function emailLayout(title: string, bodyHtml: string): string {
         ${title}
       </h1>
       ${bodyHtml}
+      <p style="text-align: center; margin-top: 40px; padding-top: 16px; border-top: 1px solid #eee;">
+        <a href="${siteUrl}/nosotros" style="font-size: 10px; color: #999; text-decoration: none; margin: 0 8px;">Quiénes somos</a>
+        <a href="${siteUrl}/terminos" style="font-size: 10px; color: #999; text-decoration: none; margin: 0 8px;">Términos y condiciones</a>
+      </p>
     </div>
   `
 }
