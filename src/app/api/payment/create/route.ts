@@ -23,10 +23,33 @@ export async function POST(request: Request) {
   }
 
   let listing_id: string
+  let shipping: {
+    shipping_name: string
+    shipping_phone: string
+    shipping_address: string
+    shipping_address_extra: string
+    shipping_comuna: string
+    shipping_city: string
+  }
   try {
     const body = await request.json()
     listing_id = body.listing_id
     if (!listing_id) throw new Error()
+
+    const required = ['shipping_name', 'shipping_phone', 'shipping_address', 'shipping_comuna', 'shipping_city']
+    for (const field of required) {
+      if (!body[field] || typeof body[field] !== 'string') {
+        return Response.json({ error: 'Faltan datos de envío' }, { status: 400 })
+      }
+    }
+    shipping = {
+      shipping_name: body.shipping_name,
+      shipping_phone: body.shipping_phone,
+      shipping_address: body.shipping_address,
+      shipping_address_extra: typeof body.shipping_address_extra === 'string' ? body.shipping_address_extra : '',
+      shipping_comuna: body.shipping_comuna,
+      shipping_city: body.shipping_city,
+    }
   } catch {
     return Response.json({ error: 'listing_id requerido' }, { status: 400 })
   }
@@ -54,6 +77,7 @@ export async function POST(request: Request) {
 
   if (existing) {
     orderId = existing.id
+    await supabase.from('orders').update(shipping).eq('id', orderId)
   } else {
     const commission = Math.round(listing.price * COMMISSION_PCT)
     const { data: order, error: orderErr } = await supabase
@@ -65,6 +89,7 @@ export async function POST(request: Request) {
         amount: listing.price,
         commission,
         status: 'pending_payment',
+        ...shipping,
       })
       .select('id')
       .single()

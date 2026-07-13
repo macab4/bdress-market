@@ -65,17 +65,23 @@ create policy "Vendedora edita sus prendas" on public.listings
 
 -- Órdenes
 create table public.orders (
-  id              uuid default gen_random_uuid() primary key,
-  listing_id      uuid references public.listings(id) not null,
-  buyer_id        uuid references public.profiles(id) not null,
-  seller_id       uuid references public.profiles(id) not null,
-  amount          integer not null,
-  commission      integer not null,
-  status          text not null default 'pending_payment'
-                    check (status in ('pending_payment','paid','shipped','delivered','completed','disputed','cancelled')),
-  tracking_number text,
-  flow_order_id   text,
-  created_at      timestamptz default now()
+  id                    uuid default gen_random_uuid() primary key,
+  listing_id            uuid references public.listings(id) not null,
+  buyer_id              uuid references public.profiles(id) not null,
+  seller_id             uuid references public.profiles(id) not null,
+  amount                integer not null,
+  commission            integer not null,
+  status                text not null default 'pending_payment'
+                          check (status in ('pending_payment','paid','shipped','delivered','completed','disputed','cancelled')),
+  tracking_number       text,
+  flow_order_id         text,
+  shipping_name         text not null,
+  shipping_phone        text not null,
+  shipping_address      text not null,
+  shipping_address_extra text not null default '',
+  shipping_comuna       text not null,
+  shipping_city         text not null,
+  created_at            timestamptz default now()
 );
 alter table public.orders enable row level security;
 

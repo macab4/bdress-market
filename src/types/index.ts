@@ -42,6 +42,12 @@ export interface Order {
   status: OrderStatus
   tracking_number: string | null
   flow_order_id: string | null
+  shipping_name: string
+  shipping_phone: string
+  shipping_address: string
+  shipping_address_extra: string
+  shipping_comuna: string
+  shipping_city: string
   created_at: string
   listing?: Listing
   buyer?: Profile

@@ -86,6 +86,14 @@ export default async function SalesPage() {
                           ${(order.amount - order.commission).toLocaleString('es-CL')}
                           <span className="text-xs font-normal text-gray-400 ml-1">(neto)</span>
                         </p>
+
+                        <div className="bg-gray-50 p-3 mt-3 text-xs text-gray-600 space-y-0.5">
+                          <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Enviar a</p>
+                          <p className="font-medium text-gray-700">{order.shipping_name} · {order.shipping_phone}</p>
+                          <p>{order.shipping_address}{order.shipping_address_extra && `, ${order.shipping_address_extra}`}</p>
+                          <p>{order.shipping_comuna}, {order.shipping_city}</p>
+                        </div>
+
                         <AddTrackingForm orderId={order.id} />
                       </div>
                     </div>
