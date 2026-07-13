@@ -24,7 +24,7 @@ export default async function SalesPage() {
       .order('created_at', { ascending: false }),
     supabase
       .from('orders')
-      .select('*, listing:listings(title, photos), buyer:profiles(name)')
+      .select('*, listing:listings(title, photos), buyer:profiles!orders_buyer_id_fkey(name)')
       .eq('seller_id', user.id)
       .order('created_at', { ascending: false }),
   ])

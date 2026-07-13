@@ -27,7 +27,7 @@ export default async function PurchasesPage() {
 
   const { data: orders } = await supabase
     .from('orders')
-    .select('*, listing:listings(title, photos, price), seller:profiles(name, city)')
+    .select('*, listing:listings(title, photos, price), seller:profiles!orders_seller_id_fkey(name, city)')
     .eq('buyer_id', user.id)
     .order('created_at', { ascending: false }) as { data: OrderWithRelations[] | null }
 
