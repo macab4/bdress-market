@@ -20,10 +20,11 @@ export async function POST(
   if (order.buyer_id !== user.id) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   if (order.status !== 'shipped') return Response.json({ error: 'La orden no está en estado "enviado"' }, { status: 409 })
 
-  const { error } = await supabase.rpc('confirm_delivery', {
-    order_id: id,
-    buyer_uuid: user.id,
-  })
+  const { error } = await supabase
+    .from('orders')
+    .update({ status: 'completed' })
+    .eq('id', id)
+    .eq('status', 'shipped')
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
