@@ -25,6 +25,9 @@ export default async function Navbar() {
               <Link href="/dashboard/purchases" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis compras
               </Link>
+              <Link href={`/profile/${user.id}`} className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
+                Mi perfil
+              </Link>
               <form action="/auth/signout" method="POST">
                 <button className="text-xs text-gray-400 hover:text-black tracking-widest uppercase">
                   Salir

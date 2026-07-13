@@ -13,7 +13,7 @@ export default async function ProfilePage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: profile }, { data: listings }] = await Promise.all([
+  const [{ data: profile }, { data: listings }, { data: { user } }] = await Promise.all([
     supabase
       .from('profiles')
       .select('*')
@@ -25,7 +25,10 @@ export default async function ProfilePage({
       .eq('seller_id', id)
       .eq('status', 'active')
       .order('created_at', { ascending: false }) as unknown as Promise<{ data: Listing[] | null }>,
+    supabase.auth.getUser(),
   ])
+
+  const isOwnProfile = user?.id === id
 
   if (!profile) notFound()
 
@@ -58,6 +61,12 @@ export default async function ProfilePage({
             {profile.city && <p className="text-xs text-gray-400">{profile.city}</p>}
             <p className="text-[10px] text-gray-400 mt-1">En Bdress desde {memberSince}</p>
           </div>
+          {isOwnProfile && (
+            <Link href="/profile/edit"
+              className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black border border-gray-200 px-4 py-2 flex-shrink-0">
+              Editar perfil
+            </Link>
+          )}
         </div>
 
         {profile.bio && (
