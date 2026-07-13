@@ -15,7 +15,7 @@ export default function BuyButton({ listingId, price }: BuyButtonProps) {
         Comprar — ${price.toLocaleString('es-CL')}
       </Link>
       <p className="text-[10px] text-gray-400 text-center">
-        Pago seguro vía Flow · Bdress retiene hasta confirmar recepción
+        Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción
       </p>
     </div>
   )

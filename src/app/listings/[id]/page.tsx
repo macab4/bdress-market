@@ -122,7 +122,7 @@ export default async function ListingPage({
                     Ingresar para comprar
                   </Link>
                   <p className="text-[10px] text-gray-400 text-center">
-                    Pago seguro vía Flow · Bdress retiene hasta confirmar recepción
+                    Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción
                   </p>
                 </div>
               ) : (

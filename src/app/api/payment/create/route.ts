@@ -1,19 +1,8 @@
-import { createHmac } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 
-const FLOW_API_URL = process.env.FLOW_API_URL!
-const FLOW_API_KEY = process.env.FLOW_API_KEY!
-const FLOW_SECRET_KEY = process.env.FLOW_SECRET_KEY!
+const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 const COMMISSION_PCT = parseInt(process.env.BDRESS_COMMISSION_PCT ?? '12') / 100
-
-function flowSign(params: Record<string, string | number>): string {
-  const toSign = Object.keys(params)
-    .sort()
-    .map(k => `${k}=${params[k]}`)
-    .join('')
-  return createHmac('sha256', FLOW_SECRET_KEY).update(toSign).digest('hex')
-}
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -100,44 +89,45 @@ export async function POST(request: Request) {
     orderId = order.id
   }
 
-  // Crear pago en Flow.cl
-  const buyerEmail = user.email ?? ''
-
-  const params: Record<string, string | number> = {
-    apiKey: FLOW_API_KEY,
-    amount: listing.price,
-    commerceOrder: orderId,
-    currency: 'CLP',
-    email: buyerEmail,
-    subject: `Bdress Market — ${listing.title}`,
-    urlConfirmation: `${SITE_URL}/api/payment/confirm`,
-    urlReturn: `${SITE_URL}/dashboard/purchases`,
-  }
-
-  const signature = flowSign(params)
-  const formParams = new URLSearchParams()
-  Object.entries(params).forEach(([k, v]) => formParams.append(k, String(v)))
-  formParams.append('s', signature)
-
-  const flowRes = await fetch(`${FLOW_API_URL}/payment/create`, {
+  // Crear preferencia de pago en Mercado Pago (Checkout Pro)
+  const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formParams.toString(),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+    },
+    body: JSON.stringify({
+      items: [{
+        title: listing.title,
+        quantity: 1,
+        unit_price: listing.price,
+        currency_id: 'CLP',
+      }],
+      payer: { email: user.email },
+      external_reference: orderId,
+      back_urls: {
+        success: `${SITE_URL}/dashboard/purchases`,
+        pending: `${SITE_URL}/dashboard/purchases`,
+        failure: `${SITE_URL}/listings/${listing_id}`,
+      },
+      auto_return: 'approved',
+      notification_url: `${SITE_URL}/api/payment/confirm`,
+    }),
   })
 
-  if (!flowRes.ok) {
+  if (!mpRes.ok) {
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
-    return Response.json({ error: 'Error al conectar con Flow' }, { status: 502 })
+    return Response.json({ error: 'Error al conectar con Mercado Pago' }, { status: 502 })
   }
 
-  const flowData = await flowRes.json()
-  if (!flowData.url || !flowData.token) {
+  const preference = await mpRes.json()
+  if (!preference.init_point) {
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
-    return Response.json({ error: flowData.message ?? 'Error en Flow' }, { status: 502 })
+    return Response.json({ error: preference.message ?? 'Error en Mercado Pago' }, { status: 502 })
   }
 
-  // Guardar flow token en la orden
-  await supabase.from('orders').update({ flow_order_id: flowData.token }).eq('id', orderId)
+  // Guardar referencia de la preferencia en la orden
+  await supabase.from('orders').update({ payment_ref: preference.id }).eq('id', orderId)
 
-  return Response.json({ redirectUrl: `${flowData.url}?token=${flowData.token}` })
+  return Response.json({ redirectUrl: preference.init_point })
 }

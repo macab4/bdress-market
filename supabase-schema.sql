@@ -74,7 +74,7 @@ create table public.orders (
   status                text not null default 'pending_payment'
                           check (status in ('pending_payment','paid','shipped','delivered','completed','disputed','cancelled')),
   tracking_number       text,
-  flow_order_id         text,
+  payment_ref           text,
   shipping_name         text not null,
   shipping_phone        text not null,
   shipping_address      text not null,

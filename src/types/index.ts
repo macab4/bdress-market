@@ -41,7 +41,7 @@ export interface Order {
   commission: number
   status: OrderStatus
   tracking_number: string | null
-  flow_order_id: string | null
+  payment_ref: string | null
   shipping_name: string
   shipping_phone: string
   shipping_address: string
