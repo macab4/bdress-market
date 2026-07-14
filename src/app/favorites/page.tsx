@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
-import { conditionLabel } from '@/lib/catalog'
+import { conditionGroupLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 
 export default async function FavoritesPage() {
@@ -49,7 +49,7 @@ export default async function FavoritesPage() {
                     </span>
                   )}
                   <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                    {conditionLabel(listing.condition)}
+                    {conditionGroupLabel(listing.condition)}
                   </span>
                   <div className="absolute bottom-2 right-2">
                     <FavoriteButton

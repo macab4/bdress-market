@@ -5,8 +5,9 @@ import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
-import { CONDITIONS, CATEGORIES, buyerProtectionFee, COMMISSION_PCT } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, buyerProtectionFee } from '@/lib/catalog'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
+import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 
 export default async function ListingPage({
   params,
@@ -50,7 +51,7 @@ export default async function ListingPage({
     user !== null &&
     user.id !== listing.seller_id
 
-  const condition = CONDITIONS.find(c => c.value === listing.condition) ?? { label: listing.condition, color: 'bg-gray-100 text-gray-600' }
+  const conditionDetail = CONDITIONS.find(c => c.value === listing.condition) ?? { label: listing.condition, description: '' }
   const categoryLabel = CATEGORIES.find(c => c.value === listing.category)?.label
 
   return (
@@ -89,8 +90,8 @@ export default async function ListingPage({
                   <h1 className="text-xl font-light tracking-wide mt-0.5">{listing.title}</h1>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${condition.color}`}>
-                    {condition.label}
+                  <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>
+                    {conditionGroupLabel(listing.condition)}
                   </span>
                   <FavoriteButton
                     listingId={listing.id}
@@ -110,6 +111,15 @@ export default async function ListingPage({
               </div>
             </div>
 
+            {/* Estado detallado */}
+            <div>
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Estado</p>
+              <p className="text-sm text-gray-700">{conditionDetail.label}</p>
+              {conditionDetail.description && (
+                <p className="text-xs text-gray-400 mt-1">{conditionDetail.description}</p>
+              )}
+            </div>
+
             {/* Descripción */}
             {listing.description && (
               <div>
@@ -126,7 +136,10 @@ export default async function ListingPage({
                 <span>${listing.price.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between text-gray-400">
-                <span>Protección BDress ({Math.round(COMMISSION_PCT * 100)}%)</span>
+                <BuyerProtectionModal
+                  trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-gray-600">Protección Comprador</span>}
+                  triggerClassName="inline-flex"
+                />
                 <span>+ ${commission.toLocaleString('es-CL')}</span>
               </div>
               <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-100 pt-1 mt-1">

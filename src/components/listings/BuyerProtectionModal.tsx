@@ -5,7 +5,13 @@ import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { X, ShieldCheck, RotateCcw, Lock, LifeBuoy } from 'lucide-react'
 
-export default function BuyerProtectionModal({ iconSize = 13 }: { iconSize?: number }) {
+interface BuyerProtectionModalProps {
+  iconSize?: number
+  trigger?: React.ReactNode
+  triggerClassName?: string
+}
+
+export default function BuyerProtectionModal({ iconSize = 13, trigger, triggerClassName }: BuyerProtectionModalProps) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -34,10 +40,10 @@ export default function BuyerProtectionModal({ iconSize = 13 }: { iconSize?: num
       <button
         type="button"
         onClick={(e) => { stop(e); setOpen(true) }}
-        aria-label="Qué incluye la Protección BDress"
-        className="inline-flex"
+        aria-label="Qué incluye la Protección Comprador"
+        className={triggerClassName ?? 'inline-flex'}
       >
-        <ShieldCheck size={iconSize} className="text-[#8DA988] cursor-help" />
+        {trigger ?? <ShieldCheck size={iconSize} className="text-[#8DA988] cursor-help" />}
       </button>
 
       {open && createPortal(

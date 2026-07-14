@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Listing, Profile, Review } from '@/types'
-import { conditionLabel } from '@/lib/catalog'
+import { conditionGroupLabel } from '@/lib/catalog'
 import StarRating from '@/components/reviews/StarRating'
 
 type ReviewWithReviewer = Review & { reviewer: { name: string; avatar_url: string | null } | null }
@@ -119,7 +119,7 @@ export default async function ProfilePage({
                     </div>
                   )}
                   <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                    {conditionLabel(listing.condition)}
+                    {conditionGroupLabel(listing.condition)}
                   </span>
                 </div>
                 <div className="p-3">

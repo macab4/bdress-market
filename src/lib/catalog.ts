@@ -112,6 +112,29 @@ export function conditionLabel(value: string): string {
   return CONDITIONS.find(c => c.value === value)?.label ?? value
 }
 
+// "Bueno" vs "Muy bueno" es un matiz demasiado subjetivo para decidir una compra
+// de un vistazo — lo que de verdad orienta a la compradora es si es nuevo o usado.
+// Por eso el listado y las tarjetas solo muestran este grupo; el detalle fino
+// de CONDITIONS queda como matiz secundario dentro de la página de producto.
+export const CONDITION_GROUPS = [
+  { value: 'nuevo', label: 'Nuevo', conditions: ['nuevo_con_etiquetas', 'nuevo_sin_etiquetas'], color: 'bg-[#8DA988] text-white' },
+  { value: 'usado', label: 'Usado', conditions: ['muy_bueno', 'bueno', 'satisfactorio'], color: 'bg-gray-100 text-gray-600' },
+] as const
+
+export type ConditionGroupValue = (typeof CONDITION_GROUPS)[number]['value']
+
+export function conditionGroup(value: string): ConditionGroupValue {
+  return CONDITION_GROUPS.find(g => (g.conditions as readonly string[]).includes(value))?.value ?? 'usado'
+}
+
+export function conditionGroupLabel(value: string): string {
+  return CONDITION_GROUPS.find(g => g.value === conditionGroup(value))!.label
+}
+
+export function conditionGroupColor(value: string): string {
+  return CONDITION_GROUPS.find(g => g.value === conditionGroup(value))!.color
+}
+
 export const SHIPPING_SIZES = [
   { value: 'pequeno', label: 'Pequeño', description: 'Para artículos que quepan en un sobre grande.' },
   { value: 'mediano', label: 'Mediano', description: 'Para artículos que quepan en una caja de zapatos.', recommended: true },

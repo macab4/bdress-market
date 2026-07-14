@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
-import { CATEGORIES, CONDITIONS, conditionLabel } from '@/lib/catalog'
+import { CATEGORIES, CONDITION_GROUPS, conditionGroupLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 
@@ -31,7 +31,10 @@ export default async function HomePage({
   if (params.q) query = query.ilike('title', `%${params.q}%`)
   if (params.category) query = query.eq('category', params.category)
   if (params.size) query = query.eq('size', params.size)
-  if (params.condition) query = query.eq('condition', params.condition)
+  if (params.condition) {
+    const group = CONDITION_GROUPS.find(g => g.value === params.condition)
+    if (group) query = query.in('condition', group.conditions)
+  }
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
 
@@ -108,7 +111,7 @@ export default async function HomePage({
             <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Estado</label>
             <select name="condition" defaultValue={params.condition} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
               <option value="">Todos</option>
-              {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+              {CONDITION_GROUPS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
             </select>
           </div>
 
@@ -164,7 +167,7 @@ export default async function HomePage({
                       </div>
                     )}
                     <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                      {conditionLabel(listing.condition)}
+                      {conditionGroupLabel(listing.condition)}
                     </span>
                     <div className="absolute bottom-2 right-2">
                       <FavoriteButton

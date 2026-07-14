@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import ComunaSelect from '@/components/ComunaSelect'
-import { buyerProtectionFee, COMMISSION_PCT } from '@/lib/catalog'
+import { buyerProtectionFee } from '@/lib/catalog'
+import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 
 interface CheckoutFormProps {
   listingId: string
@@ -135,7 +136,10 @@ export default function CheckoutForm({ listingId, price }: CheckoutFormProps) {
           <span>${price.toLocaleString('es-CL')}</span>
         </div>
         <div className="flex justify-between">
-          <span>Protección BDress ({Math.round(COMMISSION_PCT * 100)}%)</span>
+          <BuyerProtectionModal
+            trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-black">Protección Comprador</span>}
+            triggerClassName="inline-flex"
+          />
           <span>${commission.toLocaleString('es-CL')}</span>
         </div>
         <div className="flex justify-between">
