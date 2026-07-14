@@ -74,6 +74,9 @@ create policy "Vendedora crea sus prendas" on public.listings
 create policy "Vendedora edita sus prendas" on public.listings
   for update using (auth.uid() = seller_id);
 
+create policy "Vendedora elimina sus prendas" on public.listings
+  for delete using (auth.uid() = seller_id);
+
 -- Órdenes
 create table public.orders (
   id                    uuid default gen_random_uuid() primary key,

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Listing, Order } from '@/types'
 import PauseListingButton from '@/components/dashboard/PauseListingButton'
+import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
 import GenerateLabelButton from '@/components/dashboard/GenerateLabelButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
 
@@ -212,6 +213,7 @@ export default async function SalesPage() {
                         className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
                         Ver
                       </Link>
+                      <DeleteListingButton listingId={listing.id} listingTitle={listing.title} />
                     </div>
                   </div>
                 )
