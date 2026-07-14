@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CONFIRMED_HOLD_DAYS, SHIPPED_FALLBACK_DAYS } from '@/lib/catalog'
+import { sendReviewReminderEmail } from '@/lib/email'
 
 // Se ejecuta diariamente vía Vercel Cron (ver vercel.json).
 // No mueve plata real, solo marca la orden como "completed" (el pago a
@@ -31,6 +32,27 @@ export async function GET(request: Request) {
 
   if (confirmedResult.error) return Response.json({ error: confirmedResult.error.message }, { status: 500 })
   if (shippedResult.error) return Response.json({ error: shippedResult.error.message }, { status: 500 })
+
+  const releasedIds = [
+    ...(confirmedResult.data ?? []).map(o => o.id),
+    ...(shippedResult.data ?? []).map(o => o.id),
+  ]
+
+  if (releasedIds.length > 0) {
+    const { data: releasedOrders } = await admin
+      .from('orders')
+      .select('buyer_id, listing_id')
+      .in('id', releasedIds)
+
+    await Promise.all((releasedOrders ?? []).map(async (order) => {
+      const [{ data: listing }, { data: buyer }] = await Promise.all([
+        admin.from('listings').select('title').eq('id', order.listing_id).single(),
+        admin.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
+      ])
+      if (!buyer?.email) return
+      await sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? 'tu compra' })
+    }))
+  }
 
   return Response.json({
     released: (confirmedResult.data?.length ?? 0) + (shippedResult.data?.length ?? 0),

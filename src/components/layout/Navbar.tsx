@@ -14,7 +14,7 @@ export default async function Navbar() {
           <Image src="/logo.png" alt="Bdress Market" width={160} height={53} priority className="h-9 w-auto" />
         </Link>
 
-        <div className="flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-6">
           {user ? (
             <>
               <Link href="/listings/new"
@@ -26,6 +26,9 @@ export default async function Navbar() {
               </Link>
               <Link href="/dashboard/purchases" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis compras
+              </Link>
+              <Link href="/dashboard/offers" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
+                Mis ofertas
               </Link>
               <Link href="/favorites" aria-label="Favoritos" className="text-gray-500 hover:text-black">
                 <Heart size={18} />

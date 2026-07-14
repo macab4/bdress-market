@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendReviewReminderEmail } from '@/lib/email'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
@@ -28,7 +29,7 @@ export async function POST(
   const admin = createAdminClient()
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, status, payment_ref')
+    .select('id, listing_id, buyer_id, status, payment_ref')
     .eq('id', id)
     .single()
 
@@ -46,6 +47,15 @@ export async function POST(
   if (action === 'release') {
     const { error } = await admin.from('orders').update({ status: 'completed' }).eq('id', id)
     if (error) return Response.json({ error: error.message }, { status: 500 })
+
+    const [{ data: listing }, { data: buyer }] = await Promise.all([
+      admin.from('listings').select('title').eq('id', order.listing_id).single(),
+      admin.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
+    ])
+    if (buyer?.email) {
+      await sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? 'tu compra' })
+    }
+
     return Response.json({ ok: true })
   }
 

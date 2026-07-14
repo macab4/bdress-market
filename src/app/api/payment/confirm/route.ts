@@ -110,6 +110,39 @@ async function handleNotification(request: Request) {
         })
       }
     }
+  } else if ((payment.status === 'rejected' || payment.status === 'cancelled') && orderId) {
+    const supabase = createAdminClient()
+    const { data: order } = await supabase
+      .from('orders')
+      .select('listing_id, buyer_id')
+      .eq('id', orderId)
+      .eq('status', 'pending_payment')
+      .maybeSingle()
+
+    if (order) {
+      const [{ data: listing }, { data: buyer }] = await Promise.all([
+        supabase.from('listings').select('title').eq('id', order.listing_id).single(),
+        supabase.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
+      ])
+
+      if (buyer?.email) {
+        await sendEmail({
+          to: buyer.email,
+          subject: `No pudimos procesar tu pago — ${listing?.title ?? 'tu compra'}`,
+          html: emailLayout('Pago rechazado', `
+            <p style="font-size: 14px; color: #444; line-height: 1.6;">
+              Hola ${buyer.name ?? ''}, Mercado Pago rechazó el pago de <strong>${listing?.title ?? 'esta prenda'}</strong>.
+              No te cobramos nada. La prenda sigue disponible — puedes intentarlo de nuevo con otro medio de pago.
+            </p>
+            <p style="text-align: center; margin-top: 24px;">
+              <a href="${SITE_URL}/listings/${order.listing_id}/checkout" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+                Intentar de nuevo
+              </a>
+            </p>
+          `),
+        })
+      }
+    }
   }
 
   return Response.json({ status: 'ok' })

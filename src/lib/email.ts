@@ -43,3 +43,33 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     console.error('Error enviando email:', error)
   }
 }
+
+// Se dispara cuando una orden pasa a "completed" (cron de auto-liberación o
+// resolución manual de una disputa) — antes nadie avisaba a la compradora
+// que ya podía dejar su reseña.
+export async function sendReviewReminderEmail({
+  to,
+  name,
+  listingTitle,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to,
+    subject: `¿Qué te pareció tu compra? — ${listingTitle}`,
+    html: emailLayout('Ya puedes dejar tu reseña', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu compra de <strong>${listingTitle}</strong> ya se completó.
+        Contanos cómo te fue — tu reseña ayuda a que la comunidad compre con más confianza.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Dejar mi reseña
+        </a>
+      </p>
+    `),
+  })
+}

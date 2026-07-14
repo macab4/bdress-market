@@ -6,8 +6,24 @@ import { CATEGORIES, CONDITION_GROUPS, conditionGroupLabel } from '@/lib/catalog
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import ColorFilterPopover from '@/components/listings/ColorFilterPopover'
+import RatingBadge from '@/components/reviews/RatingBadge'
+import { getSellerRatings } from '@/lib/reviews'
 
 const SIZES = ['XS','S','M','L','XL','XXL']
+const PAGE_SIZE = 48
+
+function getPageRange(current: number, total: number): (number | '…')[] {
+  const range: (number | '…')[] = []
+  const left = Math.max(2, current - 1)
+  const right = Math.min(total - 1, current + 1)
+
+  range.push(1)
+  if (left > 2) range.push('…')
+  for (let i = left; i <= right; i++) range.push(i)
+  if (right < total - 1) range.push('…')
+  if (total > 1) range.push(total)
+  return range
+}
 
 const SORT_OPTIONS = [
   { value: 'recientes', label: 'Más recientes' },
@@ -19,17 +35,24 @@ const SORT_OPTIONS = [
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string; color?: string; sort?: string }>
+  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string; color?: string; sort?: string; page?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
 
+  const page = Math.max(1, parseInt(params.page ?? '1') || 1)
+
   let query = supabase
     .from('listings')
-    .select('*, seller:profiles(id, name, city, avatar_url)')
+    .select('*, seller:profiles(id, name, city, avatar_url)', { count: 'exact' })
     .eq('status', 'active')
 
-  if (params.q) query = query.ilike('title', `%${params.q}%`)
+  if (params.q) {
+    // La coma y el paréntesis rompen la gramática del filtro or() de PostgREST,
+    // así que se descartan del término en vez de tener que escaparlos.
+    const term = params.q.replace(/[,()]/g, ' ').trim()
+    if (term) query = query.or(`title.ilike.%${term}%,brand.ilike.%${term}%,description.ilike.%${term}%`)
+  }
   if (params.category) query = query.eq('category', params.category)
   if (params.size) query = query.eq('size', params.size)
   if (params.condition) {
@@ -54,10 +77,29 @@ export default async function HomePage({
       query = query.order('created_at', { ascending: false })
   }
 
-  const [{ data: listings }, { data: { user } }] = await Promise.all([
-    query.limit(48),
+  const from = (page - 1) * PAGE_SIZE
+  const [{ data: listings, count }, { data: { user } }] = await Promise.all([
+    query.range(from, from + PAGE_SIZE - 1),
     supabase.auth.getUser(),
   ])
+
+  const totalCount = count ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+
+  function pageUrl(targetPage: number) {
+    const usp = new URLSearchParams()
+    if (params.q) usp.set('q', params.q)
+    if (params.category) usp.set('category', params.category)
+    if (params.size) usp.set('size', params.size)
+    if (params.condition) usp.set('condition', params.condition)
+    if (params.color) usp.set('color', params.color)
+    if (params.min) usp.set('min', params.min)
+    if (params.max) usp.set('max', params.max)
+    if (params.sort) usp.set('sort', params.sort)
+    if (targetPage > 1) usp.set('page', String(targetPage))
+    const qs = usp.toString()
+    return qs ? `/?${qs}` : '/'
+  }
 
   let favoritedIds = new Set<string>()
   if (user && listings && listings.length > 0) {
@@ -68,6 +110,10 @@ export default async function HomePage({
       .in('listing_id', listings.map(l => l.id))
     favoritedIds = new Set((favorites ?? []).map(f => f.listing_id))
   }
+
+  const sellerRatings = listings
+    ? await getSellerRatings(supabase, listings.map(l => l.seller_id))
+    : {}
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -88,7 +134,7 @@ export default async function HomePage({
             <input
               name="q"
               defaultValue={params.q}
-              placeholder="Marca, título..."
+              placeholder="Marca, título, descripción..."
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
             />
           </div>
@@ -153,7 +199,9 @@ export default async function HomePage({
       <div className="max-w-5xl mx-auto px-4 py-8">
         {listings && listings.length > 0 ? (
           <>
-            <p className="text-xs text-gray-400 mb-6">{listings.length} prendas disponibles</p>
+            <p className="text-xs text-gray-400 mb-6">
+              {totalCount} {totalCount === 1 ? 'prenda disponible' : 'prendas disponibles'}
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {(listings as (Listing & { seller: { name: string; city: string } })[]).map((listing) => (
                 <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white">
@@ -189,11 +237,56 @@ export default async function HomePage({
                       <p className="text-[10px] text-gray-400">T. {listing.size}</p>
                     </div>
                     <ProtectedPrice price={listing.price} size="sm" />
-                    <p className="text-[10px] text-gray-400 mt-1">{listing.seller?.name}</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <p className="text-[10px] text-gray-400">{listing.seller?.name}</p>
+                      {sellerRatings[listing.seller_id] && (
+                        <RatingBadge rating={sellerRatings[listing.seller_id].avg} count={sellerRatings[listing.seller_id].count} />
+                      )}
+                    </div>
                   </div>
                 </Link>
               ))}
             </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center flex-wrap gap-1.5 mt-10">
+                <Link
+                  href={pageUrl(Math.max(1, page - 1))}
+                  aria-disabled={page === 1}
+                  className={`px-3 h-9 flex items-center text-xs border border-gray-200 ${
+                    page === 1 ? 'pointer-events-none text-gray-300' : 'hover:border-gray-400'
+                  }`}
+                >
+                  ‹ Anterior
+                </Link>
+
+                {getPageRange(page, totalPages).map((p, i) =>
+                  p === '…' ? (
+                    <span key={`ellipsis-${i}`} className="px-1 text-xs text-gray-300">…</span>
+                  ) : (
+                    <Link
+                      key={p}
+                      href={pageUrl(p)}
+                      className={`w-9 h-9 flex items-center justify-center text-xs border ${
+                        p === page ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'
+                      }`}
+                    >
+                      {p}
+                    </Link>
+                  )
+                )}
+
+                <Link
+                  href={pageUrl(Math.min(totalPages, page + 1))}
+                  aria-disabled={page === totalPages}
+                  className={`px-3 h-9 flex items-center text-xs border border-gray-200 ${
+                    page === totalPages ? 'pointer-events-none text-gray-300' : 'hover:border-gray-400'
+                  }`}
+                >
+                  Siguiente ›
+                </Link>
+              </div>
+            )}
           </>
         ) : (
           <div className="text-center py-20">

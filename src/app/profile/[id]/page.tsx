@@ -89,6 +89,28 @@ export default async function ProfilePage({
           )}
         </div>
 
+        {/* Accesos de cuenta — en desktop ya viven en el menú superior */}
+        {isOwnProfile && (
+          <div className="md:hidden flex flex-wrap gap-4 mb-10 text-xs">
+            <Link href="/dashboard/sales" className="text-gray-500 hover:text-black tracking-widest uppercase">
+              Mis ventas
+            </Link>
+            <Link href="/dashboard/offers" className="text-gray-500 hover:text-black tracking-widest uppercase">
+              Mis ofertas
+            </Link>
+            {user?.email === process.env.ADMIN_EMAIL && (
+              <Link href="/admin" className="text-gray-500 hover:text-black tracking-widest uppercase">
+                Admin
+              </Link>
+            )}
+            <form action="/auth/signout" method="POST">
+              <button className="text-gray-400 hover:text-black tracking-widest uppercase">
+                Salir
+              </button>
+            </form>
+          </div>
+        )}
+
         {profile.bio && (
           <div className="mb-10">
             <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Sobre {profile.name}</p>

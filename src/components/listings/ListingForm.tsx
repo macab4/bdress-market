@@ -9,9 +9,10 @@ import { Listing } from '@/types'
 
 interface ListingFormProps {
   listing?: Listing // presente = modo edición
+  priceLocked?: boolean // hay una oferta pendiente — no se puede cambiar el precio
 }
 
-export default function ListingForm({ listing }: ListingFormProps) {
+export default function ListingForm({ listing, priceLocked }: ListingFormProps) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
@@ -284,9 +285,15 @@ export default function ListingForm({ listing }: ListingFormProps) {
             <div className="relative">
               <span className="absolute left-3 top-2 text-sm text-gray-400">$</span>
               <input type="number" value={form.price} onChange={e => set('price', e.target.value)}
-                required min="1000" placeholder="25000"
-                className="w-full border border-gray-200 pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+                required min="1000" placeholder="25000" disabled={priceLocked}
+                className="w-full border border-gray-200 pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-400" />
             </div>
+            {priceLocked && (
+              <p className="text-[10px] text-amber-600 mt-1">
+                Tienes una oferta esperando respuesta en esta prenda — resuélvela desde{' '}
+                <a href="/dashboard/offers" className="underline">Mis ofertas</a> antes de cambiar el precio.
+              </p>
+            )}
             <p className="text-[10px] text-gray-400 mt-1">
               Publicar y vender es gratis — no te cobramos comisión. Solo se descuenta el costo de
               procesamiento del pago ({Math.round(PROCESSING_FEE_PCT * 100)}% + ${PROCESSING_FEE_FIXED}).

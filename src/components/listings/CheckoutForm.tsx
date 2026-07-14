@@ -8,12 +8,23 @@ import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 interface CheckoutFormProps {
   listingId: string
   price: number
+  initialValues?: {
+    shipping_name?: string
+    shipping_phone?: string
+    shipping_address?: string
+    shipping_comuna?: string
+    shipping_city?: string
+  }
 }
 
-export default function CheckoutForm({ listingId, price }: CheckoutFormProps) {
+export default function CheckoutForm({ listingId, price, initialValues }: CheckoutFormProps) {
   const [form, setForm] = useState({
-    shipping_name: '', shipping_phone: '', shipping_address: '',
-    shipping_address_extra: '', shipping_comuna: '', shipping_city: '',
+    shipping_name: initialValues?.shipping_name ?? '',
+    shipping_phone: initialValues?.shipping_phone ?? '',
+    shipping_address: initialValues?.shipping_address ?? '',
+    shipping_address_extra: '',
+    shipping_comuna: initialValues?.shipping_comuna ?? '',
+    shipping_city: initialValues?.shipping_city ?? '',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

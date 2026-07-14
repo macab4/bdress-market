@@ -221,6 +221,31 @@ export function paymentProcessingFee(price: number): number {
   return Math.round(price * PROCESSING_FEE_PCT) + PROCESSING_FEE_FIXED
 }
 
+// Sistema de ofertas — negociación de precio entre compradora y vendedora.
+// No se puede ofertar menos de este % del precio publicado.
+export const OFFER_MIN_PCT = 0.5
+// Rondas máximas por hilo (oferta inicial cuenta como ronda 1) antes de que
+// solo queden aceptar/rechazar como opciones, para evitar loops infinitos.
+export const OFFER_MAX_ROUNDS = 3
+// Tiempo que tiene la otra parte para responder antes de que la oferta expire.
+export const OFFER_EXPIRY_HOURS = 48
+// Tiempo que tiene la compradora para pagar al precio pactado antes de que
+// la oferta aceptada expire y ya no sea válida.
+export const OFFER_ACCEPTED_HOLD_HOURS = 48
+
+export function minOfferPrice(originalPrice: number): number {
+  return Math.ceil(originalPrice * OFFER_MIN_PCT)
+}
+
+export const OFFER_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  pending:   { label: 'Pendiente',    color: 'bg-amber-50 text-amber-600' },
+  accepted:  { label: 'Aceptada',     color: 'bg-[#8DA988]/10 text-[#5a7a55]' },
+  rejected:  { label: 'Rechazada',    color: 'bg-red-50 text-red-600' },
+  countered: { label: 'Contraoferta', color: 'bg-blue-50 text-blue-600' },
+  expired:   { label: 'Expirada',     color: 'bg-gray-100 text-gray-400' },
+  cancelled: { label: 'Cancelada',    color: 'bg-gray-100 text-gray-400' },
+}
+
 export function sellerPayout(price: number): number {
   return price - paymentProcessingFee(price)
 }

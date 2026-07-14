@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
 import { conditionGroupLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
+import RatingBadge from '@/components/reviews/RatingBadge'
+import { getSellerRatings } from '@/lib/reviews'
 
 export default async function FavoritesPage() {
   const supabase = await createClient()
@@ -13,13 +15,14 @@ export default async function FavoritesPage() {
 
   const { data: favorites } = await supabase
     .from('favorites')
-    .select('id, listing:listings(*)')
+    .select('id, listing:listings(*, seller:profiles(id, name))')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false }) as unknown as {
-      data: { id: string; listing: Listing | null }[] | null
+      data: { id: string; listing: (Listing & { seller: { id: string; name: string } | null }) | null }[] | null
     }
 
-  const listings = (favorites ?? []).map(f => f.listing).filter((l): l is Listing => l !== null)
+  const listings = (favorites ?? []).map(f => f.listing).filter((l): l is Listing & { seller: { id: string; name: string } | null } => l !== null)
+  const sellerRatings = await getSellerRatings(supabase, listings.map(l => l.seller_id))
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -65,6 +68,12 @@ export default async function FavoritesPage() {
                   <div className="flex items-center justify-between mt-1">
                     <p className="text-sm font-semibold">${listing.price.toLocaleString('es-CL')}</p>
                     <p className="text-[10px] text-gray-400">T. {listing.size}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <p className="text-[10px] text-gray-400">{listing.seller?.name}</p>
+                    {sellerRatings[listing.seller_id] && (
+                      <RatingBadge rating={sellerRatings[listing.seller_id].avg} count={sellerRatings[listing.seller_id].count} />
+                    )}
                   </div>
                 </div>
               </Link>

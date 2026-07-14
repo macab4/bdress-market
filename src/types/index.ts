@@ -8,6 +8,8 @@ export type ListingColor =
 export type ListingShippingSize = 'pequeno' | 'mediano' | 'grande'
 export type ListingStatus = 'active' | 'sold' | 'paused'
 export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled'
+export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered' | 'expired' | 'cancelled'
+export type OfferProposedBy = 'buyer' | 'seller'
 
 export interface Profile {
   id: string
@@ -67,6 +69,25 @@ export interface Order {
   paid_at: string | null
   shipped_at: string | null
   confirmed_at: string | null
+  created_at: string
+  listing?: Listing
+  buyer?: Profile
+  seller?: Profile
+}
+
+export interface Offer {
+  id: string
+  listing_id: string
+  buyer_id: string
+  seller_id: string
+  original_price: number
+  offered_price: number
+  proposed_by: OfferProposedBy
+  status: OfferStatus
+  round: number
+  parent_offer_id: string | null
+  expires_at: string
+  accepted_expires_at: string | null
   created_at: string
   listing?: Listing
   buyer?: Profile

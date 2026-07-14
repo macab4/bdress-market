@@ -5,9 +5,12 @@ import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
-import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice } from '@/lib/catalog'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
+import MakeOfferModal from '@/components/listings/MakeOfferModal'
+import RatingBadge from '@/components/reviews/RatingBadge'
+import { getSellerRatings } from '@/lib/reviews'
 
 export default async function ListingPage({
   params,
@@ -32,6 +35,9 @@ export default async function ListingPage({
 
   if (!listing) notFound()
 
+  const sellerRatings = await getSellerRatings(supabase, [listing.seller_id])
+  const sellerRating = sellerRatings[listing.seller_id]
+
   let isFavorited = false
   if (user) {
     const { data: favorite } = await supabase
@@ -50,6 +56,24 @@ export default async function ListingPage({
     listing.status === 'active' &&
     user !== null &&
     user.id !== listing.seller_id
+
+  let myOffer: { offered_price: number; status: string; proposed_by: string; accepted_expires_at: string | null } | null = null
+  if (canBuy) {
+    const { data } = await supabase
+      .from('offers')
+      .select('offered_price, status, proposed_by, accepted_expires_at')
+      .eq('listing_id', id)
+      .eq('buyer_id', user!.id)
+      .in('status', ['pending', 'accepted'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    myOffer = data && (data.status === 'pending' || (data.status === 'accepted' && data.accepted_expires_at && new Date(data.accepted_expires_at) > new Date()))
+      ? data
+      : null
+  }
+  const offerAccepted = myOffer?.status === 'accepted'
+  const buyPrice = offerAccepted ? myOffer!.offered_price : listing.price
 
   const conditionDetail = CONDITIONS.find(c => c.value === listing.condition) ?? { label: listing.condition, description: '' }
   const categoryLabel = CATEGORIES.find(c => c.value === listing.category)?.label
@@ -163,7 +187,30 @@ export default async function ListingPage({
             {/* Botón comprar */}
             {listing.status === 'active' && (
               canBuy ? (
-                <BuyButton listingId={listing.id} price={listing.price} />
+                <div className="space-y-3">
+                  {offerAccepted && (
+                    <p className="text-xs text-[#5a7a55] bg-[#8DA988]/10 text-center py-2">
+                      ¡Tu oferta de ${myOffer!.offered_price.toLocaleString('es-CL')} fue aceptada! Cómprala antes de que venza.
+                    </p>
+                  )}
+                  <BuyButton listingId={listing.id} price={buyPrice} />
+
+                  {!myOffer && (
+                    <MakeOfferModal listingId={listing.id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
+                  )}
+                  {myOffer?.status === 'pending' && myOffer.proposed_by === 'buyer' && (
+                    <p className="text-xs text-gray-400 text-center">
+                      Ofertaste ${myOffer.offered_price.toLocaleString('es-CL')} — esperando respuesta de la vendedora.{' '}
+                      <Link href="/dashboard/offers" className="text-[#5a7a55] underline underline-offset-2">Ver oferta</Link>
+                    </p>
+                  )}
+                  {myOffer?.status === 'pending' && myOffer.proposed_by === 'seller' && (
+                    <p className="text-xs text-gray-400 text-center">
+                      La vendedora te ofreció ${myOffer.offered_price.toLocaleString('es-CL')}.{' '}
+                      <Link href="/dashboard/offers" className="text-[#5a7a55] underline underline-offset-2">Responder</Link>
+                    </p>
+                  )}
+                </div>
               ) : user === null ? (
                 <div className="space-y-2">
                   <Link href="/auth/login"
@@ -201,9 +248,12 @@ export default async function ListingPage({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">{listing.seller?.name}</p>
-                  {listing.seller?.city && (
-                    <p className="text-xs text-gray-400">{listing.seller.city}</p>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {listing.seller?.city && (
+                      <p className="text-xs text-gray-400">{listing.seller.city}</p>
+                    )}
+                    {sellerRating && <RatingBadge rating={sellerRating.avg} count={sellerRating.count} />}
+                  </div>
                 </div>
                 <Link href={`/profile/${listing.seller_id}`}
                   className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">

@@ -80,7 +80,18 @@ export default async function PurchasesPage() {
 
                       {order.tracking_number && (
                         <p className="text-xs text-gray-400 mt-1">
-                          Seguimiento: <span className="font-mono">{order.tracking_number}</span>
+                          Seguimiento:{' '}
+                          <a
+                            href="https://personas.chilexpress.cl/realizar-envios"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-mono text-[#5a7a55] underline underline-offset-2 hover:text-black"
+                          >
+                            {order.tracking_number}
+                          </a>
+                          <span className="block text-[10px] text-gray-300 mt-0.5">
+                            Pega el número en &quot;Rastrea tu envío&quot; en Chilexpress
+                          </span>
                         </p>
                       )}
 

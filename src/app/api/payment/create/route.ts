@@ -54,6 +54,19 @@ export async function POST(request: Request) {
   if (listing.status !== 'active') return Response.json({ error: 'Esta prenda ya no está disponible' }, { status: 409 })
   if (listing.seller_id === user.id) return Response.json({ error: 'No puedes comprar tu propia prenda' }, { status: 403 })
 
+  // Si esta compradora tiene una oferta aceptada vigente para esta prenda, paga
+  // el precio pactado en vez del precio público — no afecta a otras compradoras.
+  const { data: acceptedOffer } = await supabase
+    .from('offers')
+    .select('offered_price, accepted_expires_at')
+    .eq('listing_id', listing_id)
+    .eq('buyer_id', user.id)
+    .eq('status', 'accepted')
+    .gt('accepted_expires_at', new Date().toISOString())
+    .maybeSingle()
+
+  const price = acceptedOffer?.offered_price ?? listing.price
+
   // Nunca confiamos en el costo de envío que manda el cliente — se recotiza acá
   const { data: seller } = await supabase
     .from('profiles')
@@ -69,7 +82,7 @@ export async function POST(request: Request) {
     originComuna: seller.comuna,
     destComuna: shipping.shipping_comuna,
     size: listing.shipping_size,
-    declaredValue: listing.price,
+    declaredValue: price,
   })
 
   if (!quote) {
@@ -85,25 +98,29 @@ export async function POST(request: Request) {
     .eq('status', 'pending_payment')
     .maybeSingle()
 
+  const commission = buyerProtectionFee(price)
+  const processingFee = paymentProcessingFee(price)
+
   let orderId: string
 
   if (existing) {
     orderId = existing.id
     await supabase.from('orders').update({
       ...shipping,
+      amount: price + commission,
+      commission,
+      processing_fee: processingFee,
       shipping_cost: quote.price,
       courier_service_code: quote.serviceCode,
     }).eq('id', orderId)
   } else {
-    const commission = buyerProtectionFee(listing.price)
-    const processingFee = paymentProcessingFee(listing.price)
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert({
         listing_id,
         buyer_id: user.id,
         seller_id: listing.seller_id,
-        amount: listing.price + commission,
+        amount: price + commission,
         commission,
         processing_fee: processingFee,
         shipping_cost: quote.price,
@@ -121,7 +138,6 @@ export async function POST(request: Request) {
   }
 
   // Crear preferencia de pago en Mercado Pago (Checkout Pro)
-  const commissionForMp = buyerProtectionFee(listing.price)
   const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
     headers: {
@@ -133,13 +149,13 @@ export async function POST(request: Request) {
         {
           title: listing.title,
           quantity: 1,
-          unit_price: listing.price,
+          unit_price: price,
           currency_id: 'CLP',
         },
         {
           title: 'Protección BDress',
           quantity: 1,
-          unit_price: commissionForMp,
+          unit_price: commission,
           currency_id: 'CLP',
         },
         {
@@ -152,7 +168,7 @@ export async function POST(request: Request) {
       payer: { email: user.email },
       external_reference: orderId,
       back_urls: {
-        success: `${SITE_URL}/dashboard/purchases`,
+        success: `${SITE_URL}/dashboard/purchases/${orderId}/confirmacion`,
         pending: `${SITE_URL}/dashboard/purchases`,
         failure: `${SITE_URL}/listings/${listing_id}`,
       },

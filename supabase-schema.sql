@@ -78,6 +78,34 @@ create policy "Vendedora edita sus prendas" on public.listings
 create policy "Vendedora elimina sus prendas" on public.listings
   for delete using (auth.uid() = seller_id);
 
+-- Ofertas (negociación de precio estilo Vinted)
+create table public.offers (
+  id                   uuid default gen_random_uuid() primary key,
+  listing_id           uuid references public.listings(id) on delete cascade not null,
+  buyer_id             uuid references public.profiles(id) not null,
+  seller_id            uuid references public.profiles(id) not null,
+  original_price       integer not null,
+  offered_price        integer not null check (offered_price > 0),
+  proposed_by          text not null check (proposed_by in ('buyer','seller')),
+  status               text not null default 'pending'
+                         check (status in ('pending','accepted','rejected','countered','expired','cancelled')),
+  round                integer not null default 1,
+  parent_offer_id      uuid references public.offers(id),
+  expires_at           timestamptz not null,
+  accepted_expires_at  timestamptz,
+  created_at           timestamptz default now()
+);
+alter table public.offers enable row level security;
+
+create policy "Compradora y vendedora ven sus ofertas" on public.offers
+  for select using (auth.uid() = buyer_id or auth.uid() = seller_id);
+
+create policy "Compradora o vendedora crean ofertas y contraofertas" on public.offers
+  for insert with check (auth.uid() = buyer_id or auth.uid() = seller_id);
+
+create policy "Participante actualiza el estado de su oferta" on public.offers
+  for update using (auth.uid() = buyer_id or auth.uid() = seller_id);
+
 -- Órdenes
 create table public.orders (
   id                    uuid default gen_random_uuid() primary key,
@@ -193,3 +221,34 @@ create policy "Usuaria borra sus fotos" on storage.objects
 -- ============================================================
 alter table public.listings add column color text
   check (color in ('negro','gris','blanco','crema','beige','naranja_pastel','naranja','coral','rojo','burdeos','rosa','rosa_palido','morado','lila','azul_claro','azul','azul_marino','turquesa','menta','verde','verde_oscuro','caqui','marron','amarillo','plateado','dorado','varios','transparente'));
+
+-- ============================================================
+-- Migración: sistema de ofertas (negociación de precio estilo Vinted)
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create table public.offers (
+  id                   uuid default gen_random_uuid() primary key,
+  listing_id           uuid references public.listings(id) on delete cascade not null,
+  buyer_id             uuid references public.profiles(id) not null,
+  seller_id            uuid references public.profiles(id) not null,
+  original_price       integer not null,
+  offered_price        integer not null check (offered_price > 0),
+  proposed_by          text not null check (proposed_by in ('buyer','seller')),
+  status               text not null default 'pending'
+                         check (status in ('pending','accepted','rejected','countered','expired','cancelled')),
+  round                integer not null default 1,
+  parent_offer_id      uuid references public.offers(id),
+  expires_at           timestamptz not null,
+  accepted_expires_at  timestamptz,
+  created_at           timestamptz default now()
+);
+alter table public.offers enable row level security;
+
+create policy "Compradora y vendedora ven sus ofertas" on public.offers
+  for select using (auth.uid() = buyer_id or auth.uid() = seller_id);
+
+create policy "Compradora o vendedora crean ofertas y contraofertas" on public.offers
+  for insert with check (auth.uid() = buyer_id or auth.uid() = seller_id);
+
+create policy "Participante actualiza el estado de su oferta" on public.offers
+  for update using (auth.uid() = buyer_id or auth.uid() = seller_id);
