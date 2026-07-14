@@ -6,7 +6,7 @@ import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import { CONDITIONS, CATEGORIES, buyerProtectionFee, COMMISSION_PCT } from '@/lib/catalog'
-import { ShieldCheck } from 'lucide-react'
+import ProtectedPrice from '@/components/listings/ProtectedPrice'
 
 export default async function ListingPage({
   params,
@@ -106,11 +106,7 @@ export default async function ListingPage({
                   <p className="text-sm text-gray-400">${listing.price.toLocaleString('es-CL')}</p>
                   <p className="text-xs text-gray-400">Talla {listing.size}</p>
                 </div>
-                <p className="text-2xl font-semibold text-[#5a7a55] flex items-center gap-1.5 mt-0.5">
-                  ${totalPrice.toLocaleString('es-CL')}
-                  <span className="text-xs font-normal">incl.</span>
-                  <ShieldCheck size={18} className="text-[#8DA988]" />
-                </p>
+                <ProtectedPrice price={listing.price} size="lg" />
               </div>
             </div>
 

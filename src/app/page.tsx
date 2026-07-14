@@ -2,9 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
-import { CATEGORIES, CONDITIONS, conditionLabel, buyerProtectionFee } from '@/lib/catalog'
+import { CATEGORIES, CONDITIONS, conditionLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
-import { ShieldCheck } from 'lucide-react'
+import ProtectedPrice from '@/components/listings/ProtectedPrice'
 
 const SIZES = ['XS','S','M','L','XL','XXL']
 
@@ -181,11 +181,7 @@ export default async function HomePage({
                       <p className="text-xs text-gray-400">${listing.price.toLocaleString('es-CL')}</p>
                       <p className="text-[10px] text-gray-400">T. {listing.size}</p>
                     </div>
-                    <p className="text-sm font-semibold text-[#5a7a55] flex items-center gap-1">
-                      ${(listing.price + buyerProtectionFee(listing.price)).toLocaleString('es-CL')}
-                      <span className="text-[10px] font-normal">incl.</span>
-                      <ShieldCheck size={13} className="text-[#8DA988]" />
-                    </p>
+                    <ProtectedPrice price={listing.price} size="sm" />
                     <p className="text-[10px] text-gray-400 mt-1">{listing.seller?.name}</p>
                   </div>
                 </Link>
