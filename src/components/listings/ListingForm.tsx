@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, SHIPPING_SIZES, CategoryValue, sellerPayout } from '@/lib/catalog'
+import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, SHIPPING_SIZES, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
 import { Listing } from '@/types'
 
 interface ListingFormProps {
@@ -265,7 +265,7 @@ export default function ListingForm({ listing }: ListingFormProps) {
             </div>
             <p className="text-[10px] text-gray-400 mt-1">
               Publicar y vender es gratis — no te cobramos comisión. Solo se descuenta el costo de
-              procesamiento del pago (3,5% + $450).
+              procesamiento del pago ({Math.round(PROCESSING_FEE_PCT * 100)}% + ${PROCESSING_FEE_FIXED}).
               {form.price && ` Recibirás $${sellerPayout(parseInt(form.price)).toLocaleString('es-CL')}.`}
             </p>
           </div>

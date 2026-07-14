@@ -69,7 +69,9 @@ export default async function HomePage({
       {/* Hero */}
       <div className="bg-black text-white text-center py-10 px-4">
         <p className="text-xs tracking-[6px] text-[#8DA988] uppercase mb-3">Comunidad · Bdress</p>
-        <h1 className="text-3xl font-light tracking-widest uppercase mb-2">Bdress Market</h1>
+        <h1 className="mb-2">
+          <Image src="/logo-white.png" alt="Bdress Market" width={280} height={93} priority className="mx-auto h-auto w-[220px] sm:w-[280px]" />
+        </h1>
         <p className="text-sm text-gray-400">Compra y vende prendas de la comunidad Bdress</p>
       </div>
 

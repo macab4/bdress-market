@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/terminos" className="hover:text-white">Términos y condiciones</Link>
             <Link href="/contacto" className="hover:text-white">Contacto</Link>
             <a href="https://www.bdress.cl" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-              Arriendo de Vestidos
+              B-dress Arriendo
             </a>
           </p>
         </footer>

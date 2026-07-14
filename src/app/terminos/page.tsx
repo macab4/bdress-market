@@ -1,4 +1,8 @@
 import Link from 'next/link'
+import SellerPriceCalculator from '@/components/SellerPriceCalculator'
+import { sellerPayout, paymentProcessingFee, buyerProtectionFee, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT } from '@/lib/catalog'
+
+const EXAMPLE_PRICE = 100000
 
 const SECTIONS = [
   { id: 'que-es', label: 'Qué es Bdress Market' },
@@ -65,6 +69,9 @@ export default function TerminosPage() {
               <li>Imprimí la etiqueta, pegala en el paquete y llevalo a cualquier sucursal de Chilexpress.</li>
               <li>Una vez que la compradora confirma la recepción (o pasan 7 días desde el despacho sin disputa), el pago se libera a tu favor.</li>
             </ol>
+
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-5 mb-2">Calculá cuánto vas a recibir</p>
+            <SellerPriceCalculator />
           </section>
 
           <section id="envios" className="bg-white p-6 scroll-mt-4">
@@ -90,31 +97,31 @@ export default function TerminosPage() {
             <p className="font-medium text-gray-800 mb-1">Si vendés</p>
             <p className="mb-4">
               Publicar es gratis y no te cobramos comisión por vender. Cuando se concreta una venta, solo se
-              descuenta de tu pago el <strong>costo de procesamiento de la transacción</strong> (3,5% + $450), que
+              descuenta de tu pago el <strong>costo de procesamiento de la transacción</strong> ({Math.round(PROCESSING_FEE_PCT * 100)}% + ${PROCESSING_FEE_FIXED}), que
               es lo que cobra la pasarela de pago por procesar la compra — no es un cobro de Bdress.
             </p>
 
             <p className="font-medium text-gray-800 mb-1">Si comprás</p>
             <p className="mb-4">
-              Pagás el precio que fijó la vendedora más un <strong>10% de Protección BDress</strong>, ya con todo
+              Pagás el precio que fijó la vendedora más un <strong>{Math.round(COMMISSION_PCT * 100)}% de Protección BDress</strong>, ya con todo
               incluido. Esta tarifa te permite pagar de forma segura, incluye seguimiento de tu envío y soporte de
               nuestro equipo si algo sale mal — y siempre la vas a ver reflejada en el precio final antes de pagar,
               nunca como un cargo sorpresa en el último paso.
             </p>
 
-            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Ejemplo con una prenda de $100.000</p>
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Ejemplo con una prenda de ${EXAMPLE_PRICE.toLocaleString('es-CL')}</p>
             <div className="grid grid-cols-2 gap-4 mb-2">
               <div className="bg-gray-50 p-3">
                 <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Compradora paga</p>
-                <div className="flex justify-between text-xs mb-1"><span>Precio del vestido</span><span>$100.000</span></div>
-                <div className="flex justify-between text-xs mb-1"><span>Protección BDress (10%)</span><span>$10.000</span></div>
-                <div className="flex justify-between text-xs font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1"><span>Total (+ envío)</span><span>$110.000</span></div>
+                <div className="flex justify-between text-xs mb-1"><span>Precio del vestido</span><span>${EXAMPLE_PRICE.toLocaleString('es-CL')}</span></div>
+                <div className="flex justify-between text-xs mb-1"><span>Protección BDress ({Math.round(COMMISSION_PCT * 100)}%)</span><span>${buyerProtectionFee(EXAMPLE_PRICE).toLocaleString('es-CL')}</span></div>
+                <div className="flex justify-between text-xs font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1"><span>Total (+ envío)</span><span>${(EXAMPLE_PRICE + buyerProtectionFee(EXAMPLE_PRICE)).toLocaleString('es-CL')}</span></div>
               </div>
               <div className="bg-gray-50 p-3">
                 <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Vendedora recibe</p>
-                <div className="flex justify-between text-xs mb-1"><span>Precio de venta</span><span>$100.000</span></div>
-                <div className="flex justify-between text-xs mb-1"><span>Procesamiento (3,5% + $450)</span><span>− $3.950</span></div>
-                <div className="flex justify-between text-xs font-medium text-gray-800 border-t border-gray-200 pt-1 mt-1"><span>Recibe</span><span>$96.050</span></div>
+                <div className="flex justify-between text-xs mb-1"><span>Precio de venta</span><span>${EXAMPLE_PRICE.toLocaleString('es-CL')}</span></div>
+                <div className="flex justify-between text-xs mb-1"><span>Procesamiento ({Math.round(PROCESSING_FEE_PCT * 100)}% + ${PROCESSING_FEE_FIXED})</span><span>− ${paymentProcessingFee(EXAMPLE_PRICE).toLocaleString('es-CL')}</span></div>
+                <div className="flex justify-between text-xs font-medium text-gray-800 border-t border-gray-200 pt-1 mt-1"><span>Recibe</span><span>${sellerPayout(EXAMPLE_PRICE).toLocaleString('es-CL')}</span></div>
               </div>
             </div>
             <p className="text-[10px] text-gray-400">

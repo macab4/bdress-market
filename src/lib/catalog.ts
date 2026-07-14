@@ -131,7 +131,7 @@ export function buyerProtectionFee(price: number): number {
 // Costo de procesamiento del pago (no es una comisión de Bdress) — se descuenta
 // del monto que recibe la vendedora, igual que cobra cualquier pasarela de pago.
 export const PROCESSING_FEE_PCT = 0.035
-export const PROCESSING_FEE_FIXED = 450
+export const PROCESSING_FEE_FIXED = 490
 
 export function paymentProcessingFee(price: number): number {
   return Math.round(price * PROCESSING_FEE_PCT) + PROCESSING_FEE_FIXED

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout } from '@/lib/email'
+import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -95,7 +96,7 @@ async function handleNotification(request: Request) {
             </p>
             <p style="font-size: 13px; color: #888; line-height: 1.6;">
               Publicar y vender en Bdress Market es gratis — no te cobramos comisión. Al monto de tu prenda solo se
-              le descuenta el costo de procesamiento del pago (3,5% + $450).
+              le descuenta el costo de procesamiento del pago (${Math.round(PROCESSING_FEE_PCT * 100)}% + $${PROCESSING_FEE_FIXED}).
             </p>
             <p style="font-size: 13px; color: #888; line-height: 1.6;">
               Andá a <strong>Mis ventas</strong> y generá la etiqueta de envío — te la mandamos por correo lista para imprimir.
