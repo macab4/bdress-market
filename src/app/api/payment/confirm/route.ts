@@ -92,14 +92,14 @@ async function handleNotification(request: Request) {
           html: emailLayout('Nueva venta', `
             <p style="font-size: 14px; color: #444; line-height: 1.6;">
               Hola ${seller.name ?? ''}, ¡vendiste <strong>${listingTitle}</strong>! Vas a recibir <strong>${sellerNetFmt}</strong>.
-              Tenés 5 días hábiles para despacharla.
+              Tienes 5 días hábiles para despacharla.
             </p>
             <p style="font-size: 13px; color: #888; line-height: 1.6;">
               Publicar y vender en Bdress Market es gratis — no te cobramos comisión. Al monto de tu prenda solo se
               le descuenta el costo de procesamiento del pago (${Math.round(PROCESSING_FEE_PCT * 100)}% + $${PROCESSING_FEE_FIXED}).
             </p>
             <p style="font-size: 13px; color: #888; line-height: 1.6;">
-              Andá a <strong>Mis ventas</strong> y generá la etiqueta de envío — te la mandamos por correo lista para imprimir.
+              Ve a <strong>Mis ventas</strong> y genera la etiqueta de envío — te la mandamos por correo lista para imprimir.
             </p>
             <p style="text-align: center; margin-top: 24px;">
               <a href="${SITE_URL}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">

@@ -106,7 +106,7 @@ export async function POST(
           </a>
         </p>
         <p style="font-size: 13px; color: #888; line-height: 1.6;">
-          Imprimila, pegala en el paquete, y llevalo a cualquier sucursal de Chilexpress.
+          Imprímela, pégala en el paquete, y llévalo a cualquier sucursal de Chilexpress.
         </p>
       `),
     })

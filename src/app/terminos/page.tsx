@@ -50,27 +50,36 @@ export default function TerminosPage() {
           <section id="comprar" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Cómo comprar</h2>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Explorá las prendas disponibles y filtrá por categoría, talla, estado o precio, y ordená los resultados de más recientes a más antiguas o por precio.</li>
-              <li>Al entrar a una prenda que te interese, hacé clic en «Comprar» e ingresá tu dirección de despacho (comuna, calle, número y depto/casa si corresponde).</li>
+              <li>Explora las prendas disponibles y filtra por categoría, talla, estado o precio, y ordena los resultados de más recientes a más antiguas o por precio.</li>
+              <li>Al entrar a una prenda que te interese, haz clic en «Comprar» e ingresa tu dirección de despacho (comuna, calle, número y depto/casa si corresponde).</li>
               <li>Antes de pagar vas a ver el precio de la prenda, la Protección BDress y el costo real de envío — se cotiza al momento según tu comuna y la de la vendedora — con el total bien claro.</li>
               <li>El pago se realiza a través de Mercado Pago (tarjetas de crédito, débito y otros medios habilitados).</li>
               <li>Una vez confirmado el pago, la vendedora recibe aviso para despachar tu prenda dentro de los próximos días.</li>
-              <li>Podés seguir el estado de tu compra en «Mis compras»: pagada → etiqueta generada → despachada → completada.</li>
-              <li>Cuando confirmás la recepción (o pasan 7 días desde el despacho sin novedad), la compra se marca como completada y podés dejarle una reseña a la vendedora.</li>
+              <li>Puedes seguir el estado de tu compra en «Mis compras»: pagada → despachada → confirmada → completada.</li>
+              <li>
+                Cuando te llegue la prenda, confirma la recepción desde «Mis compras». Desde ese momento tienes{' '}
+                <strong>2 días</strong> para reportar un problema antes de que el pago se libere a la vendedora. Si
+                no confirmas nada, la compra se marca como completada automáticamente a los <strong>7 días</strong>{' '}
+                desde el despacho. Una vez completada, puedes dejarle una reseña a la vendedora.
+              </li>
             </ol>
           </section>
 
           <section id="vender" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Cómo vender</h2>
             <ol className="list-decimal list-inside space-y-2">
-              <li>Creá tu cuenta y completá tu perfil, incluyendo tu dirección de despacho (nombre, teléfono, dirección y comuna) — la vas a necesitar para generar etiquetas de envío.</li>
-              <li>Publicá tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Publicar es gratis y no te cobramos comisión por vender.</li>
-              <li>Cuando alguien compra tu prenda, te avisamos por correo. Entrá a «Mis ventas» y generá la etiqueta de envío: se genera automáticamente con Chilexpress y te llega lista para imprimir a tu correo.</li>
-              <li>Imprimí la etiqueta, pegala en el paquete y llevalo a cualquier sucursal de Chilexpress.</li>
-              <li>Una vez que la compradora confirma la recepción (o pasan 7 días desde el despacho sin disputa), el pago se libera a tu favor.</li>
+              <li>Crea tu cuenta y completa tu perfil, incluyendo tu dirección de despacho (nombre, teléfono, dirección y comuna) — la vas a necesitar para generar etiquetas de envío.</li>
+              <li>Publica tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Publicar es gratis y no te cobramos comisión por vender.</li>
+              <li>Cuando alguien compra tu prenda, te avisamos por correo. Entra a «Mis ventas» y genera la etiqueta de envío: se genera automáticamente con Chilexpress y te llega lista para imprimir a tu correo.</li>
+              <li>Imprime la etiqueta, pégala en el paquete y llévalo a cualquier sucursal de Chilexpress.</li>
+              <li>
+                Cuando la compradora confirma la recepción, esperamos <strong>2 días</strong> por si reporta un
+                problema — si no lo hace, el pago se libera a tu favor. Si nunca confirma, el pago se libera
+                igual de forma automática a los <strong>7 días</strong> desde el despacho.
+              </li>
             </ol>
 
-            <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-5 mb-2">Calculá cuánto vas a recibir</p>
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-5 mb-2">Calcula cuánto vas a recibir</p>
             <SellerPriceCalculator />
           </section>
 
@@ -94,16 +103,16 @@ export default function TerminosPage() {
               Queremos que esto sea simple y transparente para las dos partes. Así funciona:
             </p>
 
-            <p className="font-medium text-gray-800 mb-1">Si vendés</p>
+            <p className="font-medium text-gray-800 mb-1">Si vendes</p>
             <p className="mb-4">
               Publicar es gratis y no te cobramos comisión por vender. Cuando se concreta una venta, solo se
               descuenta de tu pago el <strong>costo de procesamiento de la transacción</strong> ({Math.round(PROCESSING_FEE_PCT * 100)}% + ${PROCESSING_FEE_FIXED}), que
               es lo que cobra la pasarela de pago por procesar la compra — no es un cobro de Bdress.
             </p>
 
-            <p className="font-medium text-gray-800 mb-1">Si comprás</p>
+            <p className="font-medium text-gray-800 mb-1">Si compras</p>
             <p className="mb-4">
-              Pagás el precio que fijó la vendedora más un <strong>{Math.round(COMMISSION_PCT * 100)}% de Protección BDress</strong>, ya con todo
+              Pagas el precio que fijó la vendedora más un <strong>{Math.round(COMMISSION_PCT * 100)}% de Protección BDress</strong>, ya con todo
               incluido. Esta tarifa te permite pagar de forma segura, incluye seguimiento de tu envío y soporte de
               nuestro equipo si algo sale mal — y siempre la vas a ver reflejada en el precio final antes de pagar,
               nunca como un cargo sorpresa en el último paso.
@@ -134,7 +143,15 @@ export default function TerminosPage() {
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Devoluciones y disputas</h2>
             <p className="mb-2">
               Si hay un problema con tu compra o venta — por ejemplo, la prenda no llegó, no corresponde a la
-              descripción, o no fue despachada a tiempo — podés abrir una disputa desde el detalle de tu orden.
+              descripción, o no fue despachada a tiempo — puedes abrir una disputa desde el detalle de tu orden,
+              mientras la orden esté pagada, despachada o recién confirmada.
+            </p>
+            <p className="mb-2">
+              Una vez que la compra pasa a completada — 2 días después de que confirmas la recepción, o 7 días
+              desde el despacho si nunca confirmas — ya no se puede abrir una disputa desde la app. Si te pasó
+              algo después de ese plazo, escríbenos igual desde nuestra{' '}
+              <Link href="/contacto" className="text-black underline underline-offset-2">página de contacto</Link>{' '}
+              y lo revisamos caso a caso.
             </p>
             <p>
               Nuestro equipo revisa cada disputa de forma manual y resuelve reembolsando el pago completo a la
@@ -157,7 +174,7 @@ export default function TerminosPage() {
           <section id="contacto" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Contacto</h2>
             <p>
-              ¿Tenés dudas sobre estos términos o sobre una compra o venta puntual? Escribinos desde nuestra{' '}
+              ¿Tienes dudas sobre estos términos o sobre una compra o venta puntual? Escríbenos desde nuestra{' '}
               <Link href="/contacto" className="text-black underline underline-offset-2">página de contacto</Link>.
             </p>
           </section>

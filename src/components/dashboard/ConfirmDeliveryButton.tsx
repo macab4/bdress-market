@@ -9,7 +9,7 @@ export default function ConfirmDeliveryButton({ orderId }: { orderId: string }) 
   const router = useRouter()
 
   async function handleConfirm() {
-    if (!confirm('¿Confirmas que recibiste la prenda en buen estado?')) return
+    if (!confirm('¿Confirmas que recibiste la prenda en buen estado? Vas a tener 2 días para reportar un problema antes de que se libere el pago a la vendedora.')) return
     setLoading(true)
     setError('')
     const res = await fetch(`/api/orders/${orderId}/confirm`, { method: 'POST' })

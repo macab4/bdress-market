@@ -104,6 +104,7 @@ create table public.orders (
   label_url             text,
   paid_at               timestamptz,
   shipped_at            timestamptz,
+  confirmed_at          timestamptz,
   created_at            timestamptz default now()
 );
 alter table public.orders enable row level security;

@@ -11,7 +11,7 @@ export default function SellerPriceCalculator() {
   return (
     <div className="bg-gray-50 p-4">
       <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
-        ¿Cuánto querés cobrar por tu prenda?
+        ¿Cuánto quieres cobrar por tu prenda?
       </label>
       <div className="relative mb-3">
         <span className="absolute left-3 top-2.5 text-sm text-gray-400">$</span>

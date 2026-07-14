@@ -6,7 +6,7 @@ import { Order } from '@/types'
 import ConfirmDeliveryButton from '@/components/dashboard/ConfirmDeliveryButton'
 import DisputeButton from '@/components/dashboard/DisputeButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
-import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
+import { ORDER_STATUS_CONFIG, daysUntilRelease } from '@/lib/catalog'
 
 type OrderWithRelations = Order & {
   listing: { title: string; photos: string[]; price: number } | null
@@ -88,6 +88,13 @@ export default async function PurchasesPage() {
                         <div className="mt-3">
                           <ConfirmDeliveryButton orderId={order.id} />
                         </div>
+                      )}
+
+                      {order.status === 'delivered' && (
+                        <p className="text-xs text-gray-400 mt-3">
+                          Confirmaste la recepción. Si no reportas un problema, el pago se libera a la vendedora
+                          en {daysUntilRelease(order.confirmed_at)}.
+                        </p>
                       )}
 
                       {['paid', 'shipped', 'delivered'].includes(order.status) && (

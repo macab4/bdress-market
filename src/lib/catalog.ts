@@ -120,6 +120,23 @@ export const SHIPPING_SIZES = [
 
 export type ShippingSizeValue = (typeof SHIPPING_SIZES)[number]['value']
 
+// Plazo de reclamo tras confirmar recepción — igual al usado por el cron
+// de auto-liberación en src/app/api/cron/auto-release/route.ts.
+export const CONFIRMED_HOLD_DAYS = 2
+
+// Respaldo para compradoras que nunca confirman ni abren una disputa,
+// contado desde el despacho.
+export const SHIPPED_FALLBACK_DAYS = 7
+
+export function daysUntilRelease(confirmedAt: string | null): string {
+  if (!confirmedAt) return `${CONFIRMED_HOLD_DAYS} días`
+  const releaseAt = new Date(confirmedAt).getTime() + CONFIRMED_HOLD_DAYS * 24 * 60 * 60 * 1000
+  const hoursLeft = Math.ceil((releaseAt - Date.now()) / (60 * 60 * 1000))
+  if (hoursLeft <= 0) return 'menos de un día'
+  if (hoursLeft <= 24) return '1 día'
+  return `${Math.ceil(hoursLeft / 24)} días`
+}
+
 // Protección BDress — se suma al precio de la prenda y la paga la compradora.
 // Publicar y vender es gratis: a la vendedora no se le descuenta comisión.
 export const COMMISSION_PCT = 0.10

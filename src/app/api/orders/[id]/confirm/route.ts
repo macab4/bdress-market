@@ -22,7 +22,7 @@ export async function POST(
 
   const { error } = await supabase
     .from('orders')
-    .update({ status: 'completed' })
+    .update({ status: 'delivered', confirmed_at: new Date().toISOString() })
     .eq('id', id)
     .eq('status', 'shipped')
 

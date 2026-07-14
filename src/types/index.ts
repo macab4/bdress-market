@@ -60,6 +60,7 @@ export interface Order {
   label_url: string | null
   paid_at: string | null
   shipped_at: string | null
+  confirmed_at: string | null
   created_at: string
   listing?: Listing
   buyer?: Profile

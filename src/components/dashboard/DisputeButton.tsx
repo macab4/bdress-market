@@ -12,7 +12,7 @@ export default function DisputeButton({ orderId }: { orderId: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!reason.trim()) { setError('Contá qué pasó'); return }
+    if (!reason.trim()) { setError('Cuéntanos qué pasó'); return }
     setLoading(true)
     setError('')
 
@@ -42,7 +42,7 @@ export default function DisputeButton({ orderId }: { orderId: string }) {
   return (
     <form onSubmit={handleSubmit} className="mt-2 space-y-2">
       <textarea value={reason} onChange={e => setReason(e.target.value)}
-        rows={2} placeholder="Contanos qué pasó con esta compra..."
+        rows={2} placeholder="Cuéntanos qué pasó con esta compra..."
         className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none" />
       {error && <p className="text-red-500 text-xs">{error}</p>}
       <div className="flex gap-2">
