@@ -89,10 +89,9 @@ export default function BuyerProtectionModal({ iconSize = 13 }: { iconSize?: num
                   <li>no corresponde a su descripción</li>
                 </ul>
                 <p>
-                  Cuando confirmas la recepción, tienes <strong>2 días</strong> para reportar un problema antes de
-                  que se libere el pago a la vendedora. Si no confirmas nada, asumimos que todo llegó bien y la
-                  compra se marca como completada automáticamente a los <strong>7 días desde el despacho</strong>.
-                  Conoce más en nuestra{' '}
+                  Cuando te llegue tu pedido, confirma la recepción — desde ese momento tienes{' '}
+                  <strong>2 días</strong> para reportar un problema. Si no confirmas nada, asumimos que todo llegó
+                  bien. Conoce más en nuestra{' '}
                   <Link href="/terminos#disputas" onClick={stopBubble} className="text-[#5a7a55] underline underline-offset-2">
                     política de devoluciones
                   </Link>.
@@ -105,10 +104,8 @@ export default function BuyerProtectionModal({ iconSize = 13 }: { iconSize?: num
                   <h3 className="font-medium text-black">Transacciones seguras</h3>
                 </div>
                 <p>
-                  Tu pago queda retenido de forma segura durante toda la transacción. No se le entrega a la
-                  vendedora hasta 2 días después de que confirmas la recepción de tu pedido (o hasta 7 días desde
-                  el despacho si nunca confirmas). Todo se procesa de forma cifrada por Mercado Pago — la
-                  vendedora nunca ve tus datos de pago.
+                  Tu pago queda retenido de forma segura durante toda la transacción y se procesa de forma cifrada
+                  por Mercado Pago — la vendedora nunca ve tus datos de pago.
                 </p>
               </div>
 
