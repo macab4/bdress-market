@@ -1,15 +1,21 @@
 import Link from 'next/link'
 import SellerPriceCalculator from '@/components/SellerPriceCalculator'
-import { sellerPayout, paymentProcessingFee, buyerProtectionFee, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT } from '@/lib/catalog'
+import {
+  sellerPayout, paymentProcessingFee, buyerProtectionFee,
+  PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT,
+  OFFER_MIN_PCT, OFFER_MAX_ROUNDS, OFFER_EXPIRY_HOURS, OFFER_ACCEPTED_HOLD_HOURS,
+} from '@/lib/catalog'
 
 const EXAMPLE_PRICE = 100000
 
 const SECTIONS = [
   { id: 'que-es', label: 'Qué es Bdress Market' },
   { id: 'comprar', label: 'Cómo comprar' },
+  { id: 'ofertas', label: 'Ofertas y negociación' },
   { id: 'vender', label: 'Cómo vender' },
   { id: 'envios', label: 'Envíos' },
   { id: 'pagos', label: 'Pagos y comisión' },
+  { id: 'mensajes', label: 'Mensajería' },
   { id: 'disputas', label: 'Devoluciones y disputas' },
   { id: 'cuentas', label: 'Cuentas y conducta' },
   { id: 'contacto', label: 'Contacto' },
@@ -21,7 +27,7 @@ export default function TerminosPage() {
       <div className="max-w-2xl mx-auto px-4 py-12">
         <p className="text-xs tracking-[6px] uppercase text-[#8DA988] mb-3">Bdress Market</p>
         <h1 className="text-2xl font-light tracking-widest uppercase mb-2">Términos y condiciones</h1>
-        <p className="text-xs text-gray-400 mb-8">Última actualización: 13 de julio de 2026</p>
+        <p className="text-xs text-gray-400 mb-8">Última actualización: 14 de julio de 2026</p>
 
         {/* Menú */}
         <nav className="bg-white p-5 mb-6">
@@ -64,6 +70,28 @@ export default function TerminosPage() {
                 dejarle una reseña a la vendedora.
               </li>
             </ol>
+          </section>
+
+          <section id="ofertas" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Ofertas y negociación</h2>
+            <p className="mb-2">
+              Si un precio te parece un poco alto, puedes hacerle una oferta a la vendedora en vez de pagar el
+              precio publicado. Ella puede aceptarla, rechazarla o hacerte una contraoferta, y desde ahí pueden
+              seguir negociando hasta llegar a un acuerdo — hasta un máximo de <strong>{OFFER_MAX_ROUNDS} rondas</strong> por
+              conversación.
+            </p>
+            <p className="mb-2">
+              La oferta mínima que se puede proponer es un <strong>{Math.round(OFFER_MIN_PCT * 100)}%</strong> del
+              precio publicado. Si la otra parte no responde dentro de <strong>{OFFER_EXPIRY_HOURS} horas</strong>, la
+              oferta expira automáticamente.
+            </p>
+            <p>
+              Cuando la vendedora acepta una oferta, se genera un precio especial solo para ti: tienes{' '}
+              <strong>{OFFER_ACCEPTED_HOLD_HOURS} horas</strong> para completar la compra a ese precio pactado. El
+              precio publicado de la prenda no cambia para el resto de las compradoras — solo tu compra se
+              beneficia del acuerdo. La Protección BDress y el resto del desglose se recalculan sobre el precio
+              pactado, no sobre el precio original.
+            </p>
           </section>
 
           <section id="vender" className="bg-white p-6 scroll-mt-4">
@@ -137,6 +165,29 @@ export default function TerminosPage() {
             <p className="text-[10px] text-gray-400">
               Todo se paga junto en un solo pago con Mercado Pago (tarjetas de crédito, débito y otros medios), y
               siempre mostramos el desglose completo antes de que confirmes tu compra.
+            </p>
+          </section>
+
+          <section id="mensajes" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Mensajería</h2>
+            <p className="mb-2">
+              Puedes escribirle a la vendedora de una prenda para preguntarle algo antes de comprar — por ejemplo,
+              una talla o un detalle que no se vea bien en las fotos. Cuando haces una oferta, se abre
+              automáticamente una conversación con ella, donde queda visible el historial de la negociación además
+              de los mensajes. La vendedora solo puede responderte a ti si tú le escribiste primero por esa prenda
+              — no puede iniciar una conversación con cualquier persona.
+            </p>
+            <p className="mb-2">
+              <strong>No está permitido usar el chat para compartir teléfonos, correos, direcciones, usuarios de
+              redes sociales, ni para coordinar un pago o una venta fuera de Bdress Market.</strong> No hace falta
+              hacerlo: la dirección de envío se entrega directamente en el checkout y el pago se procesa de forma
+              segura por Mercado Pago, así que cualquier intento de cerrar la compra por fuera pierde la Protección
+              BDress para ambas partes — sin garantía de reembolso ni de resolución de disputas.
+            </p>
+            <p>
+              Para hacer cumplir esto, filtramos automáticamente los mensajes que parecen contener este tipo de
+              información y bloqueamos su envío. Los intentos repetidos de saltarse la plataforma pueden resultar
+              en la suspensión de la cuenta.
             </p>
           </section>
 

@@ -98,6 +98,9 @@ export default async function ProfilePage({
             <Link href="/dashboard/offers" className="text-gray-500 hover:text-black tracking-widest uppercase">
               Mis ofertas
             </Link>
+            <Link href="/dashboard/messages" className="text-gray-500 hover:text-black tracking-widest uppercase">
+              Mensajes
+            </Link>
             {user?.email === process.env.ADMIN_EMAIL && (
               <Link href="/admin" className="text-gray-500 hover:text-black tracking-widest uppercase">
                 Admin

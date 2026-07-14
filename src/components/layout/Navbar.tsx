@@ -1,11 +1,21 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart } from 'lucide-react'
+import { Heart, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function Navbar() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+
+  let unreadCount = 0
+  if (user) {
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', user.id)
+      .is('read_at', null)
+    unreadCount = count ?? 0
+  }
 
   return (
     <nav className="bg-white border-b border-gray-100 px-4 py-3">
@@ -29,6 +39,15 @@ export default async function Navbar() {
               </Link>
               <Link href="/dashboard/offers" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis ofertas
+              </Link>
+              <Link href="/dashboard/messages" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-black tracking-widest uppercase">
+                <MessageCircle size={14} />
+                Mensajes
+                {unreadCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-[#5a7a55] text-white text-[9px] flex items-center justify-center normal-case tracking-normal">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
               <Link href="/favorites" aria-label="Favoritos" className="text-gray-500 hover:text-black">
                 <Heart size={18} />

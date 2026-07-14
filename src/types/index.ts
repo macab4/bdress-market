@@ -108,8 +108,11 @@ export interface Message {
   receiver_id: string
   listing_id: string
   content: string
+  read_at: string | null
   created_at: string
   sender?: Profile
+  receiver?: Profile
+  listing?: Listing
 }
 
 export interface Review {

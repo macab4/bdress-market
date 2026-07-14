@@ -196,18 +196,24 @@ export default async function ListingPage({
                   <BuyButton listingId={listing.id} price={buyPrice} />
 
                   {!myOffer && (
-                    <MakeOfferModal listingId={listing.id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
+                    <MakeOfferModal listingId={listing.id} sellerId={listing.seller_id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
                   )}
+                  <Link
+                    href={`/dashboard/messages/${listing.id}/${listing.seller_id}`}
+                    className="block w-full text-center border border-gray-200 text-gray-600 text-xs tracking-widest uppercase py-4 hover:border-black hover:text-black transition"
+                  >
+                    Enviar mensaje
+                  </Link>
                   {myOffer?.status === 'pending' && myOffer.proposed_by === 'buyer' && (
                     <p className="text-xs text-gray-400 text-center">
                       Ofertaste ${myOffer.offered_price.toLocaleString('es-CL')} — esperando respuesta de la vendedora.{' '}
-                      <Link href="/dashboard/offers" className="text-[#5a7a55] underline underline-offset-2">Ver oferta</Link>
+                      <Link href={`/dashboard/messages/${listing.id}/${listing.seller_id}`} className="text-[#5a7a55] underline underline-offset-2">Ver oferta</Link>
                     </p>
                   )}
                   {myOffer?.status === 'pending' && myOffer.proposed_by === 'seller' && (
                     <p className="text-xs text-gray-400 text-center">
                       La vendedora te ofreció ${myOffer.offered_price.toLocaleString('es-CL')}.{' '}
-                      <Link href="/dashboard/offers" className="text-[#5a7a55] underline underline-offset-2">Responder</Link>
+                      <Link href={`/dashboard/messages/${listing.id}/${listing.seller_id}`} className="text-[#5a7a55] underline underline-offset-2">Responder</Link>
                     </p>
                   )}
                 </div>

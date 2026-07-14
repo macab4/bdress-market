@@ -173,6 +173,7 @@ create table public.messages (
   receiver_id uuid references public.profiles(id) not null,
   listing_id  uuid references public.listings(id) not null,
   content     text not null,
+  read_at     timestamptz,
   created_at  timestamptz default now()
 );
 alter table public.messages enable row level security;
@@ -182,6 +183,22 @@ create policy "Mensajes visibles para sender y receiver" on public.messages
 
 create policy "Usuario envía mensajes" on public.messages
   for insert with check (auth.uid() = sender_id);
+
+create policy "Receptor marca sus mensajes como leídos" on public.messages
+  for update using (auth.uid() = receiver_id);
+
+-- Mensajes bloqueados por compartir datos de contacto/pago (solo lectura interna)
+create table public.message_flags (
+  id           uuid default gen_random_uuid() primary key,
+  sender_id    uuid references public.profiles(id) not null,
+  receiver_id  uuid references public.profiles(id) not null,
+  listing_id   uuid references public.listings(id) not null,
+  content      text not null,
+  reason       text not null,
+  reviewed_at  timestamptz,
+  created_at   timestamptz default now()
+);
+alter table public.message_flags enable row level security;
 
 -- Reseñas
 create table public.reviews (
@@ -252,3 +269,38 @@ create policy "Compradora o vendedora crean ofertas y contraofertas" on public.o
 
 create policy "Participante actualiza el estado de su oferta" on public.offers
   for update using (auth.uid() = buyer_id or auth.uid() = seller_id);
+
+-- ============================================================
+-- Migración: mensajería comprador-vendedora
+-- La tabla messages ya existe desde el schema inicial — esto solo agrega
+-- lo necesario para poder marcar mensajes como leídos.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.messages add column read_at timestamptz;
+
+create policy "Receptor marca sus mensajes como leídos" on public.messages
+  for update using (auth.uid() = receiver_id);
+
+-- ============================================================
+-- Migración: registro de mensajes bloqueados por compartir datos de
+-- contacto/pago (teléfono, email, dirección, transferencias, etc.)
+-- Solo lo lee el equipo (vía admin), no tiene policy de select para
+-- usuarias — no queremos que nadie vea qué le bloquearon a quién.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create table public.message_flags (
+  id           uuid default gen_random_uuid() primary key,
+  sender_id    uuid references public.profiles(id) not null,
+  receiver_id  uuid references public.profiles(id) not null,
+  listing_id   uuid references public.listings(id) not null,
+  content      text not null,
+  reason       text not null,
+  created_at   timestamptz default now()
+);
+alter table public.message_flags enable row level security;
+
+-- ============================================================
+-- Migración: marcar alertas de mensajes bloqueados como revisadas
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.message_flags add column reviewed_at timestamptz;

@@ -232,6 +232,9 @@ export const OFFER_EXPIRY_HOURS = 48
 // Tiempo que tiene la compradora para pagar al precio pactado antes de que
 // la oferta aceptada expire y ya no sea válida.
 export const OFFER_ACCEPTED_HOLD_HOURS = 48
+// Descuentos de un clic al hacer una oferta (estilo Vinted) — siempre están
+// muy por encima de OFFER_MIN_PCT, así que no necesitan validación aparte.
+export const OFFER_PRESET_DISCOUNTS = [0.05, 0.10]
 
 export function minOfferPrice(originalPrice: number): number {
   return Math.ceil(originalPrice * OFFER_MIN_PCT)
