@@ -1,5 +1,10 @@
 export type ListingCategory = 'mujer' | 'hombre' | 'ninos' | 'unisex'
 export type ListingCondition = 'nuevo_con_etiquetas' | 'nuevo_sin_etiquetas' | 'muy_bueno' | 'bueno' | 'satisfactorio'
+export type ListingColor =
+  | 'negro' | 'gris' | 'blanco' | 'crema' | 'beige' | 'naranja_pastel' | 'naranja' | 'coral'
+  | 'rojo' | 'burdeos' | 'rosa' | 'rosa_palido' | 'morado' | 'lila' | 'azul_claro' | 'azul'
+  | 'azul_marino' | 'turquesa' | 'menta' | 'verde' | 'verde_oscuro' | 'caqui' | 'marron'
+  | 'amarillo' | 'plateado' | 'dorado' | 'varios' | 'transparente'
 export type ListingShippingSize = 'pequeno' | 'mediano' | 'grande'
 export type ListingStatus = 'active' | 'sold' | 'paused'
 export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled'
@@ -27,6 +32,7 @@ export interface Listing {
   size: string
   brand: string
   condition: ListingCondition
+  color: ListingColor | null
   shipping_size: ListingShippingSize
   price: number
   photos: string[]

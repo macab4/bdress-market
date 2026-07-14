@@ -49,6 +49,7 @@ create table public.listings (
   size          text not null,
   brand         text not null default '',
   condition     text not null check (condition in ('nuevo_con_etiquetas','nuevo_sin_etiquetas','muy_bueno','bueno','satisfactorio')),
+  color         text check (color in ('negro','gris','blanco','crema','beige','naranja_pastel','naranja','coral','rojo','burdeos','rosa','rosa_palido','morado','lila','azul_claro','azul','azul_marino','turquesa','menta','verde','verde_oscuro','caqui','marron','amarillo','plateado','dorado','varios','transparente')),
   shipping_size text not null default 'mediano' check (shipping_size in ('pequeno','mediano','grande')),
   price         integer not null check (price > 0),
   photos        text[] not null default '{}',
@@ -184,3 +185,11 @@ create policy "Usuaria sube sus fotos" on storage.objects
 
 create policy "Usuaria borra sus fotos" on storage.objects
   for delete using (bucket_id = 'listings' and auth.uid() is not null);
+
+-- ============================================================
+-- Migración: agregar columna color a listings (filtro estilo Vinted)
+-- Pegar y correr en Supabase Dashboard → SQL Editor. Las prendas
+-- publicadas antes de esto quedan con color = null hasta que se editen.
+-- ============================================================
+alter table public.listings add column color text
+  check (color in ('negro','gris','blanco','crema','beige','naranja_pastel','naranja','coral','rojo','burdeos','rosa','rosa_palido','morado','lila','azul_claro','azul','azul_marino','turquesa','menta','verde','verde_oscuro','caqui','marron','amarillo','plateado','dorado','varios','transparente'));

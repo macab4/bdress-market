@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, SHIPPING_SIZES, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
 import { Listing } from '@/types'
 
 interface ListingFormProps {
@@ -22,6 +22,7 @@ export default function ListingForm({ listing }: ListingFormProps) {
     size: listing?.size ?? '',
     brand: listing?.brand ?? '',
     condition: listing?.condition ?? 'muy_bueno',
+    color: (listing?.color ?? '') as string,
     shipping_size: listing?.shipping_size ?? 'mediano',
     price: listing ? String(listing.price) : '',
   })
@@ -63,6 +64,7 @@ export default function ListingForm({ listing }: ListingFormProps) {
     if (totalPhotos === 0) { setError('Agrega al menos una foto'); return }
     if (!form.category) { setError('Selecciona una categoría'); return }
     if (!form.subcategory) { setError('Selecciona una subcategoría'); return }
+    if (!form.color) { setError('Selecciona un color'); return }
     setLoading(true)
     setError('')
 
@@ -93,6 +95,7 @@ export default function ListingForm({ listing }: ListingFormProps) {
       size: form.size,
       brand: form.brand,
       condition: form.condition,
+      color: form.color,
       shipping_size: form.shipping_size,
       price: parseInt(form.price),
       photos: [...existingPhotos, ...uploadedUrls],
@@ -240,6 +243,27 @@ export default function ListingForm({ listing }: ListingFormProps) {
                     <span className="block text-xs text-gray-400 mt-0.5">{c.description}</span>
                   </span>
                 </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Color */}
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Color</label>
+            <div className="grid grid-cols-6 gap-3">
+              {COLORS.map(c => (
+                <button key={c.value} type="button" onClick={() => set('color', c.value)}
+                  className="flex flex-col items-center gap-1 group" aria-pressed={form.color === c.value}>
+                  <span
+                    className={`w-8 h-8 rounded-full border transition ${
+                      form.color === c.value ? 'ring-2 ring-offset-2 ring-black' : 'border-gray-200 group-hover:border-gray-400'
+                    } ${c.value === 'blanco' || c.value === 'transparente' ? 'border-gray-300' : ''}`}
+                    style={c.value === 'varios'
+                      ? { background: 'conic-gradient(from 0deg, #C0392B, #F5A623, #F5E050, #4C9A4A, #2166B8, #6C2C8C, #C0392B)' }
+                      : { backgroundColor: c.hex }}
+                  />
+                  <span className="text-[9px] text-gray-400 text-center leading-tight">{c.label}</span>
+                </button>
               ))}
             </div>
           </div>

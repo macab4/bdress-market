@@ -5,7 +5,7 @@ import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
-import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, buyerProtectionFee } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee } from '@/lib/catalog'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 
@@ -106,6 +106,15 @@ export default async function ListingPage({
                 <div className="flex items-center gap-3">
                   <p className="text-sm text-gray-400">${listing.price.toLocaleString('es-CL')}</p>
                   <p className="text-xs text-gray-400">Talla {listing.size}</p>
+                  {listing.color && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                      <span
+                        className="w-3 h-3 rounded-full border border-gray-300 inline-block"
+                        style={{ backgroundColor: colorHex(listing.color) }}
+                      />
+                      {colorLabel(listing.color)}
+                    </p>
+                  )}
                 </div>
                 <ProtectedPrice price={listing.price} size="lg" />
               </div>

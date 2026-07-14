@@ -135,6 +135,50 @@ export function conditionGroupColor(value: string): string {
   return CONDITION_GROUPS.find(g => g.value === conditionGroup(value))!.color
 }
 
+// Paleta estilo Vinted: la vendedora elige un color al publicar y la
+// compradora filtra por él en el listado.
+export const COLORS = [
+  { value: 'negro', label: 'Negro', hex: '#000000' },
+  { value: 'gris', label: 'Gris', hex: '#9CA3AF' },
+  { value: 'blanco', label: 'Blanco', hex: '#FFFFFF' },
+  { value: 'crema', label: 'Crema', hex: '#F5F0DC' },
+  { value: 'beige', label: 'Beige', hex: '#E8D3B0' },
+  { value: 'naranja_pastel', label: 'Naranja pastel', hex: '#F7C99B' },
+  { value: 'naranja', label: 'Naranja', hex: '#F5A623' },
+  { value: 'coral', label: 'Coral', hex: '#E8734A' },
+  { value: 'rojo', label: 'Rojo', hex: '#C0392B' },
+  { value: 'burdeos', label: 'Burdeos', hex: '#7B241C' },
+  { value: 'rosa', label: 'Rosa', hex: '#E91E8C' },
+  { value: 'rosa_palido', label: 'Rosa pálido', hex: '#F4C2C2' },
+  { value: 'morado', label: 'Morado', hex: '#6C2C8C' },
+  { value: 'lila', label: 'Lila', hex: '#C9A0DC' },
+  { value: 'azul_claro', label: 'Azul claro', hex: '#A8D5F2' },
+  { value: 'azul', label: 'Azul', hex: '#2166B8' },
+  { value: 'azul_marino', label: 'Azul marino', hex: '#1B2A5B' },
+  { value: 'turquesa', label: 'Turquesa', hex: '#5FBCB9' },
+  { value: 'menta', label: 'Menta', hex: '#A8E6CE' },
+  { value: 'verde', label: 'Verde', hex: '#4C9A4A' },
+  { value: 'verde_oscuro', label: 'Verde oscuro', hex: '#2E5A34' },
+  { value: 'caqui', label: 'Caqui', hex: '#8A8B5C' },
+  { value: 'marron', label: 'Marrón', hex: '#6B3F22' },
+  { value: 'amarillo', label: 'Amarillo', hex: '#F5E050' },
+  { value: 'plateado', label: 'Plateado', hex: '#C7C7C7' },
+  { value: 'dorado', label: 'Dorado', hex: '#D4AF37' },
+  { value: 'varios', label: 'Varios', hex: 'multi' },
+  { value: 'transparente', label: 'Transparente', hex: 'transparent' },
+] as const
+
+export type ColorValue = (typeof COLORS)[number]['value']
+
+export function colorLabel(value: string | null): string {
+  if (!value) return 'Sin color'
+  return COLORS.find(c => c.value === value)?.label ?? value
+}
+
+export function colorHex(value: string): string {
+  return COLORS.find(c => c.value === value)?.hex ?? '#E5E7EB'
+}
+
 export const SHIPPING_SIZES = [
   { value: 'pequeno', label: 'Pequeño', description: 'Para artículos que quepan en un sobre grande.' },
   { value: 'mediano', label: 'Mediano', description: 'Para artículos que quepan en una caja de zapatos.', recommended: true },

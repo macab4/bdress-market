@@ -5,6 +5,7 @@ import { Listing } from '@/types'
 import { CATEGORIES, CONDITION_GROUPS, conditionGroupLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
+import ColorFilterPopover from '@/components/listings/ColorFilterPopover'
 
 const SIZES = ['XS','S','M','L','XL','XXL']
 
@@ -18,7 +19,7 @@ const SORT_OPTIONS = [
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string; sort?: string }>
+  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string; color?: string; sort?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -35,6 +36,7 @@ export default async function HomePage({
     const group = CONDITION_GROUPS.find(g => g.value === params.condition)
     if (group) query = query.in('condition', group.conditions)
   }
+  if (params.color) query = query.in('color', params.color.split(','))
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
 
@@ -115,6 +117,8 @@ export default async function HomePage({
             </select>
           </div>
 
+          <ColorFilterPopover defaultValue={params.color} />
+
           <div>
             <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Precio mín.</label>
             <input name="min" defaultValue={params.min} placeholder="$0" type="number"
@@ -139,7 +143,7 @@ export default async function HomePage({
             Filtrar
           </button>
 
-          {(params.q || params.category || params.size || params.condition || params.min || params.max || params.sort) && (
+          {(params.q || params.category || params.size || params.condition || params.color || params.min || params.max || params.sort) && (
             <Link href="/" className="text-xs text-gray-400 hover:text-black underline">Limpiar</Link>
           )}
         </div>
