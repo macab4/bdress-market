@@ -90,9 +90,9 @@ export default function BuyerProtectionModal({ iconSize = 13 }: { iconSize?: num
                 </ul>
                 <p>
                   Cuando confirmas la recepción, tienes <strong>2 días</strong> para reportar un problema antes de
-                  que se libere el pago a la vendedora. Si no confirmas nada, tienes hasta{' '}
-                  <strong>7 días desde el despacho</strong> para hacerlo, antes de que la compra se marque como
-                  completada automáticamente. Conoce más en nuestra{' '}
+                  que se libere el pago a la vendedora. Si no confirmas nada, asumimos que todo llegó bien y la
+                  compra se marca como completada automáticamente a los <strong>7 días desde el despacho</strong>.
+                  Conoce más en nuestra{' '}
                   <Link href="/terminos#disputas" onClick={stopBubble} className="text-[#5a7a55] underline underline-offset-2">
                     política de devoluciones
                   </Link>.

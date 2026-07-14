@@ -92,8 +92,8 @@ export default async function PurchasesPage() {
 
                       {order.status === 'delivered' && (
                         <p className="text-xs text-gray-400 mt-3">
-                          Confirmaste la recepción. Si no reportas un problema, el pago se libera a la vendedora
-                          en {daysUntilRelease(order.confirmed_at)}.
+                          Confirmaste la recepción. Todavía tienes {daysUntilRelease(order.confirmed_at)} para
+                          reportar un problema si algo no está bien.
                         </p>
                       )}
 

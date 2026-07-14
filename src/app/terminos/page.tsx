@@ -59,8 +59,9 @@ export default function TerminosPage() {
               <li>
                 Cuando te llegue la prenda, confirma la recepción desde «Mis compras». Desde ese momento tienes{' '}
                 <strong>2 días</strong> para reportar un problema antes de que el pago se libere a la vendedora. Si
-                no confirmas nada, la compra se marca como completada automáticamente a los <strong>7 días</strong>{' '}
-                desde el despacho. Una vez completada, puedes dejarle una reseña a la vendedora.
+                no confirmas nada, asumimos que todo llegó bien: la compra se marca como completada
+                automáticamente a los <strong>7 días</strong> desde el despacho. Una vez completada, puedes
+                dejarle una reseña a la vendedora.
               </li>
             </ol>
           </section>
@@ -74,8 +75,8 @@ export default function TerminosPage() {
               <li>Imprime la etiqueta, pégala en el paquete y llévalo a cualquier sucursal de Chilexpress.</li>
               <li>
                 Cuando la compradora confirma la recepción, esperamos <strong>2 días</strong> por si reporta un
-                problema — si no lo hace, el pago se libera a tu favor. Si nunca confirma, el pago se libera
-                igual de forma automática a los <strong>7 días</strong> desde el despacho.
+                problema — si no lo hace, el pago se libera a tu favor. Si nunca confirma, asumimos que todo llegó
+                bien y el pago se libera igual de forma automática a los <strong>7 días</strong> desde el despacho.
               </li>
             </ol>
 
