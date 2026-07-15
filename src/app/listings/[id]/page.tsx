@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { ShieldCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
-import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime } from '@/lib/catalog'
+import { getShippingQuote } from '@/lib/chilexpress'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 import MakeOfferModal from '@/components/listings/MakeOfferModal'
@@ -21,16 +23,17 @@ export default async function ListingPage({
   const supabase = await createClient()
 
   type ListingWithSeller = Listing & {
-    seller: { id: string; name: string; city: string | null; avatar_url: string | null; bio: string | null }
+    seller: { id: string; name: string; city: string | null; avatar_url: string | null; bio: string | null; comuna: string | null }
   }
 
-  const [{ data: listing }, { data: { user } }] = await Promise.all([
+  const [{ data: listing }, { data: { user } }, { count: favoriteCount }] = await Promise.all([
     supabase
       .from('listings')
-      .select('*, seller:profiles(id, name, city, avatar_url, bio)')
+      .select('*, seller:profiles(id, name, city, avatar_url, bio, comuna)')
       .eq('id', id)
       .single() as unknown as Promise<{ data: ListingWithSeller | null }>,
     supabase.auth.getUser(),
+    supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('listing_id', id),
   ])
 
   if (!listing) notFound()
@@ -51,6 +54,18 @@ export default async function ListingPage({
 
   const commission = buyerProtectionFee(listing.price)
   const totalPrice = listing.price + commission
+
+  // Estimado de envío para mostrar en la ficha — misma comuna como origen y
+  // destino (referencia razonable). El costo real se recotiza en el checkout
+  // según la dirección de la compradora.
+  const shippingEstimate = listing.seller?.comuna
+    ? await getShippingQuote({
+        originComuna: listing.seller.comuna,
+        destComuna: listing.seller.comuna,
+        size: listing.shipping_size,
+        declaredValue: listing.price,
+      })
+    : null
 
   const canBuy =
     listing.status === 'active' &&
@@ -117,39 +132,65 @@ export default async function ListingPage({
                   <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>
                     {conditionGroupLabel(listing.condition)}
                   </span>
-                  <FavoriteButton
-                    listingId={listing.id}
-                    initialFavorited={isFavorited}
-                    isLoggedIn={user !== null}
-                    buttonClassName="border border-gray-200"
-                  />
+                  <div className="flex items-center gap-1">
+                    <FavoriteButton
+                      listingId={listing.id}
+                      initialFavorited={isFavorited}
+                      isLoggedIn={user !== null}
+                      buttonClassName="border border-gray-200"
+                    />
+                    {!!favoriteCount && favoriteCount > 0 && (
+                      <span className="text-xs text-gray-400">{favoriteCount}</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
               <div className="mt-3">
-                <div className="flex items-center gap-3">
-                  <p className="text-sm text-gray-400">${listing.price.toLocaleString('es-CL')}</p>
-                  <p className="text-xs text-gray-400">Talla {listing.size}</p>
-                  {listing.color && (
-                    <p className="text-xs text-gray-400 flex items-center gap-1.5">
+                <ProtectedPrice price={listing.price} size="lg" />
+              </div>
+            </div>
+
+            {/* Specs */}
+            <div>
+              <div className="bg-white divide-y divide-gray-100 text-sm">
+                <div className="flex justify-between px-4 py-2.5">
+                  <span className="text-gray-400">Marca</span>
+                  <span className="text-gray-700">{listing.brand || 'Sin marca'}</span>
+                </div>
+                <div className="flex justify-between px-4 py-2.5">
+                  <span className="text-gray-400">Talla</span>
+                  <span className="text-gray-700">{listing.size}</span>
+                </div>
+                <div className="flex justify-between px-4 py-2.5">
+                  <span className="text-gray-400">Estado</span>
+                  <span className="text-gray-700">{conditionDetail.label}</span>
+                </div>
+                {listing.color && (
+                  <div className="flex justify-between px-4 py-2.5 items-center">
+                    <span className="text-gray-400">Color</span>
+                    <span className="text-gray-700 flex items-center gap-1.5">
                       <span
                         className="w-3 h-3 rounded-full border border-gray-300 inline-block"
                         style={{ backgroundColor: colorHex(listing.color) }}
                       />
                       {colorLabel(listing.color)}
-                    </p>
-                  )}
+                    </span>
+                  </div>
+                )}
+                {categoryLabel && (
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Categoría</span>
+                    <span className="text-gray-700">{categoryLabel}{listing.subcategory && ` · ${listing.subcategory}`}</span>
+                  </div>
+                )}
+                <div className="flex justify-between px-4 py-2.5">
+                  <span className="text-gray-400">Publicado</span>
+                  <span className="text-gray-700">{formatRelativeTime(listing.created_at)}</span>
                 </div>
-                <ProtectedPrice price={listing.price} size="lg" />
               </div>
-            </div>
-
-            {/* Estado detallado */}
-            <div>
-              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Estado</p>
-              <p className="text-sm text-gray-700">{conditionDetail.label}</p>
               {conditionDetail.description && (
-                <p className="text-xs text-gray-400 mt-1">{conditionDetail.description}</p>
+                <p className="text-xs text-gray-400 mt-2 px-1">{conditionDetail.description}</p>
               )}
             </div>
 
@@ -180,7 +221,10 @@ export default async function ListingPage({
                 <span>${totalPrice.toLocaleString('es-CL')}</span>
               </div>
               <p className="text-[10px] text-gray-400 pt-1">
-                El envío se calcula en el siguiente paso, según tu dirección. Publicar y vender en Bdress Market es gratis para la vendedora.
+                {shippingEstimate
+                  ? `Envío desde $${shippingEstimate.price.toLocaleString('es-CL')} — se confirma en el siguiente paso según tu comuna. `
+                  : 'El envío se calcula en el siguiente paso, según tu dirección. '}
+                Publicar y vender en Bdress Market es gratis para la vendedora.
               </p>
             </div>
 
@@ -193,14 +237,14 @@ export default async function ListingPage({
                       ¡Tu oferta de ${myOffer!.offered_price.toLocaleString('es-CL')} fue aceptada! Cómprala antes de que venza.
                     </p>
                   )}
-                  <BuyButton listingId={listing.id} price={buyPrice} />
+                  <BuyButton listingId={listing.id} total={buyPrice + buyerProtectionFee(buyPrice)} />
 
                   {!myOffer && (
                     <MakeOfferModal listingId={listing.id} sellerId={listing.seller_id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
                   )}
                   <Link
                     href={`/dashboard/messages/${listing.id}/${listing.seller_id}`}
-                    className="block w-full text-center border border-gray-200 text-gray-600 text-xs tracking-widest uppercase py-4 hover:border-[#7fab87] hover:text-[#7fab87] transition"
+                    className="block w-full text-center border border-gray-300 text-gray-700 text-xs tracking-widest uppercase py-4 hover:border-[#7fab87] hover:text-[#7fab87] transition"
                   >
                     Enviar mensaje
                   </Link>
@@ -239,6 +283,19 @@ export default async function ListingPage({
                 </div>
               )
             )}
+
+            {/* Confianza */}
+            <div className="bg-white p-4 flex gap-3 items-start">
+              <ShieldCheck size={20} className="text-[#5a7a55] flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-gray-500 leading-relaxed">
+                <span className="text-sm text-black font-medium block mb-0.5">Compra y vende con seguridad</span>
+                Tu pago queda retenido hasta que confirmes que todo llegó bien.{' '}
+                <BuyerProtectionModal
+                  trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-black">Cómo funciona</span>}
+                  triggerClassName="inline-flex"
+                />
+              </p>
+            </div>
 
             {/* Card vendedora */}
             <div className="border-t border-gray-200 pt-6">

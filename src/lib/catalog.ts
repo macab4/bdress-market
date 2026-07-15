@@ -207,6 +207,22 @@ export function daysUntilRelease(confirmedAt: string | null): string {
   return `${Math.ceil(hoursLeft / 24)} días`
 }
 
+// Señal de frescura en la ficha de producto ("Publicado hace X").
+export function formatRelativeTime(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime()
+  const minutes = Math.floor(diffMs / (60 * 1000))
+  if (minutes < 1) return 'ahora mismo'
+  if (minutes < 60) return `hace ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `hace ${days} ${days === 1 ? 'día' : 'días'}`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `hace ${months} ${months === 1 ? 'mes' : 'meses'}`
+  const years = Math.floor(months / 12)
+  return `hace ${years} ${years === 1 ? 'año' : 'años'}`
+}
+
 // Protección BDress — se suma al precio de la prenda y la paga la compradora.
 // Publicar y vender es gratis: a la vendedora no se le descuenta comisión.
 export const COMMISSION_PCT = 0.10
