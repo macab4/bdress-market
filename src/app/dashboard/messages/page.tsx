@@ -17,6 +17,19 @@ type MessageRow = {
   receiver: { name: string } | null
 }
 
+type OfferRow = {
+  id: string
+  listing_id: string
+  buyer_id: string
+  seller_id: string
+  offered_price: number
+  proposed_by: 'buyer' | 'seller'
+  created_at: string
+  listing: { title: string; photos: string[] } | null
+  buyer: { name: string } | null
+  seller: { name: string } | null
+}
+
 interface Conversation {
   listingId: string
   listingTitle: string
@@ -34,38 +47,94 @@ export default async function MessagesInboxPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data } = await supabase
-    .from('messages')
-    .select(`
-      id, sender_id, receiver_id, listing_id, content, read_at, created_at,
-      listing:listings(title, photos),
-      sender:profiles!messages_sender_id_fkey(name),
-      receiver:profiles!messages_receiver_id_fkey(name)
-    `)
-    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-    .order('created_at', { ascending: false }) as { data: MessageRow[] | null }
+  const [{ data: messages }, { data: offers }] = await Promise.all([
+    supabase
+      .from('messages')
+      .select(`
+        id, sender_id, receiver_id, listing_id, content, read_at, created_at,
+        listing:listings(title, photos),
+        sender:profiles!messages_sender_id_fkey(name),
+        receiver:profiles!messages_receiver_id_fkey(name)
+      `)
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .order('created_at', { ascending: false }) as unknown as { data: MessageRow[] | null },
+    supabase
+      .from('offers')
+      .select(`
+        id, listing_id, buyer_id, seller_id, offered_price, proposed_by, created_at,
+        listing:listings(title, photos),
+        buyer:profiles!offers_buyer_id_fkey(name),
+        seller:profiles!offers_seller_id_fkey(name)
+      `)
+      .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+      .order('created_at', { ascending: false }) as unknown as { data: OfferRow[] | null },
+  ])
 
-  const conversations = new Map<string, Conversation>()
+  // Un hilo puede tener solo ofertas y ningún mensaje de texto todavía —
+  // por eso se combinan ambas fuentes para armar la lista de conversaciones,
+  // en vez de mirar solo la tabla messages.
+  type Activity = {
+    createdAt: string
+    listingId: string
+    listingTitle: string
+    listingPhoto?: string
+    otherId: string
+    otherName: string
+    preview: string
+    fromMe: boolean
+    isUnreadMessage: boolean
+  }
 
-  for (const m of data ?? []) {
-    const otherId = m.sender_id === user.id ? m.receiver_id : m.sender_id
-    const key = `${m.listing_id}:${otherId}`
-    const isUnreadForMe = m.receiver_id === user.id && !m.read_at
-
-    const existing = conversations.get(key)
-    if (!existing) {
-      conversations.set(key, {
+  const activities: Activity[] = [
+    ...(messages ?? []).map((m): Activity => {
+      const fromMe = m.sender_id === user.id
+      return {
+        createdAt: m.created_at,
         listingId: m.listing_id,
         listingTitle: m.listing?.title ?? 'Prenda',
         listingPhoto: m.listing?.photos?.[0],
-        otherId,
-        otherName: (m.sender_id === user.id ? m.receiver?.name : m.sender?.name) ?? '—',
-        lastContent: m.content,
-        lastCreatedAt: m.created_at,
-        lastFromMe: m.sender_id === user.id,
-        unreadCount: isUnreadForMe ? 1 : 0,
+        otherId: fromMe ? m.receiver_id : m.sender_id,
+        otherName: (fromMe ? m.receiver?.name : m.sender?.name) ?? '—',
+        preview: m.content,
+        fromMe,
+        isUnreadMessage: m.receiver_id === user.id && !m.read_at,
+      }
+    }),
+    ...(offers ?? []).map((o): Activity => {
+      const isBuyer = o.buyer_id === user.id
+      const fromMe = (isBuyer && o.proposed_by === 'buyer') || (!isBuyer && o.proposed_by === 'seller')
+      return {
+        createdAt: o.created_at,
+        listingId: o.listing_id,
+        listingTitle: o.listing?.title ?? 'Prenda',
+        listingPhoto: o.listing?.photos?.[0],
+        otherId: isBuyer ? o.seller_id : o.buyer_id,
+        otherName: (isBuyer ? o.seller?.name : o.buyer?.name) ?? '—',
+        preview: `${fromMe ? 'Ofertaste' : 'Te ofrecieron'} $${o.offered_price.toLocaleString('es-CL')}`,
+        fromMe,
+        isUnreadMessage: false,
+      }
+    }),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const conversations = new Map<string, Conversation>()
+
+  for (const a of activities) {
+    const key = `${a.listingId}:${a.otherId}`
+    const existing = conversations.get(key)
+    if (!existing) {
+      conversations.set(key, {
+        listingId: a.listingId,
+        listingTitle: a.listingTitle,
+        listingPhoto: a.listingPhoto,
+        otherId: a.otherId,
+        otherName: a.otherName,
+        lastContent: a.preview,
+        lastCreatedAt: a.createdAt,
+        lastFromMe: a.fromMe,
+        unreadCount: a.isUnreadMessage ? 1 : 0,
       })
-    } else if (isUnreadForMe) {
+    } else if (a.isUnreadMessage) {
       existing.unreadCount += 1
     }
   }
