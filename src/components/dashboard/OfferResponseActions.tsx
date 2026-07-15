@@ -60,7 +60,7 @@ export default function OfferResponseActions({ offerId, minPrice, maxPrice, canC
         {error && <p className="text-red-500 text-xs">{error}</p>}
         <div className="flex gap-2">
           <button type="submit" disabled={loading}
-            className="text-[10px] tracking-widest uppercase bg-black text-white px-4 py-2 hover:bg-gray-800 transition disabled:opacity-50">
+            className="text-[10px] tracking-widest uppercase bg-[#7fab87] text-white px-4 py-2 hover:bg-[#6f9678] transition disabled:opacity-50">
             {loading ? 'Enviando...' : 'Enviar contraoferta'}
           </button>
           <button type="button" onClick={() => setMode('idle')}
@@ -77,12 +77,12 @@ export default function OfferResponseActions({ offerId, minPrice, maxPrice, canC
       {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={loading} onClick={() => respond('accept')}
-          className="text-[10px] tracking-widest uppercase bg-[#5a7a55] text-white px-4 py-2 hover:bg-[#4a6647] transition disabled:opacity-50">
+          className="text-[10px] tracking-widest uppercase bg-[#7fab87] text-white px-4 py-2 hover:bg-[#6f9678] transition disabled:opacity-50">
           Aceptar
         </button>
         {canCounter && (
           <button type="button" disabled={loading} onClick={() => setMode('counter')}
-            className="text-[10px] tracking-widest uppercase border border-gray-300 px-4 py-2 hover:border-black transition disabled:opacity-50">
+            className="text-[10px] tracking-widest uppercase border border-gray-300 px-4 py-2 hover:border-[#7fab87] transition disabled:opacity-50">
             Contraofertar
           </button>
         )}

@@ -159,7 +159,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
       <button type="submit" disabled={loading}
-        className="w-full bg-black text-white text-xs tracking-widest uppercase py-3 hover:bg-gray-800 transition disabled:opacity-50">
+        className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition disabled:opacity-50">
         {loading ? 'Guardando...' : 'Guardar cambios'}
       </button>
     </form>

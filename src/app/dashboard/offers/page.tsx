@@ -93,7 +93,7 @@ export default async function OffersPage() {
               <div className="mt-2">
                 <Link
                   href={`/listings/${offer.listing_id}/checkout`}
-                  className="inline-block text-[10px] tracking-widest uppercase bg-[#5a7a55] text-white px-4 py-2 hover:bg-[#4a6647] transition"
+                  className="inline-block text-[10px] tracking-widest uppercase bg-[#7fab87] text-white px-4 py-2 hover:bg-[#6f9678] transition"
                 >
                   Comprar al precio pactado
                 </Link>

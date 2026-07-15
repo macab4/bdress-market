@@ -75,7 +75,7 @@ export default async function AdminUsersPage({
                   <td className="px-4 py-3 text-gray-500">{u.email}</td>
                   <td className="px-4 py-3 text-gray-500">{u.city ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${u.banned ? 'bg-red-50 text-red-600' : 'bg-[#8DA988]/10 text-[#5a7a55]'}`}>
+                    <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${u.banned ? 'bg-red-50 text-red-600' : 'bg-[#7fab87]/10 text-[#5a7a55]'}`}>
                       {u.banned ? 'Suspendida' : 'Activa'}
                     </span>
                   </td>

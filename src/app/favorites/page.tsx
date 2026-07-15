@@ -82,7 +82,7 @@ export default async function FavoritesPage() {
         ) : (
           <div className="text-center py-20 bg-white">
             <p className="text-gray-400 text-sm mb-2">Todavía no tienes prendas favoritas.</p>
-            <Link href="/" className="text-[#8DA988] text-xs underline">Explorar prendas</Link>
+            <Link href="/" className="text-[#7fab87] text-xs underline">Explorar prendas</Link>
           </div>
         )}
       </div>

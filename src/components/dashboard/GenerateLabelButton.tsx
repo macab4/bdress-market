@@ -28,7 +28,7 @@ export default function GenerateLabelButton({ orderId }: { orderId: string }) {
       <button
         onClick={handleClick}
         disabled={loading}
-        className="bg-black text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-gray-800 transition disabled:opacity-50"
+        className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition disabled:opacity-50"
       >
         {loading ? 'Generando etiqueta...' : 'Generar etiqueta de envío'}
       </button>

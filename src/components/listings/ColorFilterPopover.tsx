@@ -69,7 +69,7 @@ export default function ColorFilterPopover({ defaultValue }: { defaultValue?: st
             <button
               type="submit"
               onClick={() => setOpen(false)}
-              className="flex-1 bg-black text-white text-xs tracking-widest uppercase py-2 hover:bg-gray-800 transition"
+              className="flex-1 bg-[#7fab87] text-white text-xs tracking-widest uppercase py-2 hover:bg-[#6f9678] transition"
             >
               Ver resultados
             </button>

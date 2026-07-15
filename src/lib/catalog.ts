@@ -78,30 +78,33 @@ export const CONDITIONS = [
     value: 'nuevo_con_etiquetas',
     label: 'Nuevo con etiquetas',
     description: 'Artículo sin estrenar que todavía tiene las etiquetas o está en su embalaje original.',
-    color: 'bg-[#8DA988] text-white',
+    color: 'bg-[#7fab87] text-white',
   },
   {
     value: 'nuevo_sin_etiquetas',
     label: 'Nuevo sin etiquetas',
     description: 'Artículo sin estrenar que no tiene las etiquetas o el embalaje original.',
-    color: 'bg-[#8DA988] text-white',
+    color: 'bg-[#7fab87] text-white',
   },
   {
     value: 'muy_bueno',
     label: 'Muy bueno',
-    description: 'Artículo poco usado que puede tener algún defecto menor. Recuerda incluir fotos y descripciones de los desperfectos en el anuncio.',
+    description: 'Artículo poco usado que puede tener algún defecto menor.',
+    sellerHint: 'Recuerda incluir fotos y descripciones de los desperfectos en el anuncio.',
     color: 'bg-gray-200 text-gray-700',
   },
   {
     value: 'bueno',
     label: 'Bueno',
-    description: 'Artículo usado que puede tener defectos o estar desgastado. Recuerda incluir fotos y descripciones de los desperfectos en el anuncio.',
+    description: 'Artículo usado que puede tener defectos o estar desgastado.',
+    sellerHint: 'Recuerda incluir fotos y descripciones de los desperfectos en el anuncio.',
     color: 'bg-gray-100 text-gray-600',
   },
   {
     value: 'satisfactorio',
     label: 'Satisfactorio',
-    description: 'Artículo bastante usado con defectos o desgaste. Recuerda incluir fotos y descripciones de los desperfectos en el anuncio.',
+    description: 'Artículo bastante usado con defectos o desgaste.',
+    sellerHint: 'Recuerda incluir fotos y descripciones de los desperfectos en el anuncio.',
     color: 'bg-gray-100 text-gray-500',
   },
 ] as const
@@ -117,7 +120,7 @@ export function conditionLabel(value: string): string {
 // Por eso el listado y las tarjetas solo muestran este grupo; el detalle fino
 // de CONDITIONS queda como matiz secundario dentro de la página de producto.
 export const CONDITION_GROUPS = [
-  { value: 'nuevo', label: 'Nuevo', conditions: ['nuevo_con_etiquetas', 'nuevo_sin_etiquetas'], color: 'bg-[#8DA988] text-white' },
+  { value: 'nuevo', label: 'Nuevo', conditions: ['nuevo_con_etiquetas', 'nuevo_sin_etiquetas'], color: 'bg-[#7fab87] text-white' },
   { value: 'usado', label: 'Usado', conditions: ['muy_bueno', 'bueno', 'satisfactorio'], color: 'bg-gray-100 text-gray-600' },
 ] as const
 
@@ -242,7 +245,7 @@ export function minOfferPrice(originalPrice: number): number {
 
 export const OFFER_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending:   { label: 'Pendiente',    color: 'bg-amber-50 text-amber-600' },
-  accepted:  { label: 'Aceptada',     color: 'bg-[#8DA988]/10 text-[#5a7a55]' },
+  accepted:  { label: 'Aceptada',     color: 'bg-[#7fab87]/10 text-[#5a7a55]' },
   rejected:  { label: 'Rechazada',    color: 'bg-red-50 text-red-600' },
   countered: { label: 'Contraoferta', color: 'bg-blue-50 text-blue-600' },
   expired:   { label: 'Expirada',     color: 'bg-gray-100 text-gray-400' },
@@ -258,7 +261,7 @@ export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string 
   paid:            { label: 'Pagado',         color: 'bg-blue-50 text-blue-600' },
   shipped:         { label: 'En camino',      color: 'bg-amber-50 text-amber-600' },
   delivered:       { label: 'Entregado',      color: 'bg-green-50 text-green-700' },
-  completed:       { label: 'Completado',     color: 'bg-[#8DA988]/10 text-[#5a7a55]' },
+  completed:       { label: 'Completado',     color: 'bg-[#7fab87]/10 text-[#5a7a55]' },
   disputed:        { label: 'En disputa',     color: 'bg-red-50 text-red-600' },
   cancelled:       { label: 'Cancelado',      color: 'bg-gray-100 text-gray-400' },
 }

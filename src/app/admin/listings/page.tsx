@@ -9,7 +9,7 @@ import AdminListingActions from '@/components/admin/AdminListingActions'
 type AdminListing = Listing & { seller: { name: string } | null }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  active: { label: 'Activa', color: 'bg-[#8DA988]/10 text-[#5a7a55]' },
+  active: { label: 'Activa', color: 'bg-[#7fab87]/10 text-[#5a7a55]' },
   sold: { label: 'Vendida', color: 'bg-blue-50 text-blue-600' },
   paused: { label: 'Pausada', color: 'bg-gray-100 text-gray-400' },
 }

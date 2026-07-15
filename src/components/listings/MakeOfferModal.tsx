@@ -78,7 +78,7 @@ export default function MakeOfferModal({ listingId, sellerId, price, minPrice }:
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full border border-black text-black text-xs tracking-widest uppercase py-4 hover:bg-black hover:text-white transition"
+        className="w-full border border-[#7fab87] text-[#7fab87] text-xs tracking-widest uppercase py-4 hover:bg-[#7fab87] hover:text-white transition"
       >
         Hacer una oferta
       </button>
@@ -107,7 +107,7 @@ export default function MakeOfferModal({ listingId, sellerId, price, minPrice }:
                     type="button"
                     onClick={() => setSelected(i)}
                     className={`text-left border rounded p-2.5 transition ${
-                      selected === i ? 'border-[#5a7a55] ring-1 ring-[#5a7a55]' : 'border-gray-200 hover:border-gray-300'
+                      selected === i ? 'border-[#7fab87] ring-1 ring-[#7fab87]' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <p className="text-sm font-medium">${presetPrice.toLocaleString('es-CL')}</p>
@@ -118,7 +118,7 @@ export default function MakeOfferModal({ listingId, sellerId, price, minPrice }:
                   type="button"
                   onClick={() => setSelected('custom')}
                   className={`text-left border rounded p-2.5 transition ${
-                    selected === 'custom' ? 'border-[#5a7a55] ring-1 ring-[#5a7a55]' : 'border-gray-200 hover:border-gray-300'
+                    selected === 'custom' ? 'border-[#7fab87] ring-1 ring-[#7fab87]' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <p className="text-sm font-medium">Personalizar</p>
@@ -148,7 +148,7 @@ export default function MakeOfferModal({ listingId, sellerId, price, minPrice }:
               <button
                 type="submit"
                 disabled={!canSubmit || loading}
-                className="w-full bg-[#5a7a55] text-white text-sm py-3 hover:bg-[#4a6647] transition disabled:opacity-40"
+                className="w-full bg-[#7fab87] text-white text-sm py-3 hover:bg-[#6f9678] transition disabled:opacity-40"
               >
                 {loading ? 'Enviando...' : offeredPrice > 0 ? `Ofrecer $${offeredPrice.toLocaleString('es-CL')}` : 'Ofrecer'}
               </button>

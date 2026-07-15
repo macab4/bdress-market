@@ -138,7 +138,7 @@ export default async function AdminMessagesPage() {
             {sellerId && (
               <Link
                 href={`/admin/messages/${f.listing_id}/${buyerId}`}
-                className="text-[10px] tracking-widest uppercase text-[#8DA988] hover:underline"
+                className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline"
               >
                 Ver conversación
               </Link>
@@ -206,7 +206,7 @@ export default async function AdminMessagesPage() {
                         {new Date(c.lastCreatedAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
                       </td>
                       <td className="p-3 text-right">
-                        <Link href={`/admin/messages/${c.listingId}/${c.buyerId}`} className="text-[10px] tracking-widest uppercase text-[#8DA988] hover:underline whitespace-nowrap">
+                        <Link href={`/admin/messages/${c.listingId}/${c.buyerId}`} className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline whitespace-nowrap">
                           Ver
                         </Link>
                       </td>

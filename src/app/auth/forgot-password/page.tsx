@@ -34,13 +34,13 @@ export default function ForgotPasswordPage() {
     return (
       <div className="min-h-screen bg-[#EBEBEB] flex items-center justify-center px-4">
         <div className="bg-white w-full max-w-md p-8 text-center">
-          <p className="text-xs tracking-[6px] uppercase text-[#8DA988] mb-4">Listo</p>
+          <p className="text-xs tracking-[6px] uppercase text-[#7fab87] mb-4">Listo</p>
           <h1 className="text-xl font-light tracking-widest uppercase mb-3">Revisa tu correo</h1>
           <p className="text-sm text-gray-500 mb-6">
             Si <span className="font-medium text-gray-700">{email}</span> tiene una cuenta en Bdress, te
             enviamos un link para crear una contraseña nueva.
           </p>
-          <Link href="/auth/login" className="text-[#8DA988] text-xs underline">
+          <Link href="/auth/login" className="text-[#7fab87] text-xs underline">
             Volver a ingresar
           </Link>
         </div>
@@ -77,14 +77,14 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white text-xs tracking-widest uppercase py-3 hover:bg-gray-800 transition disabled:opacity-50"
+            className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition disabled:opacity-50"
           >
             {loading ? 'Enviando...' : 'Enviar link'}
           </button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          <Link href="/auth/login" className="text-[#8DA988] hover:underline">
+          <Link href="/auth/login" className="text-[#7fab87] hover:underline">
             Volver a ingresar
           </Link>
         </p>

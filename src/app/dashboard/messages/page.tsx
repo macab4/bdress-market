@@ -110,7 +110,7 @@ export default async function MessagesInboxPage() {
                   </p>
                 </div>
                 {c.unreadCount > 0 && (
-                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#5a7a55] text-white text-[10px] flex items-center justify-center">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#7fab87] text-white text-[10px] flex items-center justify-center">
                     {c.unreadCount}
                   </span>
                 )}

@@ -37,7 +37,7 @@ export default function PhotoGallery({ photos, title }: PhotoGalleryProps) {
               key={i}
               onClick={() => setActive(i)}
               className={`aspect-square bg-gray-100 relative overflow-hidden border-2 transition ${
-                active === i ? 'border-black' : 'border-transparent'
+                active === i ? 'border-[#7fab87]' : 'border-transparent'
               }`}
             >
               <Image src={photo} alt={`${title} ${i + 1}`} fill className="object-cover" />

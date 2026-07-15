@@ -25,7 +25,7 @@ export default function TerminosPage() {
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
       <div className="max-w-2xl mx-auto px-4 py-12">
-        <p className="text-xs tracking-[6px] uppercase text-[#8DA988] mb-3">Bdress Market</p>
+        <p className="text-xs tracking-[6px] uppercase text-[#7fab87] mb-3">Bdress Market</p>
         <h1 className="text-2xl font-light tracking-widest uppercase mb-2">Términos y condiciones</h1>
         <p className="text-xs text-gray-400 mb-8">Última actualización: 14 de julio de 2026</p>
 

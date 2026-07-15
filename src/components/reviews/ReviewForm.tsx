@@ -59,7 +59,7 @@ export default function ReviewForm({ orderId, reviewedId, reviewedName }: Review
             onMouseLeave={() => setHovered(0)}
             onClick={() => setRating(i)}
             aria-label={`${i} estrellas`}>
-            <Star size={20} className={i <= (hovered || rating) ? 'fill-[#8DA988] text-[#8DA988]' : 'text-gray-200'} />
+            <Star size={20} className={i <= (hovered || rating) ? 'fill-[#7fab87] text-[#7fab87]' : 'text-gray-200'} />
           </button>
         ))}
       </div>
@@ -68,7 +68,7 @@ export default function ReviewForm({ orderId, reviewedId, reviewedName }: Review
         className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 resize-none" />
       {error && <p className="text-red-500 text-xs">{error}</p>}
       <button type="submit" disabled={loading}
-        className="text-[10px] tracking-widest uppercase bg-black text-white px-4 py-2 hover:bg-gray-800 transition disabled:opacity-50">
+        className="text-[10px] tracking-widest uppercase bg-[#7fab87] text-white px-4 py-2 hover:bg-[#6f9678] transition disabled:opacity-50">
         {loading ? 'Enviando...' : 'Enviar reseña'}
       </button>
     </form>

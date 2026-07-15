@@ -40,7 +40,7 @@ export default async function PurchasesPage() {
         {list.length === 0 ? (
           <div className="bg-white p-10 text-center">
             <p className="text-sm text-gray-400 mb-4">Aún no has comprado ninguna prenda.</p>
-            <Link href="/" className="bg-black text-white text-xs tracking-widest uppercase px-6 py-3 hover:bg-gray-800 transition">
+            <Link href="/" className="bg-[#7fab87] text-white text-xs tracking-widest uppercase px-6 py-3 hover:bg-[#6f9678] transition">
               Explorar prendas
             </Link>
           </div>

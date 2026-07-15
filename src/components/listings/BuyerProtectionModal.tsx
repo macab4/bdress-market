@@ -43,7 +43,7 @@ export default function BuyerProtectionModal({ iconSize = 13, trigger, triggerCl
         aria-label="Qué incluye la Protección Comprador"
         className={triggerClassName ?? 'inline-flex'}
       >
-        {trigger ?? <ShieldCheck size={iconSize} className="text-[#8DA988] cursor-help" />}
+        {trigger ?? <ShieldCheck size={iconSize} className="text-[#7fab87] cursor-help" />}
       </button>
 
       {open && createPortal(
@@ -65,7 +65,7 @@ export default function BuyerProtectionModal({ iconSize = 13, trigger, triggerCl
             </button>
 
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-14 h-14 rounded-full bg-[#8DA988]/10 flex items-center justify-center mb-4">
+              <div className="w-14 h-14 rounded-full bg-[#7fab87]/10 flex items-center justify-center mb-4">
                 <ShieldCheck size={26} className="text-[#5a7a55]" />
               </div>
               <h2 className="text-base font-medium">Protección al comprador</h2>
@@ -133,7 +133,7 @@ export default function BuyerProtectionModal({ iconSize = 13, trigger, triggerCl
             <button
               type="button"
               onClick={(e) => { stop(e); setOpen(false) }}
-              className="w-full bg-[#5a7a55] text-white text-sm tracking-widest uppercase py-3 mt-6 hover:bg-[#4a6647] transition"
+              className="w-full bg-[#7fab87] text-white text-sm tracking-widest uppercase py-3 mt-6 hover:bg-[#6f9678] transition"
             >
               Entendido
             </button>

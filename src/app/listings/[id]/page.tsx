@@ -189,7 +189,7 @@ export default async function ListingPage({
               canBuy ? (
                 <div className="space-y-3">
                   {offerAccepted && (
-                    <p className="text-xs text-[#5a7a55] bg-[#8DA988]/10 text-center py-2">
+                    <p className="text-xs text-[#5a7a55] bg-[#7fab87]/10 text-center py-2">
                       ¡Tu oferta de ${myOffer!.offered_price.toLocaleString('es-CL')} fue aceptada! Cómprala antes de que venza.
                     </p>
                   )}
@@ -200,7 +200,7 @@ export default async function ListingPage({
                   )}
                   <Link
                     href={`/dashboard/messages/${listing.id}/${listing.seller_id}`}
-                    className="block w-full text-center border border-gray-200 text-gray-600 text-xs tracking-widest uppercase py-4 hover:border-black hover:text-black transition"
+                    className="block w-full text-center border border-gray-200 text-gray-600 text-xs tracking-widest uppercase py-4 hover:border-[#7fab87] hover:text-[#7fab87] transition"
                   >
                     Enviar mensaje
                   </Link>
@@ -220,7 +220,7 @@ export default async function ListingPage({
               ) : user === null ? (
                 <div className="space-y-2">
                   <Link href="/auth/login"
-                    className="block w-full bg-black text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-gray-800 transition">
+                    className="block w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-[#6f9678] transition">
                     Ingresar para comprar
                   </Link>
                   <p className="text-[10px] text-gray-400 text-center">

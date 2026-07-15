@@ -94,7 +94,7 @@ export default function LoginPage() {
                 <p className="text-[#5a7a55]">Te reenviamos el correo de confirmación.</p>
               ) : (
                 <button type="button" onClick={handleResend} disabled={resendState === 'sending'}
-                  className="text-[#8DA988] underline disabled:opacity-50">
+                  className="text-[#7fab87] underline disabled:opacity-50">
                   {resendState === 'sending' ? 'Enviando...' : 'Reenviar correo de confirmación'}
                 </button>
               )}
@@ -104,7 +104,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-black text-white text-xs tracking-widest uppercase py-3 hover:bg-gray-800 transition disabled:opacity-50"
+            className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition disabled:opacity-50"
           >
             {loading ? 'Ingresando...' : 'Ingresar'}
           </button>
@@ -112,7 +112,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           ¿No tienes cuenta?{' '}
-          <Link href="/auth/register" className="text-[#8DA988] hover:underline">
+          <Link href="/auth/register" className="text-[#7fab87] hover:underline">
             Regístrate
           </Link>
         </p>

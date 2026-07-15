@@ -28,7 +28,7 @@ export default async function Navbar() {
           {user ? (
             <>
               <Link href="/listings/new"
-                className="bg-black text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-gray-800 transition">
+                className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
                 + Vender
               </Link>
               <Link href="/dashboard/sales" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
@@ -44,7 +44,7 @@ export default async function Navbar() {
                 <MessageCircle size={14} />
                 Mensajes
                 {unreadCount > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-[#5a7a55] text-white text-[9px] flex items-center justify-center normal-case tracking-normal">
+                  <span className="w-4 h-4 rounded-full bg-[#7fab87] text-white text-[9px] flex items-center justify-center normal-case tracking-normal">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -72,7 +72,7 @@ export default async function Navbar() {
                 Ingresar
               </Link>
               <Link href="/auth/register"
-                className="bg-black text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-gray-800 transition">
+                className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
                 Registrarse
               </Link>
             </>

@@ -178,7 +178,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
                 <button key={c.value} type="button" onClick={() => setCategory(c.value)}
                   className={`text-sm py-2 border transition ${
                     form.category === c.value
-                      ? 'border-black bg-black text-white'
+                      ? 'border-[#7fab87] bg-[#7fab87] text-white'
                       : 'border-gray-200 hover:border-gray-400'
                   }`}>
                   {c.label}
@@ -233,7 +233,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
               {CONDITIONS.map(c => (
                 <label key={c.value}
                   className={`flex items-start gap-3 p-3 border cursor-pointer transition ${
-                    form.condition === c.value ? 'border-black' : 'border-gray-200 hover:border-gray-300'
+                    form.condition === c.value ? 'border-[#7fab87]' : 'border-gray-200 hover:border-gray-300'
                   }`}>
                   <input type="radio" name="condition" value={c.value}
                     checked={form.condition === c.value}
@@ -242,6 +242,9 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
                   <span>
                     <span className="block text-sm font-medium">{c.label}</span>
                     <span className="block text-xs text-gray-400 mt-0.5">{c.description}</span>
+                    {'sellerHint' in c && (
+                      <span className="block text-xs text-amber-600 mt-0.5">{c.sellerHint}</span>
+                    )}
                   </span>
                 </label>
               ))}
@@ -308,7 +311,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
               {SHIPPING_SIZES.map(s => (
                 <label key={s.value}
                   className={`flex items-start gap-3 p-3 border cursor-pointer transition ${
-                    form.shipping_size === s.value ? 'border-black' : 'border-gray-200 hover:border-gray-300'
+                    form.shipping_size === s.value ? 'border-[#7fab87]' : 'border-gray-200 hover:border-gray-300'
                   }`}>
                   <input type="radio" name="shipping_size" value={s.value}
                     checked={form.shipping_size === s.value}
@@ -318,7 +321,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
                     <span className="block text-sm font-medium">
                       {s.label}
                       {'recommended' in s && s.recommended && (
-                        <span className="ml-2 text-[9px] tracking-widest uppercase bg-[#8DA988]/10 text-[#5a7a55] px-1.5 py-0.5">
+                        <span className="ml-2 text-[9px] tracking-widest uppercase bg-[#7fab87]/10 text-[#5a7a55] px-1.5 py-0.5">
                           Recomendado
                         </span>
                       )}
@@ -333,7 +336,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
           {error && <p className="text-red-500 text-xs">{error}</p>}
 
           <button type="submit" disabled={loading}
-            className="w-full bg-black text-white text-xs tracking-widest uppercase py-3 hover:bg-gray-800 transition disabled:opacity-50">
+            className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition disabled:opacity-50">
             {loading ? (listing ? 'Guardando...' : 'Publicando...') : (listing ? 'Guardar cambios' : 'Publicar prenda')}
           </button>
         </form>

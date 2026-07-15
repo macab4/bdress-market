@@ -212,7 +212,7 @@ export default async function SalesPage() {
               Mis prendas ({activeListings.length})
             </h2>
             <Link href="/listings/new"
-              className="bg-black text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-gray-800 transition">
+              className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
               + Publicar
             </Link>
           </div>
@@ -241,7 +241,7 @@ export default async function SalesPage() {
                     </div>
                     <div className="flex items-center gap-4 flex-shrink-0">
                       <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${
-                        listing.status === 'active' ? 'bg-[#8DA988]/10 text-[#5a7a55]' : 'bg-gray-100 text-gray-400'
+                        listing.status === 'active' ? 'bg-[#7fab87]/10 text-[#5a7a55]' : 'bg-gray-100 text-gray-400'
                       }`}>
                         {listing.status === 'active' ? 'Activa' : 'Pausada'}
                       </span>

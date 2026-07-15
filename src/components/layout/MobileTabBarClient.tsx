@@ -43,7 +43,7 @@ export default function MobileTabBarClient({ isLoggedIn, userId }: Props) {
       )}
 
       <Link href="/listings/new" aria-label="Vender" className="flex-1 flex items-center justify-center">
-        <span className="w-11 h-11 -mt-4 rounded-full bg-black text-white flex items-center justify-center shadow-lg shadow-black/25">
+        <span className="w-11 h-11 -mt-4 rounded-full bg-[#7fab87] text-white flex items-center justify-center shadow-lg shadow-black/25">
           <Plus size={22} />
         </span>
       </Link>

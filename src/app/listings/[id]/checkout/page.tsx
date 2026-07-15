@@ -67,7 +67,7 @@ export default async function CheckoutPage({
         </div>
 
         {acceptedOffer && (
-          <p className="text-xs text-[#5a7a55] bg-[#8DA988]/10 text-center py-2 mb-6">
+          <p className="text-xs text-[#5a7a55] bg-[#7fab87]/10 text-center py-2 mb-6">
             Precio pactado por tu oferta — válido por tiempo limitado
           </p>
         )}

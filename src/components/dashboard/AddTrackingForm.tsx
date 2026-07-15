@@ -39,7 +39,7 @@ export default function AddTrackingForm({ orderId }: { orderId: string }) {
       <button
         type="submit"
         disabled={loading || !tracking.trim()}
-        className="bg-black text-white text-[10px] tracking-widest uppercase px-4 py-1.5 hover:bg-gray-800 transition disabled:opacity-50"
+        className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-1.5 hover:bg-[#6f9678] transition disabled:opacity-50"
       >
         {loading ? '...' : 'Marcar enviado'}
       </button>

@@ -37,7 +37,7 @@ export default function ContactForm() {
   if (sent) {
     return (
       <div className="bg-white p-8 text-center">
-        <p className="text-xs tracking-[6px] uppercase text-[#8DA988] mb-3">Listo</p>
+        <p className="text-xs tracking-[6px] uppercase text-[#7fab87] mb-3">Listo</p>
         <p className="text-sm text-gray-600">Recibimos tu mensaje. Te vamos a responder a la brevedad.</p>
       </div>
     )
@@ -74,7 +74,7 @@ export default function ContactForm() {
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
       <button type="submit" disabled={loading}
-        className="bg-[#8DA988] text-white text-xs tracking-widest uppercase px-6 py-3 hover:bg-[#79975f] transition disabled:opacity-50">
+        className="bg-[#7fab87] text-white text-xs tracking-widest uppercase px-6 py-3 hover:bg-[#6f9678] transition disabled:opacity-50">
         {loading ? 'Enviando...' : 'Enviar'}
       </button>
     </form>

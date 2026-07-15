@@ -119,7 +119,7 @@ export default async function HomePage({
     <div className="min-h-screen bg-[#EBEBEB]">
       {/* Hero */}
       <div className="bg-black text-white text-center py-10 px-4">
-        <p className="text-xs tracking-[6px] text-[#8DA988] uppercase mb-3">Comunidad · Bdress</p>
+        <p className="text-xs tracking-[6px] text-[#7fab87] uppercase mb-3">Comunidad · Bdress</p>
         <h1 className="mb-2">
           <Image src="/logo-white.png" alt="Bdress Market" width={280} height={93} priority className="mx-auto h-auto w-[220px] sm:w-[280px]" />
         </h1>
@@ -185,7 +185,7 @@ export default async function HomePage({
           </div>
 
           <button type="submit"
-            className="bg-black text-white text-[10px] tracking-widest uppercase px-5 py-2 hover:bg-gray-800 transition">
+            className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-5 py-2 hover:bg-[#6f9678] transition">
             Filtrar
           </button>
 
@@ -268,7 +268,7 @@ export default async function HomePage({
                       key={p}
                       href={pageUrl(p)}
                       className={`w-9 h-9 flex items-center justify-center text-xs border ${
-                        p === page ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'
+                        p === page ? 'border-[#7fab87] bg-[#7fab87] text-white' : 'border-gray-200 hover:border-gray-400'
                       }`}
                     >
                       {p}
@@ -291,7 +291,7 @@ export default async function HomePage({
         ) : (
           <div className="text-center py-20">
             <p className="text-gray-400 text-sm">No hay prendas que coincidan con tu búsqueda.</p>
-            <Link href="/" className="text-[#8DA988] text-xs underline mt-2 inline-block">Ver todas</Link>
+            <Link href="/" className="text-[#7fab87] text-xs underline mt-2 inline-block">Ver todas</Link>
           </div>
         )}
       </div>

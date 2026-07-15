@@ -27,7 +27,7 @@ export default function ConfirmDeliveryButton({ orderId }: { orderId: string }) 
       <button
         onClick={handleConfirm}
         disabled={loading}
-        className="bg-[#8DA988] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-green-700 transition disabled:opacity-50"
+        className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition disabled:opacity-50"
       >
         {loading ? 'Confirmando...' : 'Confirmar recepción'}
       </button>

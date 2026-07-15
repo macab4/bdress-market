@@ -38,7 +38,7 @@ export default function DisputeResolutionActions({ orderId }: { orderId: string 
           {loading === 'refund' ? 'Reembolsando...' : 'Reembolsar a compradora'}
         </button>
         <button onClick={() => resolve('release')} disabled={loading !== null}
-          className="text-[10px] tracking-widest uppercase bg-[#8DA988] text-white px-4 py-2 hover:bg-green-700 transition disabled:opacity-50">
+          className="text-[10px] tracking-widest uppercase bg-[#7fab87] text-white px-4 py-2 hover:bg-[#6f9678] transition disabled:opacity-50">
           {loading === 'release' ? 'Liberando...' : 'Liberar pago a vendedora'}
         </button>
       </div>

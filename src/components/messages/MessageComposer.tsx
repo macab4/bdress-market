@@ -69,7 +69,7 @@ export default function MessageComposer({ listingId, receiverId }: Props) {
         <button
           type="submit"
           disabled={loading || !content.trim()}
-          className="bg-black text-white text-xs tracking-widest uppercase px-4 py-2.5 hover:bg-gray-800 transition disabled:opacity-40"
+          className="bg-[#7fab87] text-white text-xs tracking-widest uppercase px-4 py-2.5 hover:bg-[#6f9678] transition disabled:opacity-40"
         >
           Enviar
         </button>

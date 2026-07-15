@@ -86,7 +86,7 @@ export default async function OrderConfirmationPage({
 
         <div className="space-y-2">
           <Link href="/dashboard/purchases"
-            className="block w-full bg-black text-white text-xs tracking-widest uppercase py-3 hover:bg-gray-800 transition">
+            className="block w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition">
             Ver mis compras
           </Link>
           <Link href="/"

@@ -10,7 +10,7 @@ export default function BuyButton({ listingId, price }: BuyButtonProps) {
     <div className="space-y-2">
       <Link
         href={`/listings/${listingId}/checkout`}
-        className="block w-full bg-black text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-gray-800 transition"
+        className="block w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-[#6f9678] transition"
       >
         Comprar — ${price.toLocaleString('es-CL')}
       </Link>

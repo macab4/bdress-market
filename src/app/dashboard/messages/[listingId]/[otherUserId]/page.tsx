@@ -172,7 +172,7 @@ export default async function MessageThreadPage({
                         <div className="mt-1.5">
                           <Link
                             href={`/listings/${listingId}/checkout`}
-                            className="inline-block text-[10px] tracking-widest uppercase bg-[#5a7a55] text-white px-3 py-1.5 hover:bg-[#4a6647] transition"
+                            className="inline-block text-[10px] tracking-widest uppercase bg-[#7fab87] text-white px-3 py-1.5 hover:bg-[#6f9678] transition"
                           >
                             Comprar al precio pactado
                           </Link>

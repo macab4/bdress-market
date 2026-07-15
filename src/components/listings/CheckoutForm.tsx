@@ -171,7 +171,7 @@ export default function CheckoutForm({ listingId, price, initialValues }: Checko
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
       <button type="submit" disabled={loading || !quote}
-        className="w-full bg-black text-white text-xs tracking-widest uppercase py-4 hover:bg-gray-800 transition disabled:opacity-50">
+        className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 hover:bg-[#6f9678] transition disabled:opacity-50">
         {loading ? 'Redirigiendo a pago...' : 'Continuar al pago'}
       </button>
       <p className="text-[10px] text-gray-400 text-center">
