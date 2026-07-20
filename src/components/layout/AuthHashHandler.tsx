@@ -1,34 +1,32 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// Los magic links y recovery links de Supabase no siempre respetan el
-// redirectTo que le pedimos (depende de la lista de URLs permitidas en el
-// dashboard de Supabase) — a veces caen en la portada u otra página con el
-// token en el hash (#access_token=...), invisible para el servidor. Este
-// componente vive en el layout raíz para procesarlo caiga donde caiga.
+// Los magic links y recovery links que genera la API de administrador
+// (invitación de vendedoras migradas, "olvidé mi clave") llegan con el token
+// en el hash de la URL (#access_token=...) en formato implícito. Nuestro
+// cliente está configurado en modo PKCE (default de @supabase/ssr), que
+// rechaza en silencio ese formato — por eso nunca dejaba a nadie adentro.
+// Acá lo procesamos a mano con setSession(), que no depende del flujo.
 export default function AuthHashHandler() {
-  const router = useRouter()
-
   useEffect(() => {
     if (!window.location.hash.includes('access_token')) return
     const params = new URLSearchParams(window.location.hash.slice(1))
+    const access_token = params.get('access_token')
+    const refresh_token = params.get('refresh_token')
     const type = params.get('type')
-    const supabase = createClient()
+    if (!access_token || !refresh_token) return
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) return
-      history.replaceState(null, '', window.location.pathname + window.location.search)
-      if (type === 'recovery') {
-        router.push('/auth/reset-password')
-      } else {
-        router.refresh()
-      }
+    const supabase = createClient()
+    supabase.auth.setSession({ access_token, refresh_token }).then(({ data, error }) => {
+      if (error || !data.session) return
+      // router.refresh() no alcanza a reflejar la cookie recién escrita en los
+      // Server Components (Navbar incluido) — forzamos una recarga real.
+      const cleanPath = window.location.pathname + window.location.search
+      window.location.href = type === 'recovery' ? '/auth/reset-password' : cleanPath
     })
-    return () => subscription.unsubscribe()
-  }, [router])
+  }, [])
 
   return null
 }
