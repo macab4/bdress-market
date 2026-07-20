@@ -7,6 +7,10 @@ import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
 import { Listing } from '@/types'
 
+type PhotoItem =
+  | { id: string; kind: 'existing'; url: string }
+  | { id: string; kind: 'new'; file: File; preview: string }
+
 interface ListingPrefill {
   title: string
   category: CategoryValue
@@ -39,13 +43,13 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     shipping_size: listing?.shipping_size ?? prefill?.shipping_size ?? 'mediano',
     price: listing ? String(listing.price) : '',
   })
-  const [existingPhotos, setExistingPhotos] = useState<string[]>(listing?.photos ?? [])
-  const [newPhotos, setNewPhotos] = useState<File[]>([])
-  const [newPreviews, setNewPreviews] = useState<string[]>([])
+  const [photos, setPhotos] = useState<PhotoItem[]>(
+    (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const totalPhotos = existingPhotos.length + newPhotos.length
+  const totalPhotos = photos.length
 
   function set<K extends keyof typeof form>(field: K, value: typeof form[K]) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -66,20 +70,29 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   }
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const availableSlots = 5 - existingPhotos.length - newPhotos.length
+    const availableSlots = 5 - photos.length
     const files = Array.from(e.target.files || []).slice(0, availableSlots)
-    const updated = [...newPhotos, ...files]
-    setNewPhotos(updated)
-    setNewPreviews(updated.map(f => URL.createObjectURL(f)))
+    const newItems: PhotoItem[] = files.map(file => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      kind: 'new',
+      file,
+      preview: URL.createObjectURL(file),
+    }))
+    setPhotos(prev => [...prev, ...newItems])
   }
 
-  function removeExistingPhoto(i: number) {
-    setExistingPhotos(prev => prev.filter((_, idx) => idx !== i))
+  function removePhoto(id: string) {
+    setPhotos(prev => prev.filter(p => p.id !== id))
   }
 
-  function removeNewPhoto(i: number) {
-    setNewPhotos(prev => prev.filter((_, idx) => idx !== i))
-    setNewPreviews(prev => prev.filter((_, idx) => idx !== i))
+  function movePhoto(index: number, direction: -1 | 1) {
+    setPhotos(prev => {
+      const target = index + direction
+      if (target < 0 || target >= prev.length) return prev
+      const updated = [...prev]
+      ;[updated[index], updated[target]] = [updated[target], updated[index]]
+      return updated
+    })
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -95,19 +108,21 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth/login'); return }
 
-    // Subir fotos nuevas a Supabase Storage
-    const uploadedUrls: string[] = []
-    for (const file of newPhotos) {
-      const ext = file.name.split('.').pop()
+    // Subir fotos nuevas a Supabase Storage, respetando el orden elegido
+    const orderedUrls: string[] = []
+    for (const item of photos) {
+      if (item.kind === 'existing') { orderedUrls.push(item.url); continue }
+
+      const ext = item.file.name.split('.').pop()
       const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const { error: uploadError } = await supabase.storage
         .from('listings')
-        .upload(path, file, { contentType: file.type })
+        .upload(path, item.file, { contentType: item.file.type })
 
       if (uploadError) { setError('Error subiendo foto: ' + uploadError.message); setLoading(false); return }
 
       const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(path)
-      uploadedUrls.push(publicUrl)
+      orderedUrls.push(publicUrl)
     }
 
     const payload = {
@@ -121,7 +136,7 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       colors: form.colors,
       shipping_size: form.shipping_size,
       price: parseInt(form.price),
-      photos: [...existingPhotos, ...uploadedUrls],
+      photos: orderedUrls,
     }
 
     if (listing) {
@@ -171,22 +186,33 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
               Fotos (hasta 5)
             </label>
             <div className="grid grid-cols-5 gap-2 mb-3">
-              {existingPhotos.map((src, i) => (
-                <div key={`existing-${i}`} className="relative aspect-square bg-gray-100">
-                  <Image src={src} alt="" fill className="object-cover" />
-                  <button type="button" onClick={() => removeExistingPhoto(i)}
+              {photos.map((item, i) => (
+                <div key={item.id} className="relative aspect-square bg-gray-100 group">
+                  <Image src={item.kind === 'existing' ? item.url : item.preview} alt="" fill className="object-cover" />
+
+                  {i === 0 && (
+                    <span className="absolute top-1 left-1 bg-[#7fab87] text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5">
+                      Portada
+                    </span>
+                  )}
+
+                  <button type="button" onClick={() => removePhoto(item.id)}
                     className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center">
                     ×
                   </button>
-                </div>
-              ))}
-              {newPreviews.map((src, i) => (
-                <div key={`new-${i}`} className="relative aspect-square bg-gray-100">
-                  <Image src={src} alt="" fill className="object-cover" />
-                  <button type="button" onClick={() => removeNewPhoto(i)}
-                    className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center">
-                    ×
-                  </button>
+
+                  <div className="absolute bottom-0 inset-x-0 flex justify-between px-0.5 pb-0.5">
+                    <button type="button" onClick={() => movePhoto(i, -1)} disabled={i === 0}
+                      aria-label="Mover a la izquierda"
+                      className="bg-black/60 text-white w-5 h-5 flex items-center justify-center text-xs disabled:opacity-0">
+                      ‹
+                    </button>
+                    <button type="button" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1}
+                      aria-label="Mover a la derecha"
+                      className="bg-black/60 text-white w-5 h-5 flex items-center justify-center text-xs disabled:opacity-0">
+                      ›
+                    </button>
+                  </div>
                 </div>
               ))}
               {totalPhotos < 5 && (
@@ -197,7 +223,7 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
               )}
             </div>
             <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
-            <p className="text-[10px] text-gray-400">La primera foto es la portada. Usa fotos con buena luz.</p>
+            <p className="text-[10px] text-gray-400">Usa las flechas para reordenar. La primera foto es la portada.</p>
           </div>
 
           {/* Categoría */}
