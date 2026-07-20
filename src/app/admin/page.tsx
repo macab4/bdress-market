@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { Order } from '@/types'
@@ -53,15 +54,15 @@ export default async function AdminPage() {
   const totalProcessingFee = realOrders.reduce((sum, o) => sum + o.processing_fee, 0)
   const netRevenue = totalCommission - totalProcessingFee
 
-  const stats = [
-    { label: 'Usuarias', value: userCount ?? 0 },
-    { label: 'Prendas activas', value: activeListings },
-    { label: 'Prendas vendidas', value: soldListings },
-    { label: 'Prendas pausadas', value: pausedListings },
-    { label: 'GMV total', value: `$${totalGMV.toLocaleString('es-CL')}` },
-    { label: 'Protección BDress cobrada', value: `$${totalCommission.toLocaleString('es-CL')}` },
-    { label: 'Procesamiento (a vendedoras)', value: `$${totalProcessingFee.toLocaleString('es-CL')}` },
-    { label: 'Ingreso neto Bdress', value: `$${netRevenue.toLocaleString('es-CL')}` },
+  const stats: { label: string; value: string | number; href?: string }[] = [
+    { label: 'Usuarias', value: userCount ?? 0, href: '/admin/users' },
+    { label: 'Prendas activas', value: activeListings, href: '/admin/listings?status=active' },
+    { label: 'Prendas vendidas', value: soldListings, href: '/admin/listings?status=sold' },
+    { label: 'Prendas pausadas', value: pausedListings, href: '/admin/listings?status=paused' },
+    { label: 'GMV total', value: `$${totalGMV.toLocaleString('es-CL')}`, href: '#ordenes' },
+    { label: 'Protección BDress cobrada', value: `$${totalCommission.toLocaleString('es-CL')}`, href: '#ordenes' },
+    { label: 'Procesamiento (a vendedoras)', value: `$${totalProcessingFee.toLocaleString('es-CL')}`, href: '#ordenes' },
+    { label: 'Ingreso neto Bdress', value: `$${netRevenue.toLocaleString('es-CL')}`, href: '#ordenes' },
   ]
 
   return (
@@ -74,12 +75,21 @@ export default async function AdminPage() {
 
         {/* Métricas */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {stats.map(({ label, value }) => (
-            <div key={label} className="bg-white p-5">
-              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">{label}</p>
-              <p className="text-xl font-light">{value}</p>
-            </div>
-          ))}
+          {stats.map(({ label, value, href }) => {
+            const card = (
+              <div className="bg-white p-5 h-full hover:bg-gray-50 transition">
+                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">{label}</p>
+                <p className="text-xl font-light">{value}</p>
+              </div>
+            )
+            return href ? (
+              <Link key={label} href={href} className="block">
+                {card}
+              </Link>
+            ) : (
+              <div key={label}>{card}</div>
+            )
+          })}
         </div>
 
         {/* Envíos atrasados */}
@@ -107,7 +117,7 @@ export default async function AdminPage() {
         )}
 
         {/* Órdenes */}
-        <section>
+        <section id="ordenes">
           <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
             Órdenes recientes ({allOrders.length})
           </h2>

@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Listing } from '@/types'
@@ -14,17 +15,30 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   paused: { label: 'Pausada', color: 'bg-gray-100 text-gray-400' },
 }
 
-export default async function AdminListingsPage() {
+export default async function AdminListingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>
+}) {
   await requireAdminUser()
+  const { status } = await searchParams
   const admin = createAdminClient()
 
   const { data: listings } = await admin
     .from('listings')
     .select('*, seller:profiles(name)')
     .order('created_at', { ascending: false })
-    .limit(200) as unknown as { data: AdminListing[] | null }
+    .limit(1000) as unknown as { data: AdminListing[] | null }
 
-  const all = listings ?? []
+  const everyListing = listings ?? []
+  const all = status ? everyListing.filter(l => l.status === status) : everyListing
+
+  const TABS: { value: string | undefined; label: string }[] = [
+    { value: undefined, label: 'Todas' },
+    { value: 'active', label: 'Activas' },
+    { value: 'sold', label: 'Vendidas' },
+    { value: 'paused', label: 'Pausadas' },
+  ]
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -34,8 +48,23 @@ export default async function AdminListingsPage() {
           <AdminNav active="/admin/listings" />
         </div>
 
+        <div className="flex gap-6 mb-6">
+          {TABS.map(tab => {
+            const count = tab.value ? everyListing.filter(l => l.status === tab.value).length : everyListing.length
+            return (
+              <Link
+                key={tab.label}
+                href={tab.value ? `/admin/listings?status=${tab.value}` : '/admin/listings'}
+                className={`text-[10px] tracking-widest uppercase pb-1 ${status === tab.value ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
+              >
+                {tab.label} ({count})
+              </Link>
+            )
+          })}
+        </div>
+
         <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
-          Todas las prendas ({all.length})
+          {status ? `Prendas ${STATUS_LABEL[status]?.label.toLowerCase() ?? status}` : 'Todas las prendas'} ({all.length})
         </h2>
 
         {all.length === 0 ? (

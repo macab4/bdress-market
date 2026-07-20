@@ -304,3 +304,10 @@ alter table public.message_flags enable row level security;
 -- Pegar y correr en Supabase Dashboard → SQL Editor.
 -- ============================================================
 alter table public.message_flags add column reviewed_at timestamptz;
+
+-- ============================================================
+-- Migración: marca a las vendedoras importadas del marketplace anterior
+-- (julio 2026), para poder armar un embudo de activación en el admin.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.profiles add column legacy_seller boolean not null default false;
