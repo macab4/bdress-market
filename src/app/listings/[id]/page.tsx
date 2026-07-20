@@ -6,6 +6,7 @@ import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
+import ShareButton from '@/components/listings/ShareButton'
 import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime } from '@/lib/catalog'
 import { getShippingQuote } from '@/lib/chilexpress'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
@@ -132,6 +133,7 @@ export default async function ListingPage({
                   <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>
                     {conditionGroupLabel(listing.condition)}
                   </span>
+                  <ShareButton title={listing.title} buttonClassName="border border-gray-200" />
                   <div className="flex items-center gap-1">
                     <FavoriteButton
                       listingId={listing.id}
