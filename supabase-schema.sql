@@ -49,7 +49,7 @@ create table public.listings (
   size          text not null,
   brand         text not null default '',
   condition     text not null check (condition in ('nuevo_con_etiquetas','nuevo_sin_etiquetas','muy_bueno','bueno','satisfactorio')),
-  color         text check (color in ('negro','gris','blanco','crema','beige','naranja_pastel','naranja','coral','rojo','burdeos','rosa','rosa_palido','morado','lila','azul_claro','azul','azul_marino','turquesa','menta','verde','verde_oscuro','caqui','marron','amarillo','plateado','dorado','varios','transparente')),
+  colors        text[] not null default '{}' check (array_length(colors, 1) is null or array_length(colors, 1) <= 2),
   shipping_size text not null default 'mediano' check (shipping_size in ('pequeno','mediano','grande')),
   price         integer not null check (price > 0),
   photos        text[] not null default '{}',
@@ -311,3 +311,13 @@ alter table public.message_flags add column reviewed_at timestamptz;
 -- Pegar y correr en Supabase Dashboard → SQL Editor.
 -- ============================================================
 alter table public.profiles add column legacy_seller boolean not null default false;
+
+-- ============================================================
+-- Migración: permite hasta 2 colores por prenda (antes era uno solo)
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.listings add column colors text[] not null default '{}';
+update public.listings set colors = array[color] where color is not null;
+alter table public.listings drop column color;
+alter table public.listings add constraint listings_colors_max2
+  check (array_length(colors, 1) is null or array_length(colors, 1) <= 2);

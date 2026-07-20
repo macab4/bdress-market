@@ -34,7 +34,7 @@ export interface Listing {
   size: string
   brand: string
   condition: ListingCondition
-  color: ListingColor | null
+  colors: ListingColor[]
   shipping_size: ListingShippingSize
   price: number
   photos: string[]

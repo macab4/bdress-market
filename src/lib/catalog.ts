@@ -3,12 +3,16 @@ export const CATEGORIES = [
     value: 'mujer',
     label: 'Mujer',
     subcategories: [
-      'Vestidos de noche',
-      'Vestidos de fiesta',
-      'Vestidos casuales',
-      'Vestidos de novia',
+      'Vestidos mini',
+      'Vestidos midi',
       'Vestidos largos',
-      'Vestidos cortos',
+      'Vestidos de novia',
+      'Vestidos de fiesta',
+      'Vestidos de verano',
+      'Vestidos de invierno',
+      'Vestidos formales',
+      'Vestidos informales',
+      'Otros vestidos',
       'Conjuntos',
       'Tops y blusas',
       'Pantalones y jeans',
@@ -63,14 +67,17 @@ export const CATEGORIES = [
 
 export type CategoryValue = (typeof CATEGORIES)[number]['value']
 
+const LETTER_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '4XL', '5XL', 'Talla única', 'Otros']
+
 export const SIZES_BY_CATEGORY: Record<CategoryValue, string[]> = {
-  mujer: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Talla única'],
-  hombre: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Talla única'],
+  mujer: LETTER_SIZES,
+  hombre: LETTER_SIZES,
   ninos: [
     '0-3 meses', '3-6 meses', '6-12 meses',
     '1-2 años', '2-4 años', '4-6 años', '6-8 años', '8-10 años', '10-12 años', '12-14 años',
+    'Otros',
   ],
-  unisex: ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Talla única'],
+  unisex: LETTER_SIZES,
 }
 
 export const CONDITIONS = [
@@ -173,9 +180,16 @@ export const COLORS = [
 
 export type ColorValue = (typeof COLORS)[number]['value']
 
+export const MAX_LISTING_COLORS = 2
+
 export function colorLabel(value: string | null): string {
   if (!value) return 'Sin color'
   return COLORS.find(c => c.value === value)?.label ?? value
+}
+
+export function colorLabels(values: string[] | null | undefined): string {
+  if (!values || values.length === 0) return 'Sin color'
+  return values.map(colorLabel).join(', ')
 }
 
 export function colorHex(value: string): string {

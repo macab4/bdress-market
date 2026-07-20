@@ -4,27 +4,39 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
 import { Listing } from '@/types'
+
+interface ListingPrefill {
+  title: string
+  category: CategoryValue
+  subcategory: string
+  size: string
+  brand: string
+  colors: string[]
+  shipping_size: Listing['shipping_size']
+}
 
 interface ListingFormProps {
   listing?: Listing // presente = modo edición
   priceLocked?: boolean // hay una oferta pendiente — no se puede cambiar el precio
+  prefill?: ListingPrefill // precarga desde una compra propia (revender) — nunca en modo edición
+  originalPrice?: number // precio al que la compró, solo referencia visual
 }
 
-export default function ListingForm({ listing, priceLocked }: ListingFormProps) {
+export default function ListingForm({ listing, priceLocked, prefill, originalPrice }: ListingFormProps) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
-    title: listing?.title ?? '',
+    title: listing?.title ?? prefill?.title ?? '',
     description: listing?.description ?? '',
-    category: (listing?.category ?? '') as CategoryValue | '',
-    subcategory: listing?.subcategory ?? '',
-    size: listing?.size ?? '',
-    brand: listing?.brand ?? '',
+    category: (listing?.category ?? prefill?.category ?? '') as CategoryValue | '',
+    subcategory: listing?.subcategory ?? prefill?.subcategory ?? '',
+    size: listing?.size ?? prefill?.size ?? '',
+    brand: listing?.brand ?? prefill?.brand ?? '',
     condition: listing?.condition ?? 'muy_bueno',
-    color: (listing?.color ?? '') as string,
-    shipping_size: listing?.shipping_size ?? 'mediano',
+    colors: (listing?.colors ?? prefill?.colors ?? []) as string[],
+    shipping_size: listing?.shipping_size ?? prefill?.shipping_size ?? 'mediano',
     price: listing ? String(listing.price) : '',
   })
   const [existingPhotos, setExistingPhotos] = useState<string[]>(listing?.photos ?? [])
@@ -41,6 +53,16 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
 
   function setCategory(value: CategoryValue) {
     setForm(prev => ({ ...prev, category: value, subcategory: '', size: '' }))
+  }
+
+  function toggleColor(value: string) {
+    setForm(prev => {
+      if (prev.colors.includes(value)) {
+        return { ...prev, colors: prev.colors.filter(c => c !== value) }
+      }
+      if (prev.colors.length >= MAX_LISTING_COLORS) return prev
+      return { ...prev, colors: [...prev.colors, value] }
+    })
   }
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
@@ -65,7 +87,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
     if (totalPhotos === 0) { setError('Agrega al menos una foto'); return }
     if (!form.category) { setError('Selecciona una categoría'); return }
     if (!form.subcategory) { setError('Selecciona una subcategoría'); return }
-    if (!form.color) { setError('Selecciona un color'); return }
+    if (form.colors.length === 0) { setError('Selecciona al menos un color'); return }
     setLoading(true)
     setError('')
 
@@ -96,7 +118,7 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
       size: form.size,
       brand: form.brand,
       condition: form.condition,
-      color: form.color,
+      colors: form.colors,
       shipping_size: form.shipping_size,
       price: parseInt(form.price),
       photos: [...existingPhotos, ...uploadedUrls],
@@ -132,6 +154,14 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
         <h1 className="text-xl font-light tracking-widest uppercase mb-8 text-center">
           {listing ? 'Editar prenda' : 'Publicar prenda'}
         </h1>
+
+        {prefill && (
+          <p className="bg-[#7fab87]/10 text-[#5a7a55] text-xs px-4 py-3 mb-4 leading-relaxed">
+            Precargamos marca, talla, color y categoría de tu compra
+            {originalPrice ? ` (la compraste en $${originalPrice.toLocaleString('es-CL')})` : ''}.
+            Sube fotos reales de tu prenda y revisa el estado y el precio — ahora son tuyos.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="bg-white p-6 space-y-6">
 
@@ -253,22 +283,28 @@ export default function ListingForm({ listing, priceLocked }: ListingFormProps) 
 
           {/* Color */}
           <div>
-            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Color</label>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">
+              Color <span className="normal-case text-gray-400">(hasta {MAX_LISTING_COLORS})</span>
+            </label>
             <div className="grid grid-cols-6 gap-3">
-              {COLORS.map(c => (
-                <button key={c.value} type="button" onClick={() => set('color', c.value)}
-                  className="flex flex-col items-center gap-1 group" aria-pressed={form.color === c.value}>
-                  <span
-                    className={`w-8 h-8 rounded-full border transition ${
-                      form.color === c.value ? 'ring-2 ring-offset-2 ring-black' : 'border-gray-200 group-hover:border-gray-400'
-                    } ${c.value === 'blanco' || c.value === 'transparente' ? 'border-gray-300' : ''}`}
-                    style={c.value === 'varios'
-                      ? { background: 'conic-gradient(from 0deg, #C0392B, #F5A623, #F5E050, #4C9A4A, #2166B8, #6C2C8C, #C0392B)' }
-                      : { backgroundColor: c.hex }}
-                  />
-                  <span className="text-[9px] text-gray-400 text-center leading-tight">{c.label}</span>
-                </button>
-              ))}
+              {COLORS.map(c => {
+                const selected = form.colors.includes(c.value)
+                const disabled = !selected && form.colors.length >= MAX_LISTING_COLORS
+                return (
+                  <button key={c.value} type="button" onClick={() => toggleColor(c.value)} disabled={disabled}
+                    className="flex flex-col items-center gap-1 group disabled:opacity-30" aria-pressed={selected}>
+                    <span
+                      className={`w-8 h-8 rounded-full border transition ${
+                        selected ? 'ring-2 ring-offset-2 ring-black' : 'border-gray-200 group-hover:border-gray-400'
+                      } ${c.value === 'blanco' || c.value === 'transparente' ? 'border-gray-300' : ''}`}
+                      style={c.value === 'varios'
+                        ? { background: 'conic-gradient(from 0deg, #C0392B, #F5A623, #F5E050, #4C9A4A, #2166B8, #6C2C8C, #C0392B)' }
+                        : { backgroundColor: c.hex }}
+                    />
+                    <span className="text-[9px] text-gray-400 text-center leading-tight">{c.label}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 

@@ -59,7 +59,7 @@ export default async function HomePage({
     const group = CONDITION_GROUPS.find(g => g.value === params.condition)
     if (group) query = query.in('condition', group.conditions)
   }
-  if (params.color) query = query.in('color', params.color.split(','))
+  if (params.color) query = query.overlaps('colors', params.color.split(','))
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
 

@@ -131,6 +131,15 @@ export default async function PurchasesPage() {
                           />
                         )
                       )}
+
+                      {['delivered', 'completed'].includes(order.status) && (
+                        <Link
+                          href={`/listings/new?fromOrder=${order.id}`}
+                          className="inline-block mt-3 text-[10px] tracking-widest uppercase text-[#5a7a55] border border-[#7fab87] px-3 py-1.5 hover:bg-[#7fab87] hover:text-white transition"
+                        >
+                          Revender esta prenda
+                        </Link>
+                      )}
                     </div>
                   </div>
 

@@ -42,6 +42,19 @@ export default async function SalesPage() {
   const reviewedOrderIds = new Set((myReviews ?? []).map(r => r.order_id))
 
   const activeListings = listings.filter(l => l.status === 'active' || l.status === 'paused')
+
+  type RepopOrder = { id: string; amount: number; listing: { title: string; brand: string; photos: string[] } | null }
+  let repopOrders: RepopOrder[] = []
+  if (activeListings.length === 0) {
+    const { data } = await supabase
+      .from('orders')
+      .select('id, amount, listing:listings(title, brand, photos)')
+      .eq('buyer_id', user.id)
+      .in('status', ['delivered', 'completed'])
+      .order('created_at', { ascending: false })
+      .limit(4) as unknown as { data: RepopOrder[] | null }
+    repopOrders = data ?? []
+  }
   const pendingOrders = orders.filter(o => o.status === 'paid')
   const shippedOrders = orders.filter(o => o.status === 'shipped')
   const deliveredOrders = orders.filter(o => o.status === 'delivered')
@@ -220,6 +233,41 @@ export default async function SalesPage() {
           {activeListings.length === 0 ? (
             <div className="bg-white p-10 text-center">
               <p className="text-sm text-gray-400 mb-4">Aún no tienes prendas publicadas.</p>
+
+              {repopOrders.length > 0 && (
+                <div className="mt-6 text-left">
+                  <p className="text-xs font-medium mb-1">¿No sabes qué publicar?</p>
+                  <p className="text-xs text-gray-400 mb-4">
+                    Revende algo que ya compraste — precargamos los datos por ti.
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {repopOrders.map(order => {
+                      const photo = order.listing?.photos?.[0]
+                      return (
+                        <div key={order.id} className="text-left">
+                          <div className="aspect-square bg-gray-100 relative overflow-hidden mb-2">
+                            {photo ? (
+                              <Image src={photo} alt={order.listing?.title ?? ''} fill className="object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                            )}
+                          </div>
+                          <p className="text-xs font-medium truncate">{order.listing?.brand || order.listing?.title}</p>
+                          <p className="text-[10px] text-gray-400 mb-2">
+                            Comprado: ${order.amount.toLocaleString('es-CL')}
+                          </p>
+                          <Link
+                            href={`/listings/new?fromOrder=${order.id}`}
+                            className="block text-center bg-[#7fab87] text-white text-[9px] tracking-widest uppercase py-2 hover:bg-[#6f9678] transition"
+                          >
+                            Revender
+                          </Link>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-2">

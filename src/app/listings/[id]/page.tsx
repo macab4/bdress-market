@@ -168,15 +168,19 @@ export default async function ListingPage({
                   <span className="text-gray-400">Estado</span>
                   <span className="text-gray-700">{conditionDetail.label}</span>
                 </div>
-                {listing.color && (
+                {listing.colors && listing.colors.length > 0 && (
                   <div className="flex justify-between px-4 py-2.5 items-center">
                     <span className="text-gray-400">Color</span>
-                    <span className="text-gray-700 flex items-center gap-1.5">
-                      <span
-                        className="w-3 h-3 rounded-full border border-gray-300 inline-block"
-                        style={{ backgroundColor: colorHex(listing.color) }}
-                      />
-                      {colorLabel(listing.color)}
+                    <span className="text-gray-700 flex items-center gap-3">
+                      {listing.colors.map(color => (
+                        <span key={color} className="flex items-center gap-1.5">
+                          <span
+                            className="w-3 h-3 rounded-full border border-gray-300 inline-block"
+                            style={{ backgroundColor: colorHex(color) }}
+                          />
+                          {colorLabel(color)}
+                        </span>
+                      ))}
                     </span>
                   </div>
                 )}
