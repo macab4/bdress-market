@@ -93,6 +93,12 @@ export default async function AdminListingsPage({
                   <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 flex-shrink-0 whitespace-nowrap ${status.color}`}>
                     {status.label}
                   </span>
+                  <Link
+                    href={`/admin/listings/${listing.id}/photos`}
+                    className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black flex-shrink-0"
+                  >
+                    Editar fotos
+                  </Link>
                   <AdminListingActions listingId={listing.id} status={listing.status} />
                 </div>
               )

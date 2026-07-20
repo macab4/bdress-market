@@ -14,17 +14,24 @@ export async function PATCH(
   if (!(await checkAdmin())) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   const { id } = await params
 
-  let status: string
+  const update: { status?: string; photos?: string[] } = {}
   try {
     const body = await request.json()
-    status = body.status
-    if (!['active', 'paused'].includes(status)) throw new Error()
+    if (body.status !== undefined) {
+      if (!['active', 'paused'].includes(body.status)) throw new Error()
+      update.status = body.status
+    }
+    if (body.photos !== undefined) {
+      if (!Array.isArray(body.photos) || body.photos.length === 0 || !body.photos.every((p: unknown) => typeof p === 'string')) throw new Error()
+      update.photos = body.photos
+    }
+    if (Object.keys(update).length === 0) throw new Error()
   } catch {
-    return Response.json({ error: 'status inválido' }, { status: 400 })
+    return Response.json({ error: 'Solicitud inválida' }, { status: 400 })
   }
 
   const admin = createAdminClient()
-  const { error } = await admin.from('listings').update({ status }).eq('id', id)
+  const { error } = await admin.from('listings').update(update).eq('id', id)
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
   return Response.json({ ok: true })
