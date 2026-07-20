@@ -3,6 +3,9 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
+import { SortableContext, arrayMove, useSortable, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
 import { Listing } from '@/types'
@@ -85,13 +88,18 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     setPhotos(prev => prev.filter(p => p.id !== id))
   }
 
-  function movePhoto(index: number, direction: -1 | 1) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
     setPhotos(prev => {
-      const target = index + direction
-      if (target < 0 || target >= prev.length) return prev
-      const updated = [...prev]
-      ;[updated[index], updated[target]] = [updated[target], updated[index]]
-      return updated
+      const oldIndex = prev.findIndex(p => p.id === active.id)
+      const newIndex = prev.findIndex(p => p.id === over.id)
+      return arrayMove(prev, oldIndex, newIndex)
     })
   }
 
@@ -185,45 +193,23 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-3">
               Fotos (hasta 5)
             </label>
-            <div className="grid grid-cols-5 gap-2 mb-3">
-              {photos.map((item, i) => (
-                <div key={item.id} className="relative aspect-square bg-gray-100 group">
-                  <Image src={item.kind === 'existing' ? item.url : item.preview} alt="" fill className="object-cover" />
-
-                  {i === 0 && (
-                    <span className="absolute top-1 left-1 bg-[#7fab87] text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5">
-                      Portada
-                    </span>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={photos.map(p => p.id)} strategy={rectSortingStrategy}>
+                <div className="grid grid-cols-5 gap-2 mb-3">
+                  {photos.map((item, i) => (
+                    <SortablePhotoThumb key={item.id} item={item} isCover={i === 0} onRemove={() => removePhoto(item.id)} />
+                  ))}
+                  {totalPhotos < 5 && (
+                    <button type="button" onClick={() => fileRef.current?.click()}
+                      className="aspect-square bg-gray-100 flex items-center justify-center text-gray-400 text-2xl hover:bg-gray-200 transition">
+                      +
+                    </button>
                   )}
-
-                  <button type="button" onClick={() => removePhoto(item.id)}
-                    className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center">
-                    ×
-                  </button>
-
-                  <div className="absolute bottom-0 inset-x-0 flex justify-between px-0.5 pb-0.5">
-                    <button type="button" onClick={() => movePhoto(i, -1)} disabled={i === 0}
-                      aria-label="Mover a la izquierda"
-                      className="bg-black/60 text-white w-5 h-5 flex items-center justify-center text-xs disabled:opacity-0">
-                      ‹
-                    </button>
-                    <button type="button" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1}
-                      aria-label="Mover a la derecha"
-                      className="bg-black/60 text-white w-5 h-5 flex items-center justify-center text-xs disabled:opacity-0">
-                      ›
-                    </button>
-                  </div>
                 </div>
-              ))}
-              {totalPhotos < 5 && (
-                <button type="button" onClick={() => fileRef.current?.click()}
-                  className="aspect-square bg-gray-100 flex items-center justify-center text-gray-400 text-2xl hover:bg-gray-200 transition">
-                  +
-                </button>
-              )}
-            </div>
+              </SortableContext>
+            </DndContext>
             <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
-            <p className="text-[10px] text-gray-400">Usa las flechas para reordenar. La primera foto es la portada.</p>
+            <p className="text-[10px] text-gray-400">Arrastra para reordenar. La primera foto es la portada.</p>
           </div>
 
           {/* Categoría */}
@@ -403,6 +389,33 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
           </button>
         </form>
       </div>
+    </div>
+  )
+}
+
+function SortablePhotoThumb({ item, isCover, onRemove }: { item: PhotoItem; isCover: boolean; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}
+      className="relative aspect-square bg-gray-100 touch-none cursor-grab active:cursor-grabbing">
+      <Image src={item.kind === 'existing' ? item.url : item.preview} alt="" fill className="object-cover pointer-events-none" />
+
+      {isCover && (
+        <span className="absolute top-1 left-1 bg-[#7fab87] text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5">
+          Portada
+        </span>
+      )}
+
+      <button
+        type="button"
+        onPointerDown={e => e.stopPropagation()}
+        onClick={e => { e.stopPropagation(); onRemove() }}
+        className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center z-10"
+      >
+        ×
+      </button>
     </div>
   )
 }
