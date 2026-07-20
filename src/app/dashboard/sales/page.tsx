@@ -287,22 +287,26 @@ export default async function SalesPage() {
                       <p className="text-xs text-gray-400">{listing.brand} · T. {listing.size}</p>
                       <p className="text-sm font-semibold mt-0.5">${listing.price.toLocaleString('es-CL')}</p>
                     </div>
-                    <div className="flex items-center gap-4 flex-shrink-0">
-                      <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${
-                        listing.status === 'active' ? 'bg-[#7fab87]/10 text-[#5a7a55]' : 'bg-gray-100 text-gray-400'
-                      }`}>
-                        {listing.status === 'active' ? 'Activa' : 'Pausada'}
-                      </span>
-                      <PauseListingButton listingId={listing.id} currentStatus={listing.status as 'active' | 'paused'} />
-                      <Link href={`/listings/${listing.id}/edit`}
-                        className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
-                        Editar
-                      </Link>
-                      <Link href={`/listings/${listing.id}`}
-                        className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
-                        Ver
-                      </Link>
-                      <DeleteListingButton listingId={listing.id} listingTitle={listing.title} />
+                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-3">
+                        <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${
+                          listing.status === 'active' ? 'bg-[#7fab87]/10 text-[#5a7a55]' : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          {listing.status === 'active' ? 'Activa' : 'Pausada'}
+                        </span>
+                        <Link href={`/listings/${listing.id}/edit`}
+                          className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-3 py-1.5 hover:bg-[#6f9678] transition">
+                          Editar
+                        </Link>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <PauseListingButton listingId={listing.id} currentStatus={listing.status as 'active' | 'paused'} />
+                        <Link href={`/listings/${listing.id}`}
+                          className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
+                          Ver
+                        </Link>
+                        <DeleteListingButton listingId={listing.id} listingTitle={listing.title} />
+                      </div>
                     </div>
                   </div>
                 )

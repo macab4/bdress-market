@@ -7,6 +7,7 @@ const TABS = [
   { href: '/admin/disputes', label: 'Disputas' },
   { href: '/admin/messages', label: 'Mensajes' },
   { href: '/admin/shipments', label: 'Envíos' },
+  { href: '/admin/analytics', label: 'Monitoreo' },
 ]
 
 export default function AdminNav({ active }: { active: string }) {

@@ -283,7 +283,7 @@ export default async function ListingPage({
                     Esta es tu prenda publicada
                   </p>
                   <Link href={`/listings/${listing.id}/edit`}
-                    className="block w-full text-center text-xs tracking-widest uppercase text-gray-500 hover:text-black border border-gray-200 py-3 transition">
+                    className="block w-full text-center text-xs tracking-widest uppercase text-white bg-[#7fab87] hover:bg-[#6f9678] py-3 transition">
                     Editar prenda
                   </Link>
                 </div>

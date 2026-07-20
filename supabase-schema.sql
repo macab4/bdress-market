@@ -321,3 +321,23 @@ update public.listings set colors = array[color] where color is not null;
 alter table public.listings drop column color;
 alter table public.listings add constraint listings_colors_max2
   check (array_length(colors, 1) is null or array_length(colors, 1) <= 2);
+
+-- ============================================================
+-- Migración: panel de monitoreo (visitas, sesiones, ubicación)
+-- Se escribe desde middleware.ts en cada visita — solo el service role
+-- lee/escribe, por eso no lleva policies de RLS para usuarias.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create table public.page_views (
+  id          bigint generated always as identity primary key,
+  path        text not null,
+  visitor_id  uuid not null,
+  user_id     uuid references public.profiles(id),
+  country     text,
+  region      text,
+  city        text,
+  created_at  timestamptz not null default now()
+);
+create index page_views_created_at_idx on public.page_views (created_at);
+create index page_views_visitor_id_idx on public.page_views (visitor_id);
+alter table public.page_views enable row level security;
