@@ -212,6 +212,10 @@ export const CONFIRMED_HOLD_DAYS = 2
 // contado desde el despacho.
 export const SHIPPED_FALLBACK_DAYS = 7
 
+// Si nadie dejó reseña a los N días de completada la orden, se manda un
+// recordatorio de seguimiento — ver src/app/api/cron/review-followup/route.ts.
+export const REVIEW_FOLLOWUP_DAYS = 3
+
 export function daysUntilRelease(confirmedAt: string | null): string {
   if (!confirmedAt) return `${CONFIRMED_HOLD_DAYS} días`
   const releaseAt = new Date(confirmedAt).getTime() + CONFIRMED_HOLD_DAYS * 24 * 60 * 60 * 1000

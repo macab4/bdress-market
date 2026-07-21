@@ -45,28 +45,45 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 }
 
 // Se dispara cuando una orden pasa a "completed" (cron de auto-liberación o
-// resolución manual de una disputa) — antes nadie avisaba a la compradora
-// que ya podía dejar su reseña.
+// resolución manual de una disputa) y de nuevo, una sola vez, si a los
+// REVIEW_FOLLOWUP_DAYS nadie dejó su reseña — ver
+// src/app/api/cron/review-followup/route.ts. Sirve para ambos lados: la
+// compradora reseña a la vendedora y viceversa, igual que en Vinted.
 export async function sendReviewReminderEmail({
   to,
   name,
   listingTitle,
+  role,
+  followup = false,
 }: {
   to: string
   name: string | null
   listingTitle: string
+  role: 'buyer' | 'seller'
+  followup?: boolean
 }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const dashboardPath = role === 'buyer' ? '/dashboard/purchases' : '/dashboard/sales'
+  const otherParty = role === 'buyer' ? 'la vendedora' : 'la compradora'
+  const transactionWord = role === 'buyer' ? 'compra' : 'venta'
+
+  const subject = followup
+    ? `Aún puedes dejar tu reseña — ${listingTitle}`
+    : `¿Qué te pareció tu ${transactionWord}? — ${listingTitle}`
+
+  const intro = followup
+    ? `Hola ${name ?? ''}, todavía no dejas tu reseña de <strong>${listingTitle}</strong>. Solo toma un minuto y ayuda a ${otherParty} y a toda la comunidad.`
+    : `Hola ${name ?? ''}, tu ${transactionWord} de <strong>${listingTitle}</strong> ya se completó. Contanos cómo te fue con ${otherParty} — tu reseña ayuda a que la comunidad compre y venda con más confianza.`
+
   await sendEmail({
     to,
-    subject: `¿Qué te pareció tu compra? — ${listingTitle}`,
-    html: emailLayout('Ya puedes dejar tu reseña', `
+    subject,
+    html: emailLayout(followup ? 'Te falta dejar tu reseña' : 'Ya puedes dejar tu reseña', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, tu compra de <strong>${listingTitle}</strong> ya se completó.
-        Contanos cómo te fue — tu reseña ayuda a que la comunidad compre con más confianza.
+        ${intro}
       </p>
       <p style="text-align: center; margin-top: 24px;">
-        <a href="${siteUrl}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+        <a href="${siteUrl}${dashboardPath}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
           Dejar mi reseña
         </a>
       </p>

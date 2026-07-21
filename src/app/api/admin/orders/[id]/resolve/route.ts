@@ -29,7 +29,7 @@ export async function POST(
   const admin = createAdminClient()
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, buyer_id, status, payment_ref')
+    .select('id, listing_id, buyer_id, seller_id, status, payment_ref')
     .eq('id', id)
     .single()
 
@@ -45,16 +45,26 @@ export async function POST(
   }
 
   if (action === 'release') {
-    const { error } = await admin.from('orders').update({ status: 'completed' }).eq('id', id)
+    const { error } = await admin
+      .from('orders')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .eq('id', id)
     if (error) return Response.json({ error: error.message }, { status: 500 })
 
-    const [{ data: listing }, { data: buyer }] = await Promise.all([
+    const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
       admin.from('listings').select('title').eq('id', order.listing_id).single(),
       admin.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
+      admin.from('profiles').select('email, name').eq('id', order.seller_id).single(),
     ])
-    if (buyer?.email) {
-      await sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? 'tu compra' })
-    }
+    const listingTitle = listing?.title ?? 'esta prenda'
+    await Promise.all([
+      buyer?.email
+        ? sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle, role: 'buyer' })
+        : Promise.resolve(),
+      seller?.email
+        ? sendReviewReminderEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
+        : Promise.resolve(),
+    ])
 
     return Response.json({ ok: true })
   }

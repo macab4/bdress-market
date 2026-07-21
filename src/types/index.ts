@@ -69,6 +69,9 @@ export interface Order {
   paid_at: string | null
   shipped_at: string | null
   confirmed_at: string | null
+  completed_at: string | null
+  buyer_review_reminded_at: string | null
+  seller_review_reminded_at: string | null
   created_at: string
   listing?: Listing
   buyer?: Profile

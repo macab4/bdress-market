@@ -14,17 +14,18 @@ export async function GET(request: Request) {
   const admin = createAdminClient()
   const confirmedCutoff = new Date(Date.now() - CONFIRMED_HOLD_DAYS * 24 * 60 * 60 * 1000).toISOString()
   const shippedCutoff = new Date(Date.now() - SHIPPED_FALLBACK_DAYS * 24 * 60 * 60 * 1000).toISOString()
+  const completedAt = new Date().toISOString()
 
   const [confirmedResult, shippedResult] = await Promise.all([
     admin
       .from('orders')
-      .update({ status: 'completed' })
+      .update({ status: 'completed', completed_at: completedAt })
       .eq('status', 'delivered')
       .lt('confirmed_at', confirmedCutoff)
       .select('id'),
     admin
       .from('orders')
-      .update({ status: 'completed' })
+      .update({ status: 'completed', completed_at: completedAt })
       .eq('status', 'shipped')
       .lt('shipped_at', shippedCutoff)
       .select('id'),
@@ -41,16 +42,24 @@ export async function GET(request: Request) {
   if (releasedIds.length > 0) {
     const { data: releasedOrders } = await admin
       .from('orders')
-      .select('buyer_id, listing_id')
+      .select('buyer_id, seller_id, listing_id')
       .in('id', releasedIds)
 
     await Promise.all((releasedOrders ?? []).map(async (order) => {
-      const [{ data: listing }, { data: buyer }] = await Promise.all([
+      const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
         admin.from('listings').select('title').eq('id', order.listing_id).single(),
         admin.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
+        admin.from('profiles').select('email, name').eq('id', order.seller_id).single(),
       ])
-      if (!buyer?.email) return
-      await sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? 'tu compra' })
+      const listingTitle = listing?.title ?? 'esta prenda'
+      await Promise.all([
+        buyer?.email
+          ? sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle, role: 'buyer' })
+          : Promise.resolve(),
+        seller?.email
+          ? sendReviewReminderEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
+          : Promise.resolve(),
+      ])
     }))
   }
 

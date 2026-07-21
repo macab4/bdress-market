@@ -134,6 +134,9 @@ create table public.orders (
   paid_at               timestamptz,
   shipped_at            timestamptz,
   confirmed_at          timestamptz,
+  completed_at          timestamptz,
+  buyer_review_reminded_at  timestamptz,
+  seller_review_reminded_at timestamptz,
   created_at            timestamptz default now()
 );
 alter table public.orders enable row level security;
@@ -341,3 +344,14 @@ create table public.page_views (
 create index page_views_created_at_idx on public.page_views (created_at);
 create index page_views_visitor_id_idx on public.page_views (visitor_id);
 alter table public.page_views enable row level security;
+
+-- ============================================================
+-- Migración: reseñas mutuas (compradora ↔ vendedora) con seguimiento
+-- por correo. completed_at registra cuándo la orden pasó a "completed"
+-- (antes no quedaba guardado); las columnas *_review_reminded_at evitan
+-- mandar el correo de seguimiento más de una vez por lado.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.orders add column completed_at timestamptz;
+alter table public.orders add column buyer_review_reminded_at timestamptz;
+alter table public.orders add column seller_review_reminded_at timestamptz;
