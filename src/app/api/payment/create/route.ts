@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getShippingQuote } from '@/lib/chilexpress'
+import { getShippingQuote } from '@/lib/starken'
 import { buyerProtectionFee, paymentProcessingFee } from '@/lib/catalog'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!

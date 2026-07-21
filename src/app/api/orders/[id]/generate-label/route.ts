@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { createShipment } from '@/lib/chilexpress'
+import { createShipment, getShipmentLabel } from '@/lib/starken'
 import { sendEmail, emailLayout } from '@/lib/email'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -50,7 +50,6 @@ export async function POST(
     recipientPhone: order.shipping_phone,
     recipientEmail: buyer?.email ?? seller.email,
     size: listing.shipping_size,
-    serviceCode: order.courier_service_code,
     declaredValue: listing.price,
     reference: order.id,
   })
@@ -59,14 +58,14 @@ export async function POST(
     return Response.json({ error: shipment.error }, { status: 502 })
   }
 
-  // Subir la etiqueta (imagen JPEG en base64) a Storage
+  // Subir la etiqueta (PDF) a Storage
   let label_url: string | null = null
-  if (shipment.labelBase64) {
-    const buffer = Buffer.from(shipment.labelBase64, 'base64')
-    const path = `labels/${order.id}.jpg`
+  const labelPdf = await getShipmentLabel(shipment.trackingNumber)
+  if (labelPdf) {
+    const path = `labels/${order.id}.pdf`
     const { error: uploadError } = await supabase.storage
       .from('listings')
-      .upload(path, buffer, { contentType: 'image/jpeg', upsert: true })
+      .upload(path, labelPdf, { contentType: 'application/pdf', upsert: true })
 
     if (!uploadError) {
       const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(path)
@@ -106,13 +105,13 @@ export async function POST(
           </a>
         </p>
         <p style="font-size: 13px; color: #888; line-height: 1.6;">
-          Imprímela, pégala en el paquete, y llévalo a cualquier sucursal de Chilexpress.
+          Imprímela, pégala en el paquete, y llévalo a cualquier sucursal de Starken.
         </p>
       `),
     })
   }
 
-  // Email a la compradora avisando que se generó la etiqueta (todavía no significa que Chilexpress ya la retiró)
+  // Email a la compradora avisando que se generó la etiqueta (todavía no significa que Starken ya la retiró)
   if (buyer?.email) {
     await sendEmail({
       to: buyer.email,

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getShippingQuote } from '@/lib/chilexpress'
+import { getShippingQuote } from '@/lib/starken'
 
 export async function POST(request: Request) {
   const supabase = await createClient()

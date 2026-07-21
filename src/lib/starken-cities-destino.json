@@ -1,0 +1,7732 @@
+[
+  {
+    "codigoCiudad": 1024,
+    "nombreCiudad": "ANDACOLLO",
+    "comunas": [
+      {
+        "codigoComuna": 2609,
+        "nombreComuna": "ANDACOLLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1,
+    "nombreCiudad": "SANTIAGO",
+    "comunas": [
+      {
+        "codigoComuna": 26,
+        "nombreComuna": "CERRILLOS"
+      },
+      {
+        "codigoComuna": 3189,
+        "nombreComuna": "CERRO NAVIA"
+      },
+      {
+        "codigoComuna": 3190,
+        "nombreComuna": "CONCHALI"
+      },
+      {
+        "codigoComuna": 52,
+        "nombreComuna": "EL BOSQUE"
+      },
+      {
+        "codigoComuna": 3192,
+        "nombreComuna": "ESTACION CENTRAL"
+      },
+      {
+        "codigoComuna": 3193,
+        "nombreComuna": "HUECHURABA"
+      },
+      {
+        "codigoComuna": 3194,
+        "nombreComuna": "INDEPENDENCIA"
+      },
+      {
+        "codigoComuna": 3195,
+        "nombreComuna": "LA CISTERNA"
+      },
+      {
+        "codigoComuna": 3196,
+        "nombreComuna": "LA FLORIDA"
+      },
+      {
+        "codigoComuna": 3197,
+        "nombreComuna": "LA GRANJA"
+      },
+      {
+        "codigoComuna": 3198,
+        "nombreComuna": "LA PINTANA"
+      },
+      {
+        "codigoComuna": 3199,
+        "nombreComuna": "LA REINA"
+      },
+      {
+        "codigoComuna": 3200,
+        "nombreComuna": "LAS CONDES"
+      },
+      {
+        "codigoComuna": 3201,
+        "nombreComuna": "LO BARNECHEA"
+      },
+      {
+        "codigoComuna": 3202,
+        "nombreComuna": "LO ESPEJO"
+      },
+      {
+        "codigoComuna": 3203,
+        "nombreComuna": "LO PRADO"
+      },
+      {
+        "codigoComuna": 3204,
+        "nombreComuna": "MACUL"
+      },
+      {
+        "codigoComuna": 3205,
+        "nombreComuna": "MAIPU"
+      },
+      {
+        "codigoComuna": 3206,
+        "nombreComuna": "NUNOA"
+      },
+      {
+        "codigoComuna": 3207,
+        "nombreComuna": "PEDRO AGUIRRE CERDA"
+      },
+      {
+        "codigoComuna": 3208,
+        "nombreComuna": "PENALOLEN"
+      },
+      {
+        "codigoComuna": 3209,
+        "nombreComuna": "PROVIDENCIA"
+      },
+      {
+        "codigoComuna": 3210,
+        "nombreComuna": "PUDAHUEL"
+      },
+      {
+        "codigoComuna": 18,
+        "nombreComuna": "PUENTE ALTO"
+      },
+      {
+        "codigoComuna": 3212,
+        "nombreComuna": "QUILICURA"
+      },
+      {
+        "codigoComuna": 3213,
+        "nombreComuna": "QUINTA NORMAL"
+      },
+      {
+        "codigoComuna": 3214,
+        "nombreComuna": "RECOLETA"
+      },
+      {
+        "codigoComuna": 3215,
+        "nombreComuna": "RENCA"
+      },
+      {
+        "codigoComuna": 3216,
+        "nombreComuna": "SAN BERNARDO"
+      },
+      {
+        "codigoComuna": 3217,
+        "nombreComuna": "SAN JOAQUIN"
+      },
+      {
+        "codigoComuna": 3218,
+        "nombreComuna": "SAN MIGUEL"
+      },
+      {
+        "codigoComuna": 3219,
+        "nombreComuna": "SAN PEDRO"
+      },
+      {
+        "codigoComuna": 3220,
+        "nombreComuna": "SAN RAMON"
+      },
+      {
+        "codigoComuna": 3126,
+        "nombreComuna": "SANTIAGO"
+      },
+      {
+        "codigoComuna": 3221,
+        "nombreComuna": "VITACURA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1025,
+    "nombreCiudad": "LA HIGUERA",
+    "comunas": [
+      {
+        "codigoComuna": 2642,
+        "nombreComuna": "LA HIGUERA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1026,
+    "nombreCiudad": "CANELA",
+    "comunas": [
+      {
+        "codigoComuna": 2611,
+        "nombreComuna": "CANELA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2,
+    "nombreCiudad": "CONCEPCION",
+    "comunas": [
+      {
+        "codigoComuna": 2859,
+        "nombreComuna": "CONCEPCION"
+      },
+      {
+        "codigoComuna": 1016,
+        "nombreComuna": "HUALPEN"
+      },
+      {
+        "codigoComuna": 172,
+        "nombreComuna": "SAN PEDRO DE LA PAZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 3074,
+    "nombreCiudad": "PUERTO NUEVO",
+    "comunas": [
+      {
+        "codigoComuna": 3781,
+        "nombreComuna": "PUERTO NUEVO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1027,
+    "nombreCiudad": "PUNITAQUI",
+    "comunas": [
+      {
+        "codigoComuna": 2667,
+        "nombreComuna": "PUNITAQUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 3,
+    "nombreCiudad": "SAN CARLOS",
+    "comunas": [
+      {
+        "codigoComuna": 2916,
+        "nombreComuna": "SAN CARLOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 4,
+    "nombreCiudad": "LA SERENA",
+    "comunas": [
+      {
+        "codigoComuna": 2641,
+        "nombreComuna": "LA SERENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1028,
+    "nombreCiudad": "PANQUEHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2726,
+        "nombreComuna": "PANQUEHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 5,
+    "nombreCiudad": "IQUIQUE",
+    "comunas": [
+      {
+        "codigoComuna": 2553,
+        "nombreComuna": "IQUIQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1030,
+    "nombreCiudad": "COLTAUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2765,
+        "nombreComuna": "COLTAUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 6,
+    "nombreCiudad": "COYHAIQUE",
+    "comunas": [
+      {
+        "codigoComuna": 3093,
+        "nombreComuna": "COYHAIQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 7,
+    "nombreCiudad": "CABILDO",
+    "comunas": [
+      {
+        "codigoComuna": 2688,
+        "nombreComuna": "CABILDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1031,
+    "nombreCiudad": "PICHILEMU",
+    "comunas": [
+      {
+        "codigoComuna": 2792,
+        "nombreComuna": "PICHILEMU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 8,
+    "nombreCiudad": "CABRERO",
+    "comunas": [
+      {
+        "codigoComuna": 2865,
+        "nombreComuna": "CABRERO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1032,
+    "nombreCiudad": "RIO CLARO",
+    "comunas": [
+      {
+        "codigoComuna": 2844,
+        "nombreComuna": "RIO CLARO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 9,
+    "nombreCiudad": "CAJON",
+    "comunas": [
+      {
+        "codigoComuna": 2956,
+        "nombreComuna": "CAJON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1033,
+    "nombreCiudad": "HUALANE",
+    "comunas": [
+      {
+        "codigoComuna": 2826,
+        "nombreComuna": "HUALANE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 10,
+    "nombreCiudad": "CALAMA",
+    "comunas": [
+      {
+        "codigoComuna": 2573,
+        "nombreComuna": "CALAMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1034,
+    "nombreCiudad": "LICANTEN",
+    "comunas": [
+      {
+        "codigoComuna": 2828,
+        "nombreComuna": "LICANTEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 11,
+    "nombreCiudad": "CALBUCO",
+    "comunas": [
+      {
+        "codigoComuna": 3050,
+        "nombreComuna": "CALBUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1035,
+    "nombreCiudad": "RAUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2842,
+        "nombreComuna": "RAUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 12,
+    "nombreCiudad": "CALDERA",
+    "comunas": [
+      {
+        "codigoComuna": 2595,
+        "nombreComuna": "CALDERA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1036,
+    "nombreCiudad": "ROMERAL",
+    "comunas": [
+      {
+        "codigoComuna": 2846,
+        "nombreComuna": "ROMERAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1037,
+    "nombreCiudad": "VICHUQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2853,
+        "nombreComuna": "VICHUQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 14,
+    "nombreCiudad": "CANETE",
+    "comunas": [
+      {
+        "codigoComuna": 2867,
+        "nombreComuna": "CANETE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1038,
+    "nombreCiudad": "CONSTITUCION",
+    "comunas": [
+      {
+        "codigoComuna": 2821,
+        "nombreComuna": "CONSTITUCION"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 15,
+    "nombreCiudad": "CARAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2954,
+        "nombreComuna": "CARAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1039,
+    "nombreCiudad": "CUREPTO",
+    "comunas": [
+      {
+        "codigoComuna": 2822,
+        "nombreComuna": "CUREPTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 16,
+    "nombreCiudad": "CARAMPANGUE",
+    "comunas": [
+      {
+        "codigoComuna": 2868,
+        "nombreComuna": "CARAMPANGUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1040,
+    "nombreCiudad": "PELARCO",
+    "comunas": [
+      {
+        "codigoComuna": 2839,
+        "nombreComuna": "PELARCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 17,
+    "nombreCiudad": "CHANARAL",
+    "comunas": [
+      {
+        "codigoComuna": 2596,
+        "nombreComuna": "CHANARAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1041,
+    "nombreCiudad": "PENCAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2841,
+        "nombreComuna": "PENCAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 18,
+    "nombreCiudad": "CHIGUAYANTE",
+    "comunas": [
+      {
+        "codigoComuna": 2873,
+        "nombreComuna": "CHIGUAYANTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1042,
+    "nombreCiudad": "SAN RAFAEL",
+    "comunas": [
+      {
+        "codigoComuna": 2850,
+        "nombreComuna": "SAN RAFAEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 19,
+    "nombreCiudad": "CHILLAN",
+    "comunas": [
+      {
+        "codigoComuna": 2857,
+        "nombreComuna": "CHILLAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1043,
+    "nombreCiudad": "COLBUN",
+    "comunas": [
+      {
+        "codigoComuna": 2820,
+        "nombreComuna": "COLBUN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 20,
+    "nombreCiudad": "HUALPENCILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2885,
+        "nombreComuna": "HUALPENCILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1044,
+    "nombreCiudad": "RETIRO",
+    "comunas": [
+      {
+        "codigoComuna": 2845,
+        "nombreComuna": "RETIRO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1045,
+    "nombreCiudad": "YERBAS BUENAS",
+    "comunas": [
+      {
+        "codigoComuna": 2856,
+        "nombreComuna": "YERBAS BUENAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1046,
+    "nombreCiudad": "COIHUECO",
+    "comunas": [
+      {
+        "codigoComuna": 2876,
+        "nombreComuna": "COIHUECO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 23,
+    "nombreCiudad": "COELEMU",
+    "comunas": [
+      {
+        "codigoComuna": 2875,
+        "nombreComuna": "COELEMU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1047,
+    "nombreCiudad": "NIQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2903,
+        "nombreComuna": "NIQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 24,
+    "nombreCiudad": "COLLIPULLI",
+    "comunas": [
+      {
+        "codigoComuna": 2958,
+        "nombreComuna": "COLLIPULLI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1048,
+    "nombreCiudad": "PEMUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2904,
+        "nombreComuna": "PEMUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1049,
+    "nombreCiudad": "PINTO",
+    "comunas": [
+      {
+        "codigoComuna": 2907,
+        "nombreComuna": "PINTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 25,
+    "nombreCiudad": "SANTA CRUZ",
+    "comunas": [
+      {
+        "codigoComuna": 2806,
+        "nombreComuna": "SANTA CRUZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 26,
+    "nombreCiudad": "COPIAPO",
+    "comunas": [
+      {
+        "codigoComuna": 2591,
+        "nombreComuna": "COPIAPO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1050,
+    "nombreCiudad": "SAN IGNACIO",
+    "comunas": [
+      {
+        "codigoComuna": 2919,
+        "nombreComuna": "SAN IGNACIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 27,
+    "nombreCiudad": "COQUIMBO",
+    "comunas": [
+      {
+        "codigoComuna": 2606,
+        "nombreComuna": "COQUIMBO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1051,
+    "nombreCiudad": "SAN NICOLAS",
+    "comunas": [
+      {
+        "codigoComuna": 2920,
+        "nombreComuna": "SAN NICOLAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 28,
+    "nombreCiudad": "CORONEL",
+    "comunas": [
+      {
+        "codigoComuna": 2879,
+        "nombreComuna": "CORONEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1052,
+    "nombreCiudad": "FLORIDA",
+    "comunas": [
+      {
+        "codigoComuna": 2883,
+        "nombreComuna": "FLORIDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1053,
+    "nombreCiudad": "SANTA JUANA",
+    "comunas": [
+      {
+        "codigoComuna": 2923,
+        "nombreComuna": "SANTA JUANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 30,
+    "nombreCiudad": "CURACAUTIN",
+    "comunas": [
+      {
+        "codigoComuna": 2961,
+        "nombreComuna": "CURACAUTIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1054,
+    "nombreCiudad": "NEGRETE",
+    "comunas": [
+      {
+        "codigoComuna": 2900,
+        "nombreComuna": "NEGRETE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 31,
+    "nombreCiudad": "CURANILAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2880,
+        "nombreComuna": "CURANILAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1055,
+    "nombreCiudad": "QUILLECO",
+    "comunas": [
+      {
+        "codigoComuna": 2911,
+        "nombreComuna": "QUILLECO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1056,
+    "nombreCiudad": "ALTO BIO BIO",
+    "comunas": [
+      {
+        "codigoComuna": 2860,
+        "nombreComuna": "ALTO BIO BIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 32,
+    "nombreCiudad": "CURICO",
+    "comunas": [
+      {
+        "codigoComuna": 2811,
+        "nombreComuna": "CURICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 33,
+    "nombreCiudad": "ERCILLA",
+    "comunas": [
+      {
+        "codigoComuna": 2963,
+        "nombreComuna": "ERCILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1058,
+    "nombreCiudad": "CUNCO",
+    "comunas": [
+      {
+        "codigoComuna": 2960,
+        "nombreComuna": "CUNCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 34,
+    "nombreCiudad": "FREIRE",
+    "comunas": [
+      {
+        "codigoComuna": 2964,
+        "nombreComuna": "FREIRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 35,
+    "nombreCiudad": "FRESIA",
+    "comunas": [
+      {
+        "codigoComuna": 3079,
+        "nombreComuna": "FRESIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1059,
+    "nombreCiudad": "TEODORO SCHMIDT",
+    "comunas": [
+      {
+        "codigoComuna": 2986,
+        "nombreComuna": "TEODORO SCHMIDT"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 36,
+    "nombreCiudad": "FRUTILLAR",
+    "comunas": [
+      {
+        "codigoComuna": 3080,
+        "nombreComuna": "FRUTILLAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1060,
+    "nombreCiudad": "LONQUIMAY",
+    "comunas": [
+      {
+        "codigoComuna": 2973,
+        "nombreComuna": "LONQUIMAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1061,
+    "nombreCiudad": "PUREN",
+    "comunas": [
+      {
+        "codigoComuna": 2984,
+        "nombreComuna": "PUREN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1062,
+    "nombreCiudad": "CHONCHI",
+    "comunas": [
+      {
+        "codigoComuna": 3077,
+        "nombreComuna": "CHONCHI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 38,
+    "nombreCiudad": "GORBEA",
+    "comunas": [
+      {
+        "codigoComuna": 2966,
+        "nombreComuna": "GORBEA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 39,
+    "nombreCiudad": "ARICA",
+    "comunas": [
+      {
+        "codigoComuna": 2536,
+        "nombreComuna": "ARICA"
+      },
+      {
+        "codigoComuna": 3423,
+        "nombreComuna": "TEST"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1063,
+    "nombreCiudad": "QUELLON",
+    "comunas": [
+      {
+        "codigoComuna": 3090,
+        "nombreComuna": "QUELLON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 40,
+    "nombreCiudad": "LA CALERA",
+    "comunas": [
+      {
+        "codigoComuna": 2708,
+        "nombreComuna": "CALERA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1064,
+    "nombreCiudad": "PUERTO OCTAY",
+    "comunas": [
+      {
+        "codigoComuna": 3086,
+        "nombreComuna": "PUERTO OCTAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 41,
+    "nombreCiudad": "LAJA",
+    "comunas": [
+      {
+        "codigoComuna": 2888,
+        "nombreComuna": "LAJA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1065,
+    "nombreCiudad": "PUYEHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3087,
+        "nombreComuna": "PUYEHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 42,
+    "nombreCiudad": "LA LIGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2711,
+        "nombreComuna": "LA LIGUA"
+      },
+      {
+        "codigoComuna": 3819,
+        "nombreComuna": "LA LIGUA DOMICILIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 43,
+    "nombreCiudad": "LA UNION",
+    "comunas": [
+      {
+        "codigoComuna": 3001,
+        "nombreComuna": "LA UNION"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1067,
+    "nombreCiudad": "TILTIL",
+    "comunas": [
+      {
+        "codigoComuna": 3167,
+        "nombreComuna": "TILTIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1068,
+    "nombreCiudad": "CURACO DE VELEZ",
+    "comunas": [
+      {
+        "codigoComuna": 3072,
+        "nombreComuna": "CURACO DE VELEZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 44,
+    "nombreCiudad": "LANCO",
+    "comunas": [
+      {
+        "codigoComuna": 3003,
+        "nombreComuna": "LANCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 45,
+    "nombreCiudad": "LAUTARO",
+    "comunas": [
+      {
+        "codigoComuna": 2970,
+        "nombreComuna": "LAUTARO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1069,
+    "nombreCiudad": "MAULLIN",
+    "comunas": [
+      {
+        "codigoComuna": 3084,
+        "nombreComuna": "MAULLIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 46,
+    "nombreCiudad": "LEBU",
+    "comunas": [
+      {
+        "codigoComuna": 2892,
+        "nombreComuna": "LEBU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1070,
+    "nombreCiudad": "PERQUENCO",
+    "comunas": [
+      {
+        "codigoComuna": 2979,
+        "nombreComuna": "PERQUENCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1071,
+    "nombreCiudad": "PUQUELDON",
+    "comunas": [
+      {
+        "codigoComuna": 3071,
+        "nombreComuna": "PUQUELDON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1072,
+    "nombreCiudad": "QUEMCHI",
+    "comunas": [
+      {
+        "codigoComuna": 3073,
+        "nombreComuna": "QUEMCHI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 48,
+    "nombreCiudad": "QUILLON",
+    "comunas": [
+      {
+        "codigoComuna": 2912,
+        "nombreComuna": "QUILLON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 49,
+    "nombreCiudad": "MARBELLA",
+    "comunas": [
+      {
+        "codigoComuna": 2719,
+        "nombreComuna": "MARBELLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1073,
+    "nombreCiudad": "RENAICO",
+    "comunas": [
+      {
+        "codigoComuna": 2985,
+        "nombreComuna": "RENAICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 50,
+    "nombreCiudad": "LONCOCHE",
+    "comunas": [
+      {
+        "codigoComuna": 2972,
+        "nombreComuna": "LONCOCHE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1074,
+    "nombreCiudad": "SAN PABLO",
+    "comunas": [
+      {
+        "codigoComuna": 3092,
+        "nombreComuna": "SAN PABLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 51,
+    "nombreCiudad": "PLAYA ANCHA",
+    "comunas": [
+      {
+        "codigoComuna": 2730,
+        "nombreComuna": "PLAYA ANCHA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 52,
+    "nombreCiudad": "LOS ALAMOS",
+    "comunas": [
+      {
+        "codigoComuna": 2894,
+        "nombreComuna": "LOS ALAMOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 53,
+    "nombreCiudad": "LOS ANGELES",
+    "comunas": [
+      {
+        "codigoComuna": 3799,
+        "nombreComuna": "CHACAYAL"
+      },
+      {
+        "codigoComuna": 2858,
+        "nombreComuna": "LOS ANGELES"
+      },
+      {
+        "codigoComuna": 264,
+        "nombreComuna": "MILLANTU"
+      },
+      {
+        "codigoComuna": 3639,
+        "nombreComuna": "SANTA FE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 54,
+    "nombreCiudad": "LOS LAGOS",
+    "comunas": [
+      {
+        "codigoComuna": 3004,
+        "nombreComuna": "LOS LAGOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 55,
+    "nombreCiudad": "LOS SAUCES",
+    "comunas": [
+      {
+        "codigoComuna": 2974,
+        "nombreComuna": "LOS SAUCES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 56,
+    "nombreCiudad": "LOTA",
+    "comunas": [
+      {
+        "codigoComuna": 2896,
+        "nombreComuna": "LOTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 57,
+    "nombreCiudad": "MACHALI",
+    "comunas": [
+      {
+        "codigoComuna": 2782,
+        "nombreComuna": "MACHALI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1081,
+    "nombreCiudad": "PUTAENDO",
+    "comunas": [
+      {
+        "codigoComuna": 2733,
+        "nombreComuna": "PUTAENDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 58,
+    "nombreCiudad": "MARIA ELENA",
+    "comunas": [
+      {
+        "codigoComuna": 2581,
+        "nombreComuna": "MARIA ELENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 59,
+    "nombreCiudad": "MEJILLONES",
+    "comunas": [
+      {
+        "codigoComuna": 2582,
+        "nombreComuna": "MEJILLONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1083,
+    "nombreCiudad": "SAN ROSENDO",
+    "comunas": [
+      {
+        "codigoComuna": 2889,
+        "nombreComuna": "SAN ROSENDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 60,
+    "nombreCiudad": "MULCHEN",
+    "comunas": [
+      {
+        "codigoComuna": 2898,
+        "nombreComuna": "MULCHEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1085,
+    "nombreCiudad": "MAFIL",
+    "comunas": [
+      {
+        "codigoComuna": 3005,
+        "nombreComuna": "MAFIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 61,
+    "nombreCiudad": "NACIMIENTO",
+    "comunas": [
+      {
+        "codigoComuna": 2899,
+        "nombreComuna": "NACIMIENTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1086,
+    "nombreCiudad": "CORRAL",
+    "comunas": [
+      {
+        "codigoComuna": 2998,
+        "nombreComuna": "CORRAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 62,
+    "nombreCiudad": "NUEVA IMPERIAL",
+    "comunas": [
+      {
+        "codigoComuna": 2976,
+        "nombreComuna": "NUEVA IMPERIAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 63,
+    "nombreCiudad": "OSORNO",
+    "comunas": [
+      {
+        "codigoComuna": 3023,
+        "nombreComuna": "OSORNO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1088,
+    "nombreCiudad": "COCHAMO",
+    "comunas": [
+      {
+        "codigoComuna": 3031,
+        "nombreComuna": "COCHAMO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 64,
+    "nombreCiudad": "OVALLE",
+    "comunas": [
+      {
+        "codigoComuna": 2657,
+        "nombreComuna": "OVALLE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 65,
+    "nombreCiudad": "PAILLACO",
+    "comunas": [
+      {
+        "codigoComuna": 3760,
+        "nombreComuna": "LOS ESTEROS"
+      },
+      {
+        "codigoComuna": 3007,
+        "nombreComuna": "PAILLACO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1089,
+    "nombreCiudad": "TOLTEN",
+    "comunas": [
+      {
+        "codigoComuna": 2987,
+        "nombreComuna": "TOLTEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1090,
+    "nombreCiudad": "LUMACO",
+    "comunas": [
+      {
+        "codigoComuna": 2989,
+        "nombreComuna": "LUMACO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 66,
+    "nombreCiudad": "PANGUIPULLI",
+    "comunas": [
+      {
+        "codigoComuna": 3008,
+        "nombreComuna": "PANGUIPULLI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 67,
+    "nombreCiudad": "PAPUDO",
+    "comunas": [
+      {
+        "codigoComuna": 2727,
+        "nombreComuna": "PAPUDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1092,
+    "nombreCiudad": "CONARIPE",
+    "comunas": [
+      {
+        "codigoComuna": 2959,
+        "nombreComuna": "CONARIPE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1093,
+    "nombreCiudad": "LICANRAY",
+    "comunas": [
+      {
+        "codigoComuna": 2971,
+        "nombreComuna": "LICANRAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 69,
+    "nombreCiudad": "PENCO",
+    "comunas": [
+      {
+        "codigoComuna": 2905,
+        "nombreComuna": "PENCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 71,
+    "nombreCiudad": "PITRUFQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2981,
+        "nombreComuna": "PITRUFQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1096,
+    "nombreCiudad": "COLCHANE",
+    "comunas": [
+      {
+        "codigoComuna": 2560,
+        "nombreComuna": "COLCHANE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 72,
+    "nombreCiudad": "POZO ALMONTE",
+    "comunas": [
+      {
+        "codigoComuna": 2571,
+        "nombreComuna": "POZO ALMONTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 73,
+    "nombreCiudad": "PUCON",
+    "comunas": [
+      {
+        "codigoComuna": 2982,
+        "nombreComuna": "PUCON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 74,
+    "nombreCiudad": "PUERTO MONTT",
+    "comunas": [
+      {
+        "codigoComuna": 3780,
+        "nombreComuna": "CHAMIZA"
+      },
+      {
+        "codigoComuna": 3779,
+        "nombreComuna": "PANITAO"
+      },
+      {
+        "codigoComuna": 3024,
+        "nombreComuna": "PUERTO MONTT"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 75,
+    "nombreCiudad": "PUERTO VARAS",
+    "comunas": [
+      {
+        "codigoComuna": 3088,
+        "nombreComuna": "PUERTO VARAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1100,
+    "nombreCiudad": "LA TIRANA",
+    "comunas": [
+      {
+        "codigoComuna": 2564,
+        "nombreComuna": "LA TIRANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 77,
+    "nombreCiudad": "PURRANQUE",
+    "comunas": [
+      {
+        "codigoComuna": 3089,
+        "nombreComuna": "PURRANQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 78,
+    "nombreCiudad": "QUILPUE",
+    "comunas": [
+      {
+        "codigoComuna": 2736,
+        "nombreComuna": "QUILPUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 79,
+    "nombreCiudad": "QUIRIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2913,
+        "nombreComuna": "QUIRIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 80,
+    "nombreCiudad": "RANCAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2755,
+        "nombreComuna": "RANCAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 81,
+    "nombreCiudad": "RENACA",
+    "comunas": [
+      {
+        "codigoComuna": 2739,
+        "nombreComuna": "RENACA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 82,
+    "nombreCiudad": "RENGO",
+    "comunas": [
+      {
+        "codigoComuna": 2802,
+        "nombreComuna": "RENGO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 83,
+    "nombreCiudad": "RIO BUENO",
+    "comunas": [
+      {
+        "codigoComuna": 3021,
+        "nombreComuna": "RIO BUENO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 84,
+    "nombreCiudad": "ANTOFAGASTA",
+    "comunas": [
+      {
+        "codigoComuna": 2572,
+        "nombreComuna": "ANTOFAGASTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1108,
+    "nombreCiudad": "BAQUEDANO",
+    "comunas": [
+      {
+        "codigoComuna": 2575,
+        "nombreComuna": "BAQUEDANO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 85,
+    "nombreCiudad": "SAN FERNANDO",
+    "comunas": [
+      {
+        "codigoComuna": 2804,
+        "nombreComuna": "SAN FERNANDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 86,
+    "nombreCiudad": "SAN JOSE DE LA MARIQUINA",
+    "comunas": [
+      {
+        "codigoComuna": 3022,
+        "nombreComuna": "SAN JOSE DE LA MARIQUINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 87,
+    "nombreCiudad": "SANTA BARBARA",
+    "comunas": [
+      {
+        "codigoComuna": 2922,
+        "nombreComuna": "SANTA BARBARA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 88,
+    "nombreCiudad": "ANGOL",
+    "comunas": [
+      {
+        "codigoComuna": 2953,
+        "nombreComuna": "ANGOL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 89,
+    "nombreCiudad": "ARAUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2862,
+        "nombreComuna": "ARAUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 91,
+    "nombreCiudad": "TALCA",
+    "comunas": [
+      {
+        "codigoComuna": 2812,
+        "nombreComuna": "TALCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 92,
+    "nombreCiudad": "TALCAHUANO",
+    "comunas": [
+      {
+        "codigoComuna": 2924,
+        "nombreComuna": "TALCAHUANO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 93,
+    "nombreCiudad": "TALTAL",
+    "comunas": [
+      {
+        "codigoComuna": 2588,
+        "nombreComuna": "TALTAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 94,
+    "nombreCiudad": "TEMUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2978,
+        "nombreComuna": "LABRANZA"
+      },
+      {
+        "codigoComuna": 3719,
+        "nombreComuna": "LASTARRIA"
+      },
+      {
+        "codigoComuna": 3721,
+        "nombreComuna": "METRENCO"
+      },
+      {
+        "codigoComuna": 3700,
+        "nombreComuna": "QUITRATUE"
+      },
+      {
+        "codigoComuna": 3699,
+        "nombreComuna": "SAN RAMON"
+      },
+      {
+        "codigoComuna": 3720,
+        "nombreComuna": "SELVA OSCURA"
+      },
+      {
+        "codigoComuna": 2952,
+        "nombreComuna": "TEMUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 95,
+    "nombreCiudad": "TOCOPILLA",
+    "comunas": [
+      {
+        "codigoComuna": 2590,
+        "nombreComuna": "TOCOPILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 96,
+    "nombreCiudad": "TOME",
+    "comunas": [
+      {
+        "codigoComuna": 2925,
+        "nombreComuna": "TOME"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 97,
+    "nombreCiudad": "TRAIGUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2988,
+        "nombreComuna": "TRAIGUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 98,
+    "nombreCiudad": "VALDIVIA",
+    "comunas": [
+      {
+        "codigoComuna": 2997,
+        "nombreComuna": "VALDIVIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 99,
+    "nombreCiudad": "VALLENAR",
+    "comunas": [
+      {
+        "codigoComuna": 2605,
+        "nombreComuna": "VALLENAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 100,
+    "nombreCiudad": "VALPARAISO",
+    "comunas": [
+      {
+        "codigoComuna": 2750,
+        "nombreComuna": "VALPARAISO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 101,
+    "nombreCiudad": "VICTORIA",
+    "comunas": [
+      {
+        "codigoComuna": 2992,
+        "nombreComuna": "VICTORIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 103,
+    "nombreCiudad": "VILLARRICA",
+    "comunas": [
+      {
+        "codigoComuna": 3739,
+        "nombreComuna": "HUISCAPI"
+      },
+      {
+        "codigoComuna": 2996,
+        "nombreComuna": "VILLARRICA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 104,
+    "nombreCiudad": "VINA DEL MAR",
+    "comunas": [
+      {
+        "codigoComuna": 2683,
+        "nombreComuna": "VINA DEL MAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 105,
+    "nombreCiudad": "YUMBEL",
+    "comunas": [
+      {
+        "codigoComuna": 2951,
+        "nombreComuna": "YUMBEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1130,
+    "nombreCiudad": "TOCONAO",
+    "comunas": [
+      {
+        "codigoComuna": 2589,
+        "nombreComuna": "TOCONAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 106,
+    "nombreCiudad": "ZAPALLAR",
+    "comunas": [
+      {
+        "codigoComuna": 2753,
+        "nombreComuna": "ZAPALLAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1132,
+    "nombreCiudad": "DOMEYKO",
+    "comunas": [
+      {
+        "codigoComuna": 2622,
+        "nombreComuna": "DOMEYKO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 108,
+    "nombreCiudad": "LLAILLAY",
+    "comunas": [
+      {
+        "codigoComuna": 2713,
+        "nombreComuna": "LLAILLAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 109,
+    "nombreCiudad": "EL MELON",
+    "comunas": [
+      {
+        "codigoComuna": 2699,
+        "nombreComuna": "EL MELON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 110,
+    "nombreCiudad": "CATEMU",
+    "comunas": [
+      {
+        "codigoComuna": 2696,
+        "nombreComuna": "CATEMU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 118,
+    "nombreCiudad": "SIERRA GORDA",
+    "comunas": [
+      {
+        "codigoComuna": 2586,
+        "nombreComuna": "SIERRA GORDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1143,
+    "nombreCiudad": "ALGARROBITO",
+    "comunas": [
+      {
+        "codigoComuna": 2607,
+        "nombreComuna": "ALGARROBITO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1145,
+    "nombreCiudad": "CAMARICO",
+    "comunas": [
+      {
+        "codigoComuna": 1143,
+        "nombreComuna": "CAMARICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 121,
+    "nombreCiudad": "PUNTA ARENAS",
+    "comunas": [
+      {
+        "codigoComuna": 3111,
+        "nombreComuna": "PUNTA ARENAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 122,
+    "nombreCiudad": "VILCUN",
+    "comunas": [
+      {
+        "codigoComuna": 2993,
+        "nombreComuna": "VILCUN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1147,
+    "nombreCiudad": "PISCO ELQUI",
+    "comunas": [
+      {
+        "codigoComuna": 2664,
+        "nombreComuna": "PISCO ELQUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1152,
+    "nombreCiudad": "LAS TACAS",
+    "comunas": [
+      {
+        "codigoComuna": 2648,
+        "nombreComuna": "LAS TACAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1154,
+    "nombreCiudad": "MORRILLOS",
+    "comunas": [
+      {
+        "codigoComuna": 2655,
+        "nombreComuna": "MORRILLOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1155,
+    "nombreCiudad": "PAIHUANO",
+    "comunas": [
+      {
+        "codigoComuna": 2658,
+        "nombreComuna": "PAIHUANO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1156,
+    "nombreCiudad": "RIO HURTADO",
+    "comunas": [
+      {
+        "codigoComuna": 2671,
+        "nombreComuna": "RIO HURTADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1157,
+    "nombreCiudad": "SAN MARCOS",
+    "comunas": [
+      {
+        "codigoComuna": 1155,
+        "nombreComuna": "SAN MARCOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1158,
+    "nombreCiudad": "TIERRAS BLANCAS",
+    "comunas": [
+      {
+        "codigoComuna": 1156,
+        "nombreComuna": "TIERRAS BLANCAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1162,
+    "nombreCiudad": "BUCALEMU",
+    "comunas": [
+      {
+        "codigoComuna": 2757,
+        "nombreComuna": "BUCALEMU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1164,
+    "nombreCiudad": "LA DORMIDA",
+    "comunas": [
+      {
+        "codigoComuna": 1162,
+        "nombreComuna": "LA DORMIDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1165,
+    "nombreCiudad": "LOS MOLLES",
+    "comunas": [
+      {
+        "codigoComuna": 2754,
+        "nombreComuna": "LOS MOLLES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1168,
+    "nombreCiudad": "PICHIDANGUI",
+    "comunas": [
+      {
+        "codigoComuna": 2663,
+        "nombreComuna": "PICHIDANGUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1170,
+    "nombreCiudad": "PETORCA",
+    "comunas": [
+      {
+        "codigoComuna": 2729,
+        "nombreComuna": "PETORCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1171,
+    "nombreCiudad": "QUINTAY",
+    "comunas": [
+      {
+        "codigoComuna": 2737,
+        "nombreComuna": "QUINTAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1173,
+    "nombreCiudad": "TOTORALILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2680,
+        "nombreComuna": "TOTORALILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1174,
+    "nombreCiudad": "LAS VENTANAS",
+    "comunas": [
+      {
+        "codigoComuna": 2751,
+        "nombreComuna": "LAS VENTANAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 150,
+    "nombreCiudad": "SAN PEDRO DE ATACAMA",
+    "comunas": [
+      {
+        "codigoComuna": 2585,
+        "nombreComuna": "SAN PEDRO DE ATACAMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1175,
+    "nombreCiudad": "CALETONES",
+    "comunas": [
+      {
+        "codigoComuna": 2759,
+        "nombreComuna": "CALETONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1177,
+    "nombreCiudad": "LA ESTRELLA",
+    "comunas": [
+      {
+        "codigoComuna": 2772,
+        "nombreComuna": "LA ESTRELLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 154,
+    "nombreCiudad": "GALVARINO",
+    "comunas": [
+      {
+        "codigoComuna": 2965,
+        "nombreComuna": "GALVARINO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1178,
+    "nombreCiudad": "LITUECHE",
+    "comunas": [
+      {
+        "codigoComuna": 2779,
+        "nombreComuna": "LITUECHE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1179,
+    "nombreCiudad": "LOLOL",
+    "comunas": [
+      {
+        "codigoComuna": 2781,
+        "nombreComuna": "LOLOL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1180,
+    "nombreCiudad": "NAVIDAD",
+    "comunas": [
+      {
+        "codigoComuna": 2786,
+        "nombreComuna": "NAVIDAD"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1181,
+    "nombreCiudad": "COYA",
+    "comunas": [
+      {
+        "codigoComuna": 2766,
+        "nombreComuna": "COYA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 159,
+    "nombreCiudad": "PAIPOTE",
+    "comunas": [
+      {
+        "codigoComuna": 2602,
+        "nombreComuna": "PAIPOTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1184,
+    "nombreCiudad": "PAREDONES",
+    "comunas": [
+      {
+        "codigoComuna": 2789,
+        "nombreComuna": "PAREDONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 160,
+    "nombreCiudad": "TIERRA AMARILLA",
+    "comunas": [
+      {
+        "codigoComuna": 2604,
+        "nombreComuna": "TIERRA AMARILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1187,
+    "nombreCiudad": "PLACILLA (VINA DEL MAR)",
+    "comunas": [
+      {
+        "codigoComuna": 2694,
+        "nombreComuna": "PLACILLA (VINA DEL MAR)"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1188,
+    "nombreCiudad": "PUMANQUE",
+    "comunas": [
+      {
+        "codigoComuna": 2798,
+        "nombreComuna": "PUMANQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 165,
+    "nombreCiudad": "EL SALVADOR",
+    "comunas": [
+      {
+        "codigoComuna": 2598,
+        "nombreComuna": "EL SALVADOR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 166,
+    "nombreCiudad": "DIEGO DE ALMAGRO",
+    "comunas": [
+      {
+        "codigoComuna": 2597,
+        "nombreComuna": "DIEGO DE ALMAGRO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1190,
+    "nombreCiudad": "RAPEL",
+    "comunas": [
+      {
+        "codigoComuna": 2799,
+        "nombreComuna": "RAPEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 169,
+    "nombreCiudad": "ALTO DEL CARMEN",
+    "comunas": [
+      {
+        "codigoComuna": 2593,
+        "nombreComuna": "ALTO DEL CARMEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1193,
+    "nombreCiudad": "CHANCO",
+    "comunas": [
+      {
+        "codigoComuna": 2819,
+        "nombreComuna": "CHANCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1194,
+    "nombreCiudad": "CURANIPE",
+    "comunas": [
+      {
+        "codigoComuna": 2818,
+        "nombreComuna": "CURANIPE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1195,
+    "nombreCiudad": "EMPEDRADO",
+    "comunas": [
+      {
+        "codigoComuna": 2824,
+        "nombreComuna": "EMPEDRADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 171,
+    "nombreCiudad": "HUASCO",
+    "comunas": [
+      {
+        "codigoComuna": 2594,
+        "nombreComuna": "HUASCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1197,
+    "nombreCiudad": "ILOCA",
+    "comunas": [
+      {
+        "codigoComuna": 2827,
+        "nombreComuna": "ILOCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1198,
+    "nombreCiudad": "LONGAVI",
+    "comunas": [
+      {
+        "codigoComuna": 2831,
+        "nombreComuna": "LONGAVI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1199,
+    "nombreCiudad": "LONTUE",
+    "comunas": [
+      {
+        "codigoComuna": 2832,
+        "nombreComuna": "LONTUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1200,
+    "nombreCiudad": "PELLUHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2840,
+        "nombreComuna": "PELLUHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1201,
+    "nombreCiudad": "CUMPEO",
+    "comunas": [
+      {
+        "codigoComuna": 2816,
+        "nombreComuna": "CUMPEO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 177,
+    "nombreCiudad": "VICUNA",
+    "comunas": [
+      {
+        "codigoComuna": 2682,
+        "nombreComuna": "VICUNA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1202,
+    "nombreCiudad": "PANIMAVIDA",
+    "comunas": [
+      {
+        "codigoComuna": 2837,
+        "nombreComuna": "PANIMAVIDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1204,
+    "nombreCiudad": "DUAO",
+    "comunas": [
+      {
+        "codigoComuna": 2823,
+        "nombreComuna": "DUAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 180,
+    "nombreCiudad": "PAN DE AZUCAR",
+    "comunas": [
+      {
+        "codigoComuna": 2603,
+        "nombreComuna": "PAN DE AZUCAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1205,
+    "nombreCiudad": "ANTUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2861,
+        "nombreComuna": "ANTUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1207,
+    "nombreCiudad": "COLCURA",
+    "comunas": [
+      {
+        "codigoComuna": 1233,
+        "nombreComuna": "COLCURA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 183,
+    "nombreCiudad": "GUANAQUEROS",
+    "comunas": [
+      {
+        "codigoComuna": 2630,
+        "nombreComuna": "GUANAQUEROS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1208,
+    "nombreCiudad": "COBQUECURA",
+    "comunas": [
+      {
+        "codigoComuna": 2874,
+        "nombreComuna": "COBQUECURA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 185,
+    "nombreCiudad": "TONGOY",
+    "comunas": [
+      {
+        "codigoComuna": 2679,
+        "nombreComuna": "TONGOY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1210,
+    "nombreCiudad": "CONTULMO",
+    "comunas": [
+      {
+        "codigoComuna": 2878,
+        "nombreComuna": "CONTULMO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1211,
+    "nombreCiudad": "DICHATO",
+    "comunas": [
+      {
+        "codigoComuna": 2881,
+        "nombreComuna": "DICHATO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 187,
+    "nombreCiudad": "SOTAQUI",
+    "comunas": [
+      {
+        "codigoComuna": 2676,
+        "nombreComuna": "SOTAQUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 188,
+    "nombreCiudad": "LA CHIMBA",
+    "comunas": [
+      {
+        "codigoComuna": 2637,
+        "nombreComuna": "LA CHIMBA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1212,
+    "nombreCiudad": "RANGUELMO",
+    "comunas": [
+      {
+        "codigoComuna": 2941,
+        "nombreComuna": "RANGUELMO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 189,
+    "nombreCiudad": "EL PALQUI",
+    "comunas": [
+      {
+        "codigoComuna": 2625,
+        "nombreComuna": "EL PALQUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1213,
+    "nombreCiudad": "HUALQUI",
+    "comunas": [
+      {
+        "codigoComuna": 2886,
+        "nombreComuna": "HUALQUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 190,
+    "nombreCiudad": "MONTE PATRIA",
+    "comunas": [
+      {
+        "codigoComuna": 2653,
+        "nombreComuna": "MONTE PATRIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1215,
+    "nombreCiudad": "HUEPIL",
+    "comunas": [
+      {
+        "codigoComuna": 2887,
+        "nombreComuna": "HUEPIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 192,
+    "nombreCiudad": "SAN ESTEBAN",
+    "comunas": [
+      {
+        "codigoComuna": 2746,
+        "nombreComuna": "SAN ESTEBAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 193,
+    "nombreCiudad": "CHANARAL ALTO",
+    "comunas": [
+      {
+        "codigoComuna": 2617,
+        "nombreComuna": "CHANARAL ALTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1217,
+    "nombreCiudad": "LARAQUETE",
+    "comunas": [
+      {
+        "codigoComuna": 2890,
+        "nombreComuna": "LARAQUETE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 194,
+    "nombreCiudad": "COMBARBALA",
+    "comunas": [
+      {
+        "codigoComuna": 2619,
+        "nombreComuna": "COMBARBALA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1218,
+    "nombreCiudad": "MONTE AGUILA",
+    "comunas": [
+      {
+        "codigoComuna": 2897,
+        "nombreComuna": "MONTE AGUILA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 195,
+    "nombreCiudad": "LOS VILOS",
+    "comunas": [
+      {
+        "codigoComuna": 2652,
+        "nombreComuna": "LOS VILOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1219,
+    "nombreCiudad": "SANTA CLARA",
+    "comunas": [
+      {
+        "codigoComuna": 2944,
+        "nombreComuna": "SANTA CLARA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 196,
+    "nombreCiudad": "ILLAPEL",
+    "comunas": [
+      {
+        "codigoComuna": 2636,
+        "nombreComuna": "ILLAPEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1220,
+    "nombreCiudad": "MININCO",
+    "comunas": [
+      {
+        "codigoComuna": 2933,
+        "nombreComuna": "MININCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1222,
+    "nombreCiudad": "NINHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2901,
+        "nombreComuna": "NINHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 198,
+    "nombreCiudad": "SALAMANCA",
+    "comunas": [
+      {
+        "codigoComuna": 2672,
+        "nombreComuna": "SALAMANCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 200,
+    "nombreCiudad": "CATAPILCO",
+    "comunas": [
+      {
+        "codigoComuna": 2695,
+        "nombreComuna": "CATAPILCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1224,
+    "nombreCiudad": "PORTEZUELO",
+    "comunas": [
+      {
+        "codigoComuna": 2908,
+        "nombreComuna": "PORTEZUELO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1225,
+    "nombreCiudad": "QUILACO",
+    "comunas": [
+      {
+        "codigoComuna": 2910,
+        "nombreComuna": "QUILACO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 202,
+    "nombreCiudad": "LAS CRUCES",
+    "comunas": [
+      {
+        "codigoComuna": 2709,
+        "nombreComuna": "LAS CRUCES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1226,
+    "nombreCiudad": "RANQUIL",
+    "comunas": [
+      {
+        "codigoComuna": 2915,
+        "nombreComuna": "RANQUIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 203,
+    "nombreCiudad": "CACHAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2689,
+        "nombreComuna": "CACHAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 204,
+    "nombreCiudad": "EL TABO",
+    "comunas": [
+      {
+        "codigoComuna": 2701,
+        "nombreComuna": "EL TABO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 205,
+    "nombreCiudad": "MAITENCILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2718,
+        "nombreComuna": "MAITENCILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 206,
+    "nombreCiudad": "ISLA NEGRA",
+    "comunas": [
+      {
+        "codigoComuna": 2707,
+        "nombreComuna": "ISLA NEGRA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1230,
+    "nombreCiudad": "TUCAPEL",
+    "comunas": [
+      {
+        "codigoComuna": 2927,
+        "nombreComuna": "TUCAPEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 207,
+    "nombreCiudad": "PUCHUNCAVI",
+    "comunas": [
+      {
+        "codigoComuna": 2731,
+        "nombreComuna": "PUCHUNCAVI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 208,
+    "nombreCiudad": "VILLA ALEMANA",
+    "comunas": [
+      {
+        "codigoComuna": 2752,
+        "nombreComuna": "VILLA ALEMANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 209,
+    "nombreCiudad": "SAN SEBASTIAN",
+    "comunas": [
+      {
+        "codigoComuna": 2748,
+        "nombreComuna": "SAN SEBASTIAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 210,
+    "nombreCiudad": "QUILLOTA",
+    "comunas": [
+      {
+        "codigoComuna": 2735,
+        "nombreComuna": "QUILLOTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 211,
+    "nombreCiudad": "RINCONADA",
+    "comunas": [
+      {
+        "codigoComuna": 2740,
+        "nombreComuna": "RINCONADA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1237,
+    "nombreCiudad": "CAPITAN PASTENE",
+    "comunas": [
+      {
+        "codigoComuna": 2991,
+        "nombreComuna": "CAPITAN PASTENE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 213,
+    "nombreCiudad": "SAN FELIPE",
+    "comunas": [
+      {
+        "codigoComuna": 2747,
+        "nombreComuna": "SAN FELIPE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 214,
+    "nombreCiudad": "LOS ANDES",
+    "comunas": [
+      {
+        "codigoComuna": 2714,
+        "nombreComuna": "LOS ANDES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 215,
+    "nombreCiudad": "LA CRUZ",
+    "comunas": [
+      {
+        "codigoComuna": 2710,
+        "nombreComuna": "LA CRUZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 216,
+    "nombreCiudad": "LIMACHE",
+    "comunas": [
+      {
+        "codigoComuna": 2712,
+        "nombreComuna": "LIMACHE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1241,
+    "nombreCiudad": "MELIPEUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2975,
+        "nombreComuna": "MELIPEUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 217,
+    "nombreCiudad": "OLMUE",
+    "comunas": [
+      {
+        "codigoComuna": 2725,
+        "nombreComuna": "OLMUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 218,
+    "nombreCiudad": "HIJUELAS",
+    "comunas": [
+      {
+        "codigoComuna": 2704,
+        "nombreComuna": "HIJUELAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 219,
+    "nombreCiudad": "CURAUMA",
+    "comunas": [
+      {
+        "codigoComuna": 2698,
+        "nombreComuna": "CURAUMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 221,
+    "nombreCiudad": "LAGUNA VERDE",
+    "comunas": [
+      {
+        "codigoComuna": 1179,
+        "nombreComuna": "LAGUNA VERDE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1245,
+    "nombreCiudad": "QUEPE",
+    "comunas": [
+      {
+        "codigoComuna": 1280,
+        "nombreComuna": "QUEPE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 223,
+    "nombreCiudad": "CONCON",
+    "comunas": [
+      {
+        "codigoComuna": 2697,
+        "nombreComuna": "CONCON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1247,
+    "nombreCiudad": "HUALPIN",
+    "comunas": [
+      {
+        "codigoComuna": 1282,
+        "nombreComuna": "HUALPIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 224,
+    "nombreCiudad": "BELLOTO",
+    "comunas": [
+      {
+        "codigoComuna": 2687,
+        "nombreComuna": "BELLOTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1248,
+    "nombreCiudad": "PILLANLELBUN",
+    "comunas": [
+      {
+        "codigoComuna": 1283,
+        "nombreComuna": "PILLANLELBUN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 225,
+    "nombreCiudad": "QUINTERO",
+    "comunas": [
+      {
+        "codigoComuna": 2738,
+        "nombreComuna": "QUINTERO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1250,
+    "nombreCiudad": "ALERCE",
+    "comunas": [
+      {
+        "codigoComuna": 3026,
+        "nombreComuna": "ALERCE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 227,
+    "nombreCiudad": "SAN ANTONIO",
+    "comunas": [
+      {
+        "codigoComuna": 3679,
+        "nombreComuna": "EL CONVENTO"
+      },
+      {
+        "codigoComuna": 3659,
+        "nombreComuna": "EL YECO"
+      },
+      {
+        "codigoComuna": 2745,
+        "nombreComuna": "SAN ANTONIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1252,
+    "nombreCiudad": "NUEVA BRAUNAU",
+    "comunas": [
+      {
+        "codigoComuna": 3038,
+        "nombreComuna": "NUEVA BRAUNAU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1253,
+    "nombreCiudad": "CHACAO",
+    "comunas": [
+      {
+        "codigoComuna": 3053,
+        "nombreComuna": "CHACAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 229,
+    "nombreCiudad": "SANTA MARIA",
+    "comunas": [
+      {
+        "codigoComuna": 2749,
+        "nombreComuna": "SANTA MARIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1254,
+    "nombreCiudad": "CHOSHUENCO",
+    "comunas": [
+      {
+        "codigoComuna": 3009,
+        "nombreComuna": "CHOSHUENCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 233,
+    "nombreCiudad": "CASABLANCA",
+    "comunas": [
+      {
+        "codigoComuna": 2693,
+        "nombreComuna": "CASABLANCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1258,
+    "nombreCiudad": "CARELMAPU",
+    "comunas": [
+      {
+        "codigoComuna": 3029,
+        "nombreComuna": "CARELMAPU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 234,
+    "nombreCiudad": "EL CARMEN CHILLAN",
+    "comunas": [
+      {
+        "codigoComuna": 2882,
+        "nombreComuna": "EL CARMEN CHILLAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 235,
+    "nombreCiudad": "GRANEROS",
+    "comunas": [
+      {
+        "codigoComuna": 2771,
+        "nombreComuna": "GRANEROS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 236,
+    "nombreCiudad": "REQUINOA",
+    "comunas": [
+      {
+        "codigoComuna": 2801,
+        "nombreComuna": "REQUINOA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 237,
+    "nombreCiudad": "DONIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2768,
+        "nombreComuna": "DONIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1261,
+    "nombreCiudad": "ENTRE LAGOS",
+    "comunas": [
+      {
+        "codigoComuna": 3032,
+        "nombreComuna": "ENTRE LAGOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1262,
+    "nombreCiudad": "ENSENADA",
+    "comunas": [
+      {
+        "codigoComuna": 3082,
+        "nombreComuna": "ENSENADA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 238,
+    "nombreCiudad": "OLIVAR ALTO",
+    "comunas": [
+      {
+        "codigoComuna": 2787,
+        "nombreComuna": "OLIVAR ALTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1264,
+    "nombreCiudad": "FUTALEUFU",
+    "comunas": [
+      {
+        "codigoComuna": 3033,
+        "nombreComuna": "FUTALEUFU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 241,
+    "nombreCiudad": "CODEGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2763,
+        "nombreComuna": "CODEGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1266,
+    "nombreCiudad": "HUALAIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3035,
+        "nombreComuna": "HUALAIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1267,
+    "nombreCiudad": "HORNOPIREN",
+    "comunas": [
+      {
+        "codigoComuna": 3034,
+        "nombreComuna": "HORNOPIREN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 245,
+    "nombreCiudad": "COINCO",
+    "comunas": [
+      {
+        "codigoComuna": 2764,
+        "nombreComuna": "COINCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 246,
+    "nombreCiudad": "LO MIRANDA",
+    "comunas": [
+      {
+        "codigoComuna": 2780,
+        "nombreComuna": "LO MIRANDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1270,
+    "nombreCiudad": "MEHUIN",
+    "comunas": [
+      {
+        "codigoComuna": 3011,
+        "nombreComuna": "MEHUIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 250,
+    "nombreCiudad": "MALLOA",
+    "comunas": [
+      {
+        "codigoComuna": 2783,
+        "nombreComuna": "MALLOA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1275,
+    "nombreCiudad": "NELTUME",
+    "comunas": [
+      {
+        "codigoComuna": 3017,
+        "nombreComuna": "NELTUME"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 251,
+    "nombreCiudad": "PELEQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2794,
+        "nombreComuna": "PELEQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1276,
+    "nombreCiudad": "PALENA",
+    "comunas": [
+      {
+        "codigoComuna": 3039,
+        "nombreComuna": "PALENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 253,
+    "nombreCiudad": "LAS CABRAS",
+    "comunas": [
+      {
+        "codigoComuna": 2778,
+        "nombreComuna": "LAS CABRAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1277,
+    "nombreCiudad": "PETROHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3041,
+        "nombreComuna": "PETROHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 254,
+    "nombreCiudad": "PICHIDEGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2791,
+        "nombreComuna": "PICHIDEGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1278,
+    "nombreCiudad": "QUINCHAO",
+    "comunas": [
+      {
+        "codigoComuna": 3076,
+        "nombreComuna": "QUINCHAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 255,
+    "nombreCiudad": "PEUMO",
+    "comunas": [
+      {
+        "codigoComuna": 2790,
+        "nombreComuna": "PEUMO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1280,
+    "nombreCiudad": "QUEILEN",
+    "comunas": [
+      {
+        "codigoComuna": 3069,
+        "nombreComuna": "QUEILEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 256,
+    "nombreCiudad": "QUINTA DE TILCOCO",
+    "comunas": [
+      {
+        "codigoComuna": 2800,
+        "nombreComuna": "QUINTA DE TILCOCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1285,
+    "nombreCiudad": "SAN JUAN DE LA COSTA",
+    "comunas": [
+      {
+        "codigoComuna": 3044,
+        "nombreComuna": "SAN JUAN DE LA COSTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1286,
+    "nombreCiudad": "TRUMAO",
+    "comunas": [
+      {
+        "codigoComuna": 3045,
+        "nombreComuna": "TRUMAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1287,
+    "nombreCiudad": "ACHAO",
+    "comunas": [
+      {
+        "codigoComuna": 3047,
+        "nombreComuna": "ACHAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1288,
+    "nombreCiudad": "CHAITEN",
+    "comunas": [
+      {
+        "codigoComuna": 3030,
+        "nombreComuna": "CHAITEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1289,
+    "nombreCiudad": "PARGUA",
+    "comunas": [
+      {
+        "codigoComuna": 3040,
+        "nombreComuna": "PARGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1290,
+    "nombreCiudad": "PUERTO AGUIRRE",
+    "comunas": [
+      {
+        "codigoComuna": 3100,
+        "nombreComuna": "PUERTO AGUIRRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 266,
+    "nombreCiudad": "SAN VICENTE DE TAGUATAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2805,
+        "nombreComuna": "SAN VICENTE DE TAGUATAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2315,
+    "nombreCiudad": "VISVIRI",
+    "comunas": [
+      {
+        "codigoComuna": 2552,
+        "nombreComuna": "VISVIRI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1292,
+    "nombreCiudad": "CHILE CHICO",
+    "comunas": [
+      {
+        "codigoComuna": 3094,
+        "nombreComuna": "CHILE CHICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 268,
+    "nombreCiudad": "CHIMBARONGO",
+    "comunas": [
+      {
+        "codigoComuna": 2761,
+        "nombreComuna": "CHIMBARONGO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 269,
+    "nombreCiudad": "CUNACO",
+    "comunas": [
+      {
+        "codigoComuna": 2767,
+        "nombreComuna": "CUNACO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2317,
+    "nombreCiudad": "TIGNAMAR",
+    "comunas": [
+      {
+        "codigoComuna": 2551,
+        "nombreComuna": "TIGNAMAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2318,
+    "nombreCiudad": "SORA",
+    "comunas": [
+      {
+        "codigoComuna": 2550,
+        "nombreComuna": "SORA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 271,
+    "nombreCiudad": "CHEPICA",
+    "comunas": [
+      {
+        "codigoComuna": 2760,
+        "nombreComuna": "CHEPICA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2319,
+    "nombreCiudad": "SOCOROMA",
+    "comunas": [
+      {
+        "codigoComuna": 2549,
+        "nombreComuna": "SOCOROMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1296,
+    "nombreCiudad": "GUAITECAS",
+    "comunas": [
+      {
+        "codigoComuna": 1333,
+        "nombreComuna": "GUAITECAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 272,
+    "nombreCiudad": "NANCAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2785,
+        "nombreComuna": "NANCAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2320,
+    "nombreCiudad": "PACHAMA",
+    "comunas": [
+      {
+        "codigoComuna": 2546,
+        "nombreComuna": "PACHAMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2321,
+    "nombreCiudad": "BELEN",
+    "comunas": [
+      {
+        "codigoComuna": 2537,
+        "nombreComuna": "BELEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1298,
+    "nombreCiudad": "LA JUNTA",
+    "comunas": [
+      {
+        "codigoComuna": 3106,
+        "nombreComuna": "LA JUNTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2322,
+    "nombreCiudad": "MOLINOS",
+    "comunas": [
+      {
+        "codigoComuna": 2545,
+        "nombreComuna": "MOLINOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2324,
+    "nombreCiudad": "ESQUINA",
+    "comunas": [
+      {
+        "codigoComuna": 2543,
+        "nombreComuna": "ESQUINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 276,
+    "nombreCiudad": "MAULE",
+    "comunas": [
+      {
+        "codigoComuna": 2834,
+        "nombreComuna": "MAULE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2325,
+    "nombreCiudad": "CAMARONES",
+    "comunas": [
+      {
+        "codigoComuna": 2538,
+        "nombreComuna": "CAMARONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1301,
+    "nombreCiudad": "VILLA MANIHUALES",
+    "comunas": [
+      {
+        "codigoComuna": 1338,
+        "nombreComuna": "VILLA MANIHUALES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1302,
+    "nombreCiudad": "MELINKA",
+    "comunas": [
+      {
+        "codigoComuna": 3099,
+        "nombreComuna": "MELINKA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2327,
+    "nombreCiudad": "CAQUENA",
+    "comunas": [
+      {
+        "codigoComuna": 2539,
+        "nombreComuna": "CAQUENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2328,
+    "nombreCiudad": "COSAPILLA",
+    "comunas": [
+      {
+        "codigoComuna": 2541,
+        "nombreComuna": "COSAPILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1304,
+    "nombreCiudad": "VILLA OHIGGINS",
+    "comunas": [
+      {
+        "codigoComuna": 1341,
+        "nombreComuna": "VILLA OHIGGINS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2329,
+    "nombreCiudad": "CODPA",
+    "comunas": [
+      {
+        "codigoComuna": 2540,
+        "nombreComuna": "CODPA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1305,
+    "nombreCiudad": "PUERTO CISNES",
+    "comunas": [
+      {
+        "codigoComuna": 3108,
+        "nombreComuna": "PUERTO CISNES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1306,
+    "nombreCiudad": "PUERTO CHACABUCO",
+    "comunas": [
+      {
+        "codigoComuna": 3102,
+        "nombreComuna": "PUERTO CHACABUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 282,
+    "nombreCiudad": "SAN CLEMENTE",
+    "comunas": [
+      {
+        "codigoComuna": 2848,
+        "nombreComuna": "SAN CLEMENTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2330,
+    "nombreCiudad": "SOTOCA",
+    "comunas": [
+      {
+        "codigoComuna": 2570,
+        "nombreComuna": "SOTOCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2331,
+    "nombreCiudad": "ANCUAQUE",
+    "comunas": [
+      {
+        "codigoComuna": 2555,
+        "nombreComuna": "ANCUAQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1307,
+    "nombreCiudad": "LAGO VERDE",
+    "comunas": [
+      {
+        "codigoComuna": 3098,
+        "nombreComuna": "LAGO VERDE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 283,
+    "nombreCiudad": "SAN JAVIER",
+    "comunas": [
+      {
+        "codigoComuna": 2849,
+        "nombreComuna": "SAN JAVIER"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2332,
+    "nombreCiudad": "MOCHA",
+    "comunas": [
+      {
+        "codigoComuna": 2568,
+        "nombreComuna": "MOCHA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1308,
+    "nombreCiudad": "RIO IBANEZ",
+    "comunas": [
+      {
+        "codigoComuna": 1345,
+        "nombreComuna": "RIO IBANEZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 284,
+    "nombreCiudad": "VILLA ALEGRE",
+    "comunas": [
+      {
+        "codigoComuna": 2854,
+        "nombreComuna": "VILLA ALEGRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2333,
+    "nombreCiudad": "LIRIMA",
+    "comunas": [
+      {
+        "codigoComuna": 2566,
+        "nombreComuna": "LIRIMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2334,
+    "nombreCiudad": "CALETA BUENA",
+    "comunas": [
+      {
+        "codigoComuna": 2556,
+        "nombreComuna": "CALETA BUENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1310,
+    "nombreCiudad": "PUERTO BERTRAND",
+    "comunas": [
+      {
+        "codigoComuna": 3101,
+        "nombreComuna": "PUERTO BERTRAND"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2335,
+    "nombreCiudad": "ISLUGA",
+    "comunas": [
+      {
+        "codigoComuna": 2563,
+        "nombreComuna": "ISLUGA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1311,
+    "nombreCiudad": "TORTEL",
+    "comunas": [
+      {
+        "codigoComuna": 3103,
+        "nombreComuna": "TORTEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2336,
+    "nombreCiudad": "CAMINA",
+    "comunas": [
+      {
+        "codigoComuna": 2557,
+        "nombreComuna": "CAMINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1312,
+    "nombreCiudad": "PUYUHUAPI",
+    "comunas": [
+      {
+        "codigoComuna": 3110,
+        "nombreComuna": "PUYUHUAPI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2337,
+    "nombreCiudad": "CANCOSA",
+    "comunas": [
+      {
+        "codigoComuna": 2558,
+        "nombreComuna": "CANCOSA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2338,
+    "nombreCiudad": "CARIQUIMA",
+    "comunas": [
+      {
+        "codigoComuna": 2559,
+        "nombreComuna": "CARIQUIMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1315,
+    "nombreCiudad": "CERRO SOMBRERO",
+    "comunas": [
+      {
+        "codigoComuna": 3113,
+        "nombreComuna": "CERRO SOMBRERO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2339,
+    "nombreCiudad": "COLLACAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2561,
+        "nombreComuna": "COLLACAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 292,
+    "nombreCiudad": "PARRAL",
+    "comunas": [
+      {
+        "codigoComuna": 2838,
+        "nombreComuna": "PARRAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 293,
+    "nombreCiudad": "CAUQUENES",
+    "comunas": [
+      {
+        "codigoComuna": 2817,
+        "nombreComuna": "CAUQUENES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1317,
+    "nombreCiudad": "LAGUNA BLANCA",
+    "comunas": [
+      {
+        "codigoComuna": 3114,
+        "nombreComuna": "LAGUNA BLANCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2341,
+    "nombreCiudad": "QUILLAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2584,
+        "nombreComuna": "QUILLAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 294,
+    "nombreCiudad": "MOLINA",
+    "comunas": [
+      {
+        "codigoComuna": 2835,
+        "nombreComuna": "MOLINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2342,
+    "nombreCiudad": "PAPOSO",
+    "comunas": [
+      {
+        "codigoComuna": 2583,
+        "nombreComuna": "PAPOSO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1319,
+    "nombreCiudad": "PUERTO NATALES",
+    "comunas": [
+      {
+        "codigoComuna": 3125,
+        "nombreComuna": "PUERTO NATALES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2344,
+    "nombreCiudad": "HORNITOS",
+    "comunas": [
+      {
+        "codigoComuna": 2578,
+        "nombreComuna": "HORNITOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1320,
+    "nombreCiudad": "PRIMAVERA",
+    "comunas": [
+      {
+        "codigoComuna": 3117,
+        "nombreComuna": "PRIMAVERA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2345,
+    "nombreCiudad": "COBIJA",
+    "comunas": [
+      {
+        "codigoComuna": 2577,
+        "nombreComuna": "COBIJA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1321,
+    "nombreCiudad": "PUERTO WILLIAMS",
+    "comunas": [
+      {
+        "codigoComuna": 3120,
+        "nombreComuna": "PUERTO WILLIAMS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2346,
+    "nombreCiudad": "ALGARROBAL",
+    "comunas": [
+      {
+        "codigoComuna": 2592,
+        "nombreComuna": "ALGARROBAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 298,
+    "nombreCiudad": "TENO",
+    "comunas": [
+      {
+        "codigoComuna": 2852,
+        "nombreComuna": "TENO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2347,
+    "nombreCiudad": "LA ARENA",
+    "comunas": [
+      {
+        "codigoComuna": 2601,
+        "nombreComuna": "LA ARENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1323,
+    "nombreCiudad": "RIO VERDE",
+    "comunas": [
+      {
+        "codigoComuna": 3122,
+        "nombreComuna": "RIO VERDE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 299,
+    "nombreCiudad": "SAGRADA FAMILIA",
+    "comunas": [
+      {
+        "codigoComuna": 2847,
+        "nombreComuna": "SAGRADA FAMILIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1324,
+    "nombreCiudad": "TORRES DEL PAINE",
+    "comunas": [
+      {
+        "codigoComuna": 3124,
+        "nombreComuna": "TORRES DEL PAINE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2349,
+    "nombreCiudad": "MONTE GRANDE",
+    "comunas": [
+      {
+        "codigoComuna": 2654,
+        "nombreComuna": "MONTE GRANDE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1325,
+    "nombreCiudad": "PORVENIR",
+    "comunas": [
+      {
+        "codigoComuna": 3116,
+        "nombreComuna": "PORVENIR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2350,
+    "nombreCiudad": "LA PLACILLA (PUNITAQUI)",
+    "comunas": [
+      {
+        "codigoComuna": 2640,
+        "nombreComuna": "LA PLACILLA (PUNITAQUI)"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1327,
+    "nombreCiudad": "TIMAUKEL",
+    "comunas": [
+      {
+        "codigoComuna": 3123,
+        "nombreComuna": "TIMAUKEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1328,
+    "nombreCiudad": "FARELLONES",
+    "comunas": [
+      {
+        "codigoComuna": 3139,
+        "nombreComuna": "FARELLONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2353,
+    "nombreCiudad": "CANTO DE AGUA",
+    "comunas": [
+      {
+        "codigoComuna": 2612,
+        "nombreComuna": "CANTO DE AGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1329,
+    "nombreCiudad": "PORTILLO",
+    "comunas": [
+      {
+        "codigoComuna": 1367,
+        "nombreComuna": "PORTILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2354,
+    "nombreCiudad": "CONAY",
+    "comunas": [
+      {
+        "codigoComuna": 2620,
+        "nombreComuna": "CONAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1330,
+    "nombreCiudad": "SALADILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2744,
+        "nombreComuna": "SALADILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1331,
+    "nombreCiudad": "ALHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3127,
+        "nombreComuna": "ALHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2355,
+    "nombreCiudad": "CARRIZAL BAJO",
+    "comunas": [
+      {
+        "codigoComuna": 2614,
+        "nombreComuna": "CARRIZAL BAJO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1333,
+    "nombreCiudad": "CHAMPA",
+    "comunas": [
+      {
+        "codigoComuna": 3171,
+        "nombreComuna": "CHAMPA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 309,
+    "nombreCiudad": "SAN GREGORIO",
+    "comunas": [
+      {
+        "codigoComuna": 2918,
+        "nombreComuna": "SAN GREGORIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1334,
+    "nombreCiudad": "CURIMON",
+    "comunas": [
+      {
+        "codigoComuna": 3176,
+        "nombreComuna": "CURIMON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2358,
+    "nombreCiudad": "PICHICUY",
+    "comunas": [
+      {
+        "codigoComuna": 2661,
+        "nombreComuna": "PICHICUY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2359,
+    "nombreCiudad": "ALICAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2684,
+        "nombreComuna": "ALICAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1336,
+    "nombreCiudad": "HOSPITAL",
+    "comunas": [
+      {
+        "codigoComuna": 3140,
+        "nombreComuna": "HOSPITAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2360,
+    "nombreCiudad": "SEWELL",
+    "comunas": [
+      {
+        "codigoComuna": 2808,
+        "nombreComuna": "SEWELL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1337,
+    "nombreCiudad": "EL MELOCOTON",
+    "comunas": [
+      {
+        "codigoComuna": 3178,
+        "nombreComuna": "EL MELOCOTON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2362,
+    "nombreCiudad": "POPETA",
+    "comunas": [
+      {
+        "codigoComuna": 2796,
+        "nombreComuna": "POPETA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2363,
+    "nombreCiudad": "LAS NIEVES",
+    "comunas": [
+      {
+        "codigoComuna": 2777,
+        "nombreComuna": "LAS NIEVES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2364,
+    "nombreCiudad": "LA CEBADA",
+    "comunas": [
+      {
+        "codigoComuna": 2774,
+        "nombreComuna": "LA CEBADA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1340,
+    "nombreCiudad": "POLPAICO",
+    "comunas": [
+      {
+        "codigoComuna": 3185,
+        "nombreComuna": "POLPAICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2366,
+    "nombreCiudad": "EL MANZANO",
+    "comunas": [
+      {
+        "codigoComuna": 2770,
+        "nombreComuna": "EL MANZANO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1343,
+    "nombreCiudad": "SAN PEDRO DE MELIPILLA",
+    "comunas": [
+      {
+        "codigoComuna": 1381,
+        "nombreComuna": "SAN PEDRO DE MELIPILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2368,
+    "nombreCiudad": "CIRUELOS",
+    "comunas": [
+      {
+        "codigoComuna": 2762,
+        "nombreComuna": "CIRUELOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1345,
+    "nombreCiudad": "BATUCO (TALCA)",
+    "comunas": [
+      {
+        "codigoComuna": 2813,
+        "nombreComuna": "BATUCO (TALCA)"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2369,
+    "nombreCiudad": "BUCHUPUREO",
+    "comunas": [
+      {
+        "codigoComuna": 2863,
+        "nombreComuna": "BUCHUPUREO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1346,
+    "nombreCiudad": "CODIGUA",
+    "comunas": [
+      {
+        "codigoComuna": 3174,
+        "nombreComuna": "CODIGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2370,
+    "nombreCiudad": "VEGAS DE ITATA",
+    "comunas": [
+      {
+        "codigoComuna": 2948,
+        "nombreComuna": "VEGAS DE ITATA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1347,
+    "nombreCiudad": "VALDIVIA DE PAINE",
+    "comunas": [
+      {
+        "codigoComuna": 3168,
+        "nombreComuna": "VALDIVIA DE PAINE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1348,
+    "nombreCiudad": "ISLA DE PASCUA",
+    "comunas": [
+      {
+        "codigoComuna": 1386,
+        "nombreComuna": "ISLA DE PASCUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2372,
+    "nombreCiudad": "RAFAEL",
+    "comunas": [
+      {
+        "codigoComuna": 2940,
+        "nombreComuna": "RAFAEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2373,
+    "nombreCiudad": "CHOLGUAN",
+    "comunas": [
+      {
+        "codigoComuna": 2870,
+        "nombreComuna": "CHOLGUAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 325,
+    "nombreCiudad": "LIRQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2893,
+        "nombreComuna": "LIRQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2375,
+    "nombreCiudad": "CAYUCUPIL",
+    "comunas": [
+      {
+        "codigoComuna": 2869,
+        "nombreComuna": "CAYUCUPIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1352,
+    "nombreCiudad": "GENERAL LAGOS",
+    "comunas": [
+      {
+        "codigoComuna": 2544,
+        "nombreComuna": "GENERAL LAGOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2377,
+    "nombreCiudad": "LIQUINE",
+    "comunas": [
+      {
+        "codigoComuna": 2968,
+        "nombreComuna": "LIQUINE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1353,
+    "nombreCiudad": "POCONCHILE",
+    "comunas": [
+      {
+        "codigoComuna": 2547,
+        "nombreComuna": "POCONCHILE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1354,
+    "nombreCiudad": "PUTRE",
+    "comunas": [
+      {
+        "codigoComuna": 2548,
+        "nombreComuna": "PUTRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2379,
+    "nombreCiudad": "TROVOLHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2969,
+        "nombreComuna": "TROVOLHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1356,
+    "nombreCiudad": "CUYA",
+    "comunas": [
+      {
+        "codigoComuna": 2542,
+        "nombreComuna": "CUYA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2381,
+    "nombreCiudad": "PUNUCAPA",
+    "comunas": [
+      {
+        "codigoComuna": 3013,
+        "nombreComuna": "PUNUCAPA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 333,
+    "nombreCiudad": "YUNGAY",
+    "comunas": [
+      {
+        "codigoComuna": 2929,
+        "nombreComuna": "YUNGAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2383,
+    "nombreCiudad": "CURINANCO",
+    "comunas": [
+      {
+        "codigoComuna": 3010,
+        "nombreComuna": "CURINANCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1359,
+    "nombreCiudad": "HACIENDA LOS ANDES",
+    "comunas": [
+      {
+        "codigoComuna": 2632,
+        "nombreComuna": "HACIENDA LOS ANDES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2384,
+    "nombreCiudad": "RININAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3014,
+        "nombreComuna": "RININAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1361,
+    "nombreCiudad": "LLANOS DE GUANTA",
+    "comunas": [
+      {
+        "codigoComuna": 2650,
+        "nombreComuna": "LLANOS DE GUANTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1362,
+    "nombreCiudad": "QUILIMARI",
+    "comunas": [
+      {
+        "codigoComuna": 2669,
+        "nombreComuna": "QUILIMARI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1363,
+    "nombreCiudad": "GUANGUALI",
+    "comunas": [
+      {
+        "codigoComuna": 2631,
+        "nombreComuna": "GUANGUALI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2387,
+    "nombreCiudad": "PUCATRIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3043,
+        "nombreComuna": "PUCATRIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1364,
+    "nombreCiudad": "HUENTELAUQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2635,
+        "nombreComuna": "HUENTELAUQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2388,
+    "nombreCiudad": "PUAUCHO",
+    "comunas": [
+      {
+        "codigoComuna": 3042,
+        "nombreComuna": "PUAUCHO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2389,
+    "nombreCiudad": "BAHIA MANSA",
+    "comunas": [
+      {
+        "codigoComuna": 3027,
+        "nombreComuna": "BAHIA MANSA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1365,
+    "nombreCiudad": "LOS NICHES",
+    "comunas": [
+      {
+        "codigoComuna": 2833,
+        "nombreComuna": "LOS NICHES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1366,
+    "nombreCiudad": "LO VALDIVIA",
+    "comunas": [
+      {
+        "codigoComuna": 2830,
+        "nombreComuna": "LO VALDIVIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2390,
+    "nombreCiudad": "MAICOLPUE",
+    "comunas": [
+      {
+        "codigoComuna": 3037,
+        "nombreComuna": "MAICOLPUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1367,
+    "nombreCiudad": "NIPAS",
+    "comunas": [
+      {
+        "codigoComuna": 2902,
+        "nombreComuna": "NIPAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2392,
+    "nombreCiudad": "LLICO",
+    "comunas": [
+      {
+        "codigoComuna": 3036,
+        "nombreComuna": "LLICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 344,
+    "nombreCiudad": "PADRE LAS CASAS",
+    "comunas": [
+      {
+        "codigoComuna": 2977,
+        "nombreComuna": "PADRE LAS CASAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1368,
+    "nombreCiudad": "TREHUACO",
+    "comunas": [
+      {
+        "codigoComuna": 2926,
+        "nombreComuna": "TREHUACO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 345,
+    "nombreCiudad": "PUERTO SAAVEDRA",
+    "comunas": [
+      {
+        "codigoComuna": 2983,
+        "nombreComuna": "PUERTO SAAVEDRA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2393,
+    "nombreCiudad": "VILLA CERRO CASTILLO",
+    "comunas": [
+      {
+        "codigoComuna": 3104,
+        "nombreComuna": "VILLA CERRO CASTILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1372,
+    "nombreCiudad": "CABURGA",
+    "comunas": [
+      {
+        "codigoComuna": 2955,
+        "nombreComuna": "CABURGA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1373,
+    "nombreCiudad": "MAIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3006,
+        "nombreComuna": "MAIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2398,
+    "nombreCiudad": "BALMACEDA",
+    "comunas": [
+      {
+        "codigoComuna": 3095,
+        "nombreComuna": "BALMACEDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1376,
+    "nombreCiudad": "PUERTO TRANQUILO",
+    "comunas": [
+      {
+        "codigoComuna": 3109,
+        "nombreComuna": "PUERTO TRANQUILO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2401,
+    "nombreCiudad": "LA TAPERA",
+    "comunas": [
+      {
+        "codigoComuna": 3097,
+        "nombreComuna": "LA TAPERA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1378,
+    "nombreCiudad": "RAUQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2843,
+        "nombreComuna": "RAUQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1379,
+    "nombreCiudad": "QUIRIQUINA",
+    "comunas": [
+      {
+        "codigoComuna": 2914,
+        "nombreComuna": "QUIRIQUINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1380,
+    "nombreCiudad": "VILLUCO",
+    "comunas": [
+      {
+        "codigoComuna": 2928,
+        "nombreComuna": "VILLUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1381,
+    "nombreCiudad": "COCHRANE",
+    "comunas": [
+      {
+        "codigoComuna": 3105,
+        "nombreComuna": "COCHRANE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2406,
+    "nombreCiudad": "PUNTA DELGADA",
+    "comunas": [
+      {
+        "codigoComuna": 3121,
+        "nombreComuna": "PUNTA DELGADA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1384,
+    "nombreCiudad": "PICHI PELLUCO",
+    "comunas": [
+      {
+        "codigoComuna": 3085,
+        "nombreComuna": "PICHI PELLUCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2408,
+    "nombreCiudad": "PUERTO TORO",
+    "comunas": [
+      {
+        "codigoComuna": 3119,
+        "nombreComuna": "PUERTO TORO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2409,
+    "nombreCiudad": "PUERTO BORIES",
+    "comunas": [
+      {
+        "codigoComuna": 3118,
+        "nombreComuna": "PUERTO BORIES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2412,
+    "nombreCiudad": "MONTE AYMOND",
+    "comunas": [
+      {
+        "codigoComuna": 3115,
+        "nombreComuna": "MONTE AYMOND"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2414,
+    "nombreCiudad": "CAMERON",
+    "comunas": [
+      {
+        "codigoComuna": 3112,
+        "nombreComuna": "CAMERON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 368,
+    "nombreCiudad": "NIEBLA",
+    "comunas": [
+      {
+        "codigoComuna": 3012,
+        "nombreComuna": "NIEBLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2416,
+    "nombreCiudad": "VILLA MERCEDES",
+    "comunas": [
+      {
+        "codigoComuna": 2949,
+        "nombreComuna": "VILLA MERCEDES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2417,
+    "nombreCiudad": "TRUPAN",
+    "comunas": [
+      {
+        "codigoComuna": 2947,
+        "nombreComuna": "TRUPAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2419,
+    "nombreCiudad": "RIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2942,
+        "nombreComuna": "RIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2420,
+    "nombreCiudad": "POLCURA",
+    "comunas": [
+      {
+        "codigoComuna": 2936,
+        "nombreComuna": "POLCURA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2421,
+    "nombreCiudad": "PANGAL",
+    "comunas": [
+      {
+        "codigoComuna": 2935,
+        "nombreComuna": "PANGAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2423,
+    "nombreCiudad": "COIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2931,
+        "nombreComuna": "COIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2424,
+    "nombreCiudad": "AGUA BUENA",
+    "comunas": [
+      {
+        "codigoComuna": 2756,
+        "nombreComuna": "AGUA BUENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2425,
+    "nombreCiudad": "TOPOCALMA",
+    "comunas": [
+      {
+        "codigoComuna": 2809,
+        "nombreComuna": "TOPOCALMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2427,
+    "nombreCiudad": "PUERTECILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2797,
+        "nombreComuna": "PUERTECILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2428,
+    "nombreCiudad": "CAHUIL",
+    "comunas": [
+      {
+        "codigoComuna": 2758,
+        "nombreComuna": "CAHUIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2429,
+    "nombreCiudad": "LARMAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2776,
+        "nombreComuna": "LARMAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2430,
+    "nombreCiudad": "LA RUFINA",
+    "comunas": [
+      {
+        "codigoComuna": 2775,
+        "nombreComuna": "LA RUFINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 385,
+    "nombreCiudad": "DALCAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3078,
+        "nombreComuna": "DALCAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2434,
+    "nombreCiudad": "SOCAIRE",
+    "comunas": [
+      {
+        "codigoComuna": 2587,
+        "nombreComuna": "SOCAIRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2435,
+    "nombreCiudad": "AIQUINA",
+    "comunas": [
+      {
+        "codigoComuna": 2574,
+        "nombreComuna": "AIQUINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 388,
+    "nombreCiudad": "CASTRO",
+    "comunas": [
+      {
+        "codigoComuna": 3051,
+        "nombreComuna": "CASTRO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 389,
+    "nombreCiudad": "ANCUD",
+    "comunas": [
+      {
+        "codigoComuna": 3049,
+        "nombreComuna": "ANCUD"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2437,
+    "nombreCiudad": "LASANA",
+    "comunas": [
+      {
+        "codigoComuna": 2580,
+        "nombreComuna": "LASANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2438,
+    "nombreCiudad": "CASPANA",
+    "comunas": [
+      {
+        "codigoComuna": 2576,
+        "nombreComuna": "CASPANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2439,
+    "nombreCiudad": "TREGUALEMU",
+    "comunas": [
+      {
+        "codigoComuna": 2946,
+        "nombreComuna": "TREGUALEMU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2440,
+    "nombreCiudad": "TANILVORO",
+    "comunas": [
+      {
+        "codigoComuna": 2945,
+        "nombreComuna": "TANILVORO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2441,
+    "nombreCiudad": "RUCAPEQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2943,
+        "nombreComuna": "RUCAPEQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2442,
+    "nombreCiudad": "QUINCHAMALI",
+    "comunas": [
+      {
+        "codigoComuna": 2939,
+        "nombreComuna": "QUINCHAMALI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2443,
+    "nombreCiudad": "PUEBLO SECO",
+    "comunas": [
+      {
+        "codigoComuna": 2937,
+        "nombreComuna": "PUEBLO SECO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2444,
+    "nombreCiudad": "NAHUELTORO",
+    "comunas": [
+      {
+        "codigoComuna": 2934,
+        "nombreComuna": "NAHUELTORO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2445,
+    "nombreCiudad": "MINAS DEL PRADO",
+    "comunas": [
+      {
+        "codigoComuna": 2932,
+        "nombreComuna": "MINAS DEL PRADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2449,
+    "nombreCiudad": "VILLA SANTA LUCIA",
+    "comunas": [
+      {
+        "codigoComuna": 3046,
+        "nombreComuna": "VILLA SANTA LUCIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2453,
+    "nombreCiudad": "CALETA GONZALO",
+    "comunas": [
+      {
+        "codigoComuna": 3028,
+        "nombreComuna": "CALETA GONZALO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2459,
+    "nombreCiudad": "SAN MANUEL",
+    "comunas": [
+      {
+        "codigoComuna": 3187,
+        "nombreComuna": "SAN MANUEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2460,
+    "nombreCiudad": "POMAIRE",
+    "comunas": [
+      {
+        "codigoComuna": 3186,
+        "nombreComuna": "POMAIRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2462,
+    "nombreCiudad": "LOS MAITENES",
+    "comunas": [
+      {
+        "codigoComuna": 3184,
+        "nombreComuna": "LOS MAITENES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2463,
+    "nombreCiudad": "LO CHACON",
+    "comunas": [
+      {
+        "codigoComuna": 3183,
+        "nombreComuna": "LO CHACON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2464,
+    "nombreCiudad": "LA OBRA",
+    "comunas": [
+      {
+        "codigoComuna": 3182,
+        "nombreComuna": "LA OBRA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2465,
+    "nombreCiudad": "JUNCAL",
+    "comunas": [
+      {
+        "codigoComuna": 3181,
+        "nombreComuna": "JUNCAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2466,
+    "nombreCiudad": "GUAYACAN",
+    "comunas": [
+      {
+        "codigoComuna": 3180,
+        "nombreComuna": "GUAYACAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2467,
+    "nombreCiudad": "EL MEMBRILLO",
+    "comunas": [
+      {
+        "codigoComuna": 3179,
+        "nombreComuna": "EL MEMBRILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2469,
+    "nombreCiudad": "EL CANELO",
+    "comunas": [
+      {
+        "codigoComuna": 3177,
+        "nombreComuna": "EL CANELO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1447,
+    "nombreCiudad": "CHARRUA",
+    "comunas": [
+      {
+        "codigoComuna": 2872,
+        "nombreComuna": "CHARRUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2471,
+    "nombreCiudad": "CULIPRAN",
+    "comunas": [
+      {
+        "codigoComuna": 3175,
+        "nombreComuna": "CULIPRAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2473,
+    "nombreCiudad": "CHOCALAN",
+    "comunas": [
+      {
+        "codigoComuna": 3173,
+        "nombreComuna": "CHOCALAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2474,
+    "nombreCiudad": "CHICUREO",
+    "comunas": [
+      {
+        "codigoComuna": 2502,
+        "nombreComuna": "CHICUREO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1452,
+    "nombreCiudad": "BATUCO (RM)",
+    "comunas": [
+      {
+        "codigoComuna": 3128,
+        "nombreComuna": "BATUCO (RM)"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2476,
+    "nombreCiudad": "BOLLENAR",
+    "comunas": [
+      {
+        "codigoComuna": 3170,
+        "nombreComuna": "BOLLENAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2477,
+    "nombreCiudad": "ALTO JAHUEL",
+    "comunas": [
+      {
+        "codigoComuna": 3169,
+        "nombreComuna": "ALTO JAHUEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2478,
+    "nombreCiudad": "VILLA ALHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2810,
+        "nombreComuna": "VILLA ALHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2480,
+    "nombreCiudad": "RINCONADA DE SILVA",
+    "comunas": [
+      {
+        "codigoComuna": 2743,
+        "nombreComuna": "RINCONADA DE SILVA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2481,
+    "nombreCiudad": "RINCONADA DE GUZMAN",
+    "comunas": [
+      {
+        "codigoComuna": 2742,
+        "nombreComuna": "RINCONADA DE GUZMAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2482,
+    "nombreCiudad": "MONTENEGRO",
+    "comunas": [
+      {
+        "codigoComuna": 2723,
+        "nombreComuna": "MONTENEGRO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2483,
+    "nombreCiudad": "MANDINGA",
+    "comunas": [
+      {
+        "codigoComuna": 2720,
+        "nombreComuna": "MANDINGA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2484,
+    "nombreCiudad": "GUARDIA VIEJA",
+    "comunas": [
+      {
+        "codigoComuna": 2703,
+        "nombreComuna": "GUARDIA VIEJA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 437,
+    "nombreCiudad": "BUIN",
+    "comunas": [
+      {
+        "codigoComuna": 3129,
+        "nombreComuna": "BUIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2485,
+    "nombreCiudad": "PUNTA DE TRALCA",
+    "comunas": [
+      {
+        "codigoComuna": 2732,
+        "nombreComuna": "PUNTA DE TRALCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2486,
+    "nombreCiudad": "MATANZAS",
+    "comunas": [
+      {
+        "codigoComuna": 2721,
+        "nombreComuna": "MATANZAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 439,
+    "nombreCiudad": "CAJON DEL MAIPO",
+    "comunas": [
+      {
+        "codigoComuna": 3130,
+        "nombreComuna": "CAJON DEL MAIPO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2487,
+    "nombreCiudad": "LEYDA",
+    "comunas": [
+      {
+        "codigoComuna": 2717,
+        "nombreComuna": "LEYDA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1463,
+    "nombreCiudad": "MARCHIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2784,
+        "nombreComuna": "MARCHIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 440,
+    "nombreCiudad": "COLINA",
+    "comunas": [
+      {
+        "codigoComuna": 3133,
+        "nombreComuna": "COLINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2488,
+    "nombreCiudad": "LAGUNILLAS",
+    "comunas": [
+      {
+        "codigoComuna": 2715,
+        "nombreComuna": "LAGUNILLAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1465,
+    "nombreCiudad": "CALAFQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3015,
+        "nombreComuna": "CALAFQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 441,
+    "nombreCiudad": "CURACAVI",
+    "comunas": [
+      {
+        "codigoComuna": 3134,
+        "nombreComuna": "CURACAVI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2489,
+    "nombreCiudad": "ZEMITA",
+    "comunas": [
+      {
+        "codigoComuna": 2950,
+        "nombreComuna": "ZEMITA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2490,
+    "nombreCiudad": "CACHAPOAL CHILLAN",
+    "comunas": [
+      {
+        "codigoComuna": 2866,
+        "nombreComuna": "CACHAPOAL CHILLAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 442,
+    "nombreCiudad": "EL MONTE",
+    "comunas": [
+      {
+        "codigoComuna": 3138,
+        "nombreComuna": "EL MONTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1466,
+    "nombreCiudad": "RINIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3016,
+        "nombreComuna": "RINIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1467,
+    "nombreCiudad": "COZ COZ",
+    "comunas": [
+      {
+        "codigoComuna": 3018,
+        "nombreComuna": "COZ COZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 443,
+    "nombreCiudad": "ISLA DE MAIPO",
+    "comunas": [
+      {
+        "codigoComuna": 3142,
+        "nombreComuna": "ISLA DE MAIPO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 444,
+    "nombreCiudad": "LAMPA",
+    "comunas": [
+      {
+        "codigoComuna": 3145,
+        "nombreComuna": "LAMPA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2492,
+    "nombreCiudad": "QUELON",
+    "comunas": [
+      {
+        "codigoComuna": 2734,
+        "nombreComuna": "QUELON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1468,
+    "nombreCiudad": "ROBLE HUACHO",
+    "comunas": [
+      {
+        "codigoComuna": 3019,
+        "nombreComuna": "ROBLE HUACHO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1469,
+    "nombreCiudad": "CHAUQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3020,
+        "nombreComuna": "CHAUQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 445,
+    "nombreCiudad": "LONQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3150,
+        "nombreComuna": "LONQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2493,
+    "nombreCiudad": "MINCHA",
+    "comunas": [
+      {
+        "codigoComuna": 2722,
+        "nombreComuna": "MINCHA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2494,
+    "nombreCiudad": "CAIMANES",
+    "comunas": [
+      {
+        "codigoComuna": 2690,
+        "nombreComuna": "CAIMANES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1470,
+    "nombreCiudad": "CAMPANARIO",
+    "comunas": [
+      {
+        "codigoComuna": 2930,
+        "nombreComuna": "CAMPANARIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 446,
+    "nombreCiudad": "MAIPO",
+    "comunas": [
+      {
+        "codigoComuna": 3151,
+        "nombreComuna": "MAIPO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2495,
+    "nombreCiudad": "LAS DICHAS",
+    "comunas": [
+      {
+        "codigoComuna": 2716,
+        "nombreComuna": "LAS DICHAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1471,
+    "nombreCiudad": "LOS LAURELES",
+    "comunas": [
+      {
+        "codigoComuna": 2980,
+        "nombreComuna": "LOS LAURELES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 447,
+    "nombreCiudad": "MALLOCO",
+    "comunas": [
+      {
+        "codigoComuna": 3152,
+        "nombreComuna": "MALLOCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2496,
+    "nombreCiudad": "HUINTIL",
+    "comunas": [
+      {
+        "codigoComuna": 2706,
+        "nombreComuna": "HUINTIL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 448,
+    "nombreCiudad": "MARIA PINTO",
+    "comunas": [
+      {
+        "codigoComuna": 3153,
+        "nombreComuna": "MARIA PINTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1472,
+    "nombreCiudad": "RAMADILLAS",
+    "comunas": [
+      {
+        "codigoComuna": 2871,
+        "nombreComuna": "RAMADILLAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1473,
+    "nombreCiudad": "CHERQUENCO",
+    "comunas": [
+      {
+        "codigoComuna": 3245,
+        "nombreComuna": "CHERQUENCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 449,
+    "nombreCiudad": "MELIPILLA",
+    "comunas": [
+      {
+        "codigoComuna": 3154,
+        "nombreComuna": "MELIPILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2497,
+    "nombreCiudad": "SAN PEDRO DE ALCANTARA",
+    "comunas": [
+      {
+        "codigoComuna": 2851,
+        "nombreComuna": "SAN PEDRO DE ALCANTARA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 450,
+    "nombreCiudad": "PADRE HURTADO",
+    "comunas": [
+      {
+        "codigoComuna": 3156,
+        "nombreComuna": "PADRE HURTADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1474,
+    "nombreCiudad": "QUEULE",
+    "comunas": [
+      {
+        "codigoComuna": 2995,
+        "nombreComuna": "QUEULE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1475,
+    "nombreCiudad": "ALTOVALSOL",
+    "comunas": [
+      {
+        "codigoComuna": 2608,
+        "nombreComuna": "ALTOVALSOL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2499,
+    "nombreCiudad": "NIRIVILO",
+    "comunas": [
+      {
+        "codigoComuna": 2836,
+        "nombreComuna": "NIRIVILO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 451,
+    "nombreCiudad": "PAINE",
+    "comunas": [
+      {
+        "codigoComuna": 3157,
+        "nombreComuna": "PAINE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2500,
+    "nombreCiudad": "BOBADILLA",
+    "comunas": [
+      {
+        "codigoComuna": 2814,
+        "nombreComuna": "BOBADILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1476,
+    "nombreCiudad": "EL HINOJAL",
+    "comunas": [
+      {
+        "codigoComuna": 2623,
+        "nombreComuna": "EL HINOJAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 452,
+    "nombreCiudad": "PENAFLOR",
+    "comunas": [
+      {
+        "codigoComuna": 3158,
+        "nombreComuna": "PENAFLOR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1477,
+    "nombreCiudad": "GABRIELA MISTRAL",
+    "comunas": [
+      {
+        "codigoComuna": 2629,
+        "nombreComuna": "GABRIELA MISTRAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2501,
+    "nombreCiudad": "GUALLECO",
+    "comunas": [
+      {
+        "codigoComuna": 2825,
+        "nombreComuna": "GUALLECO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 453,
+    "nombreCiudad": "PIRQUE",
+    "comunas": [
+      {
+        "codigoComuna": 3159,
+        "nombreComuna": "PIRQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1478,
+    "nombreCiudad": "QUEBRADA DE TALCA",
+    "comunas": [
+      {
+        "codigoComuna": 2677,
+        "nombreComuna": "QUEBRADA DE TALCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 454,
+    "nombreCiudad": "SAN JOSE DE MAIPO",
+    "comunas": [
+      {
+        "codigoComuna": 3164,
+        "nombreComuna": "SAN JOSE DE MAIPO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1479,
+    "nombreCiudad": "LA MARQUESA",
+    "comunas": [
+      {
+        "codigoComuna": 2639,
+        "nombreComuna": "LA MARQUESA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2504,
+    "nombreCiudad": "CULENAR",
+    "comunas": [
+      {
+        "codigoComuna": 2815,
+        "nombreComuna": "CULENAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1480,
+    "nombreCiudad": "EL MOLLE",
+    "comunas": [
+      {
+        "codigoComuna": 2624,
+        "nombreComuna": "EL MOLLE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 456,
+    "nombreCiudad": "TALAGANTE",
+    "comunas": [
+      {
+        "codigoComuna": 3166,
+        "nombreComuna": "TALAGANTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1481,
+    "nombreCiudad": "EL TAMBO",
+    "comunas": [
+      {
+        "codigoComuna": 2627,
+        "nombreComuna": "EL TAMBO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2505,
+    "nombreCiudad": "VILLA PRAT",
+    "comunas": [
+      {
+        "codigoComuna": 2855,
+        "nombreComuna": "VILLA PRAT"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 458,
+    "nombreCiudad": "CALERA DE TANGO",
+    "comunas": [
+      {
+        "codigoComuna": 3131,
+        "nombreComuna": "CALERA DE TANGO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2506,
+    "nombreCiudad": "EL CARMEN RENGO",
+    "comunas": [
+      {
+        "codigoComuna": 2769,
+        "nombreComuna": "EL CARMEN RENGO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1482,
+    "nombreCiudad": "HORCON IV",
+    "comunas": [
+      {
+        "codigoComuna": 2633,
+        "nombreComuna": "HORCON IV"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1483,
+    "nombreCiudad": "LOS HORNOS",
+    "comunas": [
+      {
+        "codigoComuna": 2610,
+        "nombreComuna": "LOS HORNOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 459,
+    "nombreCiudad": "NOS",
+    "comunas": [
+      {
+        "codigoComuna": 3162,
+        "nombreComuna": "NOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2508,
+    "nombreCiudad": "LOS HORCONES",
+    "comunas": [
+      {
+        "codigoComuna": 2895,
+        "nombreComuna": "LOS HORCONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1484,
+    "nombreCiudad": "PUNTA COLORADA",
+    "comunas": [
+      {
+        "codigoComuna": 2668,
+        "nombreComuna": "PUNTA COLORADA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1485,
+    "nombreCiudad": "LAS DUNAS",
+    "comunas": [
+      {
+        "codigoComuna": 2646,
+        "nombreComuna": "LAS DUNAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2509,
+    "nombreCiudad": "LAS TRANCAS",
+    "comunas": [
+      {
+        "codigoComuna": 2891,
+        "nombreComuna": "LAS TRANCAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 461,
+    "nombreCiudad": "SANTA ROSA DE CHENA",
+    "comunas": [
+      {
+        "codigoComuna": 3165,
+        "nombreComuna": "SANTA ROSA DE CHENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1486,
+    "nombreCiudad": "PUERTO VELERO",
+    "comunas": [
+      {
+        "codigoComuna": 2666,
+        "nombreComuna": "PUERTO VELERO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2510,
+    "nombreCiudad": "PUNTA DE PARRA",
+    "comunas": [
+      {
+        "codigoComuna": 2909,
+        "nombreComuna": "PUNTA DE PARRA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2511,
+    "nombreCiudad": "COLIUMO",
+    "comunas": [
+      {
+        "codigoComuna": 2877,
+        "nombreComuna": "COLIUMO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1487,
+    "nombreCiudad": "EL TANGUE",
+    "comunas": [
+      {
+        "codigoComuna": 2628,
+        "nombreComuna": "EL TANGUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2512,
+    "nombreCiudad": "PINGUERAL",
+    "comunas": [
+      {
+        "codigoComuna": 2906,
+        "nombreComuna": "PINGUERAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1488,
+    "nombreCiudad": "PUERTO ALDEA",
+    "comunas": [
+      {
+        "codigoComuna": 2665,
+        "nombreComuna": "PUERTO ALDEA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2513,
+    "nombreCiudad": "SAN FABIAN DE ALICO",
+    "comunas": [
+      {
+        "codigoComuna": 2917,
+        "nombreComuna": "SAN FABIAN DE ALICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2514,
+    "nombreCiudad": "EL SAUCE",
+    "comunas": [
+      {
+        "codigoComuna": 2702,
+        "nombreComuna": "EL SAUCE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2515,
+    "nombreCiudad": "BAHIA INGLESA",
+    "comunas": [
+      {
+        "codigoComuna": 3222,
+        "nombreComuna": "BAHIA INGLESA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1491,
+    "nombreCiudad": "EL PENON",
+    "comunas": [
+      {
+        "codigoComuna": 2626,
+        "nombreComuna": "EL PENON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2516,
+    "nombreCiudad": "OLIVAR BAJO",
+    "comunas": [
+      {
+        "codigoComuna": 3223,
+        "nombreComuna": "OLIVAR BAJO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1492,
+    "nombreCiudad": "TAMBILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2678,
+        "nombreComuna": "TAMBILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1493,
+    "nombreCiudad": "LAS CARDAS",
+    "comunas": [
+      {
+        "codigoComuna": 2645,
+        "nombreComuna": "LAS CARDAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2517,
+    "nombreCiudad": "PUENTE NEGRO",
+    "comunas": [
+      {
+        "codigoComuna": 3224,
+        "nombreComuna": "PUENTE NEGRO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1494,
+    "nombreCiudad": "LOMAS DE LO AGUIRRE",
+    "comunas": [
+      {
+        "codigoComuna": 3149,
+        "nombreComuna": "LOMAS DE LO AGUIRRE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2518,
+    "nombreCiudad": "LOS LINGUES",
+    "comunas": [
+      {
+        "codigoComuna": 3263,
+        "nombreComuna": "LOS LINGUES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1495,
+    "nombreCiudad": "NOVICIADO",
+    "comunas": [
+      {
+        "codigoComuna": 3155,
+        "nombreComuna": "NOVICIADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2519,
+    "nombreCiudad": "PUELO",
+    "comunas": [
+      {
+        "codigoComuna": 3225,
+        "nombreComuna": "PUELO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1496,
+    "nombreCiudad": "LA PARVA",
+    "comunas": [
+      {
+        "codigoComuna": 3143,
+        "nombreComuna": "LA PARVA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2520,
+    "nombreCiudad": "MALALCAHUELLO",
+    "comunas": [
+      {
+        "codigoComuna": 3226,
+        "nombreComuna": "MALALCAHUELLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1497,
+    "nombreCiudad": "CIUDAD DE LOS VALLES",
+    "comunas": [
+      {
+        "codigoComuna": 3132,
+        "nombreComuna": "CIUDAD DE LOS VALLES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2521,
+    "nombreCiudad": "PUERTO DOMINGUEZ",
+    "comunas": [
+      {
+        "codigoComuna": 3227,
+        "nombreComuna": "PUERTO DOMINGUEZ"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1498,
+    "nombreCiudad": "EL COLORADO",
+    "comunas": [
+      {
+        "codigoComuna": 3136,
+        "nombreComuna": "EL COLORADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2522,
+    "nombreCiudad": "RUCA RAQUI (SAAVEDRA)",
+    "comunas": [
+      {
+        "codigoComuna": 3228,
+        "nombreComuna": "RUCA RAQUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2523,
+    "nombreCiudad": "GUADAL",
+    "comunas": [
+      {
+        "codigoComuna": 1332,
+        "nombreComuna": "GUADAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1499,
+    "nombreCiudad": "VALLE NEVADO",
+    "comunas": [
+      {
+        "codigoComuna": 3188,
+        "nombreComuna": "VALLE NEVADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1500,
+    "nombreCiudad": "SAN GABRIEL",
+    "comunas": [
+      {
+        "codigoComuna": 3163,
+        "nombreComuna": "SAN GABRIEL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2524,
+    "nombreCiudad": "VILLA ORTEGA",
+    "comunas": [
+      {
+        "codigoComuna": 3261,
+        "nombreComuna": "VILLA ORTEGA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1501,
+    "nombreCiudad": "LAS VERTIENTES",
+    "comunas": [
+      {
+        "codigoComuna": 3146,
+        "nombreComuna": "LAS VERTIENTES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2525,
+    "nombreCiudad": "VILLA AMENGUAL",
+    "comunas": [
+      {
+        "codigoComuna": 3260,
+        "nombreComuna": "VILLA AMENGUAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2526,
+    "nombreCiudad": "NIREHUAO",
+    "comunas": [
+      {
+        "codigoComuna": 3232,
+        "nombreComuna": "NIREHUAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1502,
+    "nombreCiudad": "SAN ALFONSO",
+    "comunas": [
+      {
+        "codigoComuna": 3161,
+        "nombreComuna": "SAN ALFONSO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1503,
+    "nombreCiudad": "LO VALDES",
+    "comunas": [
+      {
+        "codigoComuna": 3148,
+        "nombreComuna": "LO VALDES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1504,
+    "nombreCiudad": "RUNGUE",
+    "comunas": [
+      {
+        "codigoComuna": 3160,
+        "nombreComuna": "RUNGUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2528,
+    "nombreCiudad": "VALLE SIMPSON",
+    "comunas": [
+      {
+        "codigoComuna": 3264,
+        "nombreComuna": "VALLE SIMPSON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1505,
+    "nombreCiudad": "EL INGENIO",
+    "comunas": [
+      {
+        "codigoComuna": 3137,
+        "nombreComuna": "EL INGENIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2530,
+    "nombreCiudad": "BAHIA MURTA",
+    "comunas": [
+      {
+        "codigoComuna": 3230,
+        "nombreComuna": "BAHIA MURTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1506,
+    "nombreCiudad": "LAGUNA ACULEO",
+    "comunas": [
+      {
+        "codigoComuna": 3144,
+        "nombreComuna": "LAGUNA ACULEO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1507,
+    "nombreCiudad": "ALTO EL CANELO",
+    "comunas": [
+      {
+        "codigoComuna": 3135,
+        "nombreComuna": "ALTO EL CANELO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2531,
+    "nombreCiudad": "CALETA ANDRADE",
+    "comunas": [
+      {
+        "codigoComuna": 3231,
+        "nombreComuna": "CALETA ANDRADE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1508,
+    "nombreCiudad": "HUELQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3141,
+        "nombreComuna": "HUELQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2534,
+    "nombreCiudad": "TUBUL",
+    "comunas": [
+      {
+        "codigoComuna": 3235,
+        "nombreComuna": "TUBUL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2535,
+    "nombreCiudad": "PUNTA LAVAPIE",
+    "comunas": [
+      {
+        "codigoComuna": 3234,
+        "nombreComuna": "PUNTA LAVAPIE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2536,
+    "nombreCiudad": "CHILLEPIN",
+    "comunas": [
+      {
+        "codigoComuna": 3236,
+        "nombreComuna": "CHILLEPIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1512,
+    "nombreCiudad": "HUAMALATA",
+    "comunas": [
+      {
+        "codigoComuna": 2634,
+        "nombreComuna": "HUAMALATA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2537,
+    "nombreCiudad": "CUNCUMEN",
+    "comunas": [
+      {
+        "codigoComuna": 3237,
+        "nombreComuna": "CUNCUMEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1513,
+    "nombreCiudad": "SOCOS",
+    "comunas": [
+      {
+        "codigoComuna": 2674,
+        "nombreComuna": "SOCOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1514,
+    "nombreCiudad": "LIMARI",
+    "comunas": [
+      {
+        "codigoComuna": 2649,
+        "nombreComuna": "LIMARI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2538,
+    "nombreCiudad": "PALQUIAL",
+    "comunas": [
+      {
+        "codigoComuna": 3238,
+        "nombreComuna": "PALQUIAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1515,
+    "nombreCiudad": "CERRILLOS DE TAMAYA",
+    "comunas": [
+      {
+        "codigoComuna": 2616,
+        "nombreComuna": "CERRILLOS DE TAMAYA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2539,
+    "nombreCiudad": "LA JARILLA",
+    "comunas": [
+      {
+        "codigoComuna": 3239,
+        "nombreComuna": "LA JARILLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2540,
+    "nombreCiudad": "QUILCHE",
+    "comunas": [
+      {
+        "codigoComuna": 3240,
+        "nombreComuna": "QUILCHE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1516,
+    "nombreCiudad": "RECOLETA IV",
+    "comunas": [
+      {
+        "codigoComuna": 2670,
+        "nombreComuna": "RECOLETA IV"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1517,
+    "nombreCiudad": "SAN JULIAN",
+    "comunas": [
+      {
+        "codigoComuna": 2673,
+        "nombreComuna": "SAN JULIAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2541,
+    "nombreCiudad": "SECTOR LA PENA",
+    "comunas": [
+      {
+        "codigoComuna": 3241,
+        "nombreComuna": "SECTOR LA PEÑA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1518,
+    "nombreCiudad": "CAREN",
+    "comunas": [
+      {
+        "codigoComuna": 2613,
+        "nombreComuna": "CAREN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2542,
+    "nombreCiudad": "PARCELA EL CARMEN",
+    "comunas": [
+      {
+        "codigoComuna": 3242,
+        "nombreComuna": "PARCELA EL CARMEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1519,
+    "nombreCiudad": "CHANARAL DE CAREN",
+    "comunas": [
+      {
+        "codigoComuna": 2618,
+        "nombreComuna": "CHANARAL DE CAREN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2543,
+    "nombreCiudad": "HUELLAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3243,
+        "nombreComuna": "HUELLAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1520,
+    "nombreCiudad": "PEDREGAL",
+    "comunas": [
+      {
+        "codigoComuna": 2659,
+        "nombreComuna": "PEDREGAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2544,
+    "nombreCiudad": "RAYENCURA",
+    "comunas": [
+      {
+        "codigoComuna": 3244,
+        "nombreComuna": "RAYENCURA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2545,
+    "nombreCiudad": "MECHUQUE",
+    "comunas": [
+      {
+        "codigoComuna": 3246,
+        "nombreComuna": "MECHUQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1521,
+    "nombreCiudad": "TULAHUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2681,
+        "nombreComuna": "TULAHUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1522,
+    "nombreCiudad": "LOS OLIVOS",
+    "comunas": [
+      {
+        "codigoComuna": 2651,
+        "nombreComuna": "LOS OLIVOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2546,
+    "nombreCiudad": "PIEDRA AZUL",
+    "comunas": [
+      {
+        "codigoComuna": 3247,
+        "nombreComuna": "PIEDRA AZUL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1523,
+    "nombreCiudad": "PICHASCA",
+    "comunas": [
+      {
+        "codigoComuna": 2662,
+        "nombreComuna": "PICHASCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2547,
+    "nombreCiudad": "QUILLAIPE",
+    "comunas": [
+      {
+        "codigoComuna": 3248,
+        "nombreComuna": "QUILLAIPE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1524,
+    "nombreCiudad": "LAS BREAS",
+    "comunas": [
+      {
+        "codigoComuna": 2643,
+        "nombreComuna": "LAS BREAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2548,
+    "nombreCiudad": "METRI",
+    "comunas": [
+      {
+        "codigoComuna": 3249,
+        "nombreComuna": "METRI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1525,
+    "nombreCiudad": "LAS CARDAS SUR",
+    "comunas": [
+      {
+        "codigoComuna": 2644,
+        "nombreComuna": "LAS CARDAS SUR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2549,
+    "nombreCiudad": "LENCA",
+    "comunas": [
+      {
+        "codigoComuna": 3250,
+        "nombreComuna": "LENCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2550,
+    "nombreCiudad": "CHAICA",
+    "comunas": [
+      {
+        "codigoComuna": 3251,
+        "nombreComuna": "CHAICA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1526,
+    "nombreCiudad": "LAS RAMADAS DE TULAHUEN",
+    "comunas": [
+      {
+        "codigoComuna": 2647,
+        "nombreComuna": "LAS RAMADAS DE TULAHUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 502,
+    "nombreCiudad": "PERALILLO",
+    "comunas": [
+      {
+        "codigoComuna": 2793,
+        "nombreComuna": "PERALILLO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2551,
+    "nombreCiudad": "LA ARENA PTO MONTT",
+    "comunas": [
+      {
+        "codigoComuna": 3252,
+        "nombreComuna": "LA ARENA PTO MONTT"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1527,
+    "nombreCiudad": "PUNTA CORONA",
+    "comunas": [
+      {
+        "codigoComuna": 3068,
+        "nombreComuna": "PUNTA CORONA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1528,
+    "nombreCiudad": "GUAPILACUY",
+    "comunas": [
+      {
+        "codigoComuna": 3056,
+        "nombreComuna": "GUAPILACUY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2552,
+    "nombreCiudad": "VILLA BOLDO",
+    "comunas": [
+      {
+        "codigoComuna": 3253,
+        "nombreComuna": "VILLA BOLDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2553,
+    "nombreCiudad": "PORMA",
+    "comunas": [
+      {
+        "codigoComuna": 3254,
+        "nombreComuna": "PORMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1529,
+    "nombreCiudad": "YUSTE",
+    "comunas": [
+      {
+        "codigoComuna": 3075,
+        "nombreComuna": "YUSTE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2554,
+    "nombreCiudad": "CHOROICO",
+    "comunas": [
+      {
+        "codigoComuna": 3255,
+        "nombreComuna": "CHOROICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1530,
+    "nombreCiudad": "NAL",
+    "comunas": [
+      {
+        "codigoComuna": 3064,
+        "nombreComuna": "NAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1531,
+    "nombreCiudad": "AHUI",
+    "comunas": [
+      {
+        "codigoComuna": 3048,
+        "nombreComuna": "AHUI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2555,
+    "nombreCiudad": "COLICO",
+    "comunas": [
+      {
+        "codigoComuna": 3256,
+        "nombreComuna": "COLICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 508,
+    "nombreCiudad": "LINARES",
+    "comunas": [
+      {
+        "codigoComuna": 2829,
+        "nombreComuna": "LINARES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1532,
+    "nombreCiudad": "PUENTE QUILO",
+    "comunas": [
+      {
+        "codigoComuna": 3067,
+        "nombreComuna": "PUENTE QUILO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2556,
+    "nombreCiudad": "SAN PATRICIO",
+    "comunas": [
+      {
+        "codigoComuna": 3257,
+        "nombreComuna": "SAN PATRICIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2557,
+    "nombreCiudad": "CURACALCO",
+    "comunas": [
+      {
+        "codigoComuna": 3258,
+        "nombreComuna": "CURACALCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1533,
+    "nombreCiudad": "QUETALMAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3070,
+        "nombreComuna": "QUETALMAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2558,
+    "nombreCiudad": "LAS HORTENCIAS",
+    "comunas": [
+      {
+        "codigoComuna": 3259,
+        "nombreComuna": "LAS HORTENCIAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1534,
+    "nombreCiudad": "LECHAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 3060,
+        "nombreComuna": "LECHAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2559,
+    "nombreCiudad": "ISLA SANTA MARIA",
+    "comunas": [
+      {
+        "codigoComuna": 3262,
+        "nombreComuna": "ISLA SANTA MARIA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1535,
+    "nombreCiudad": "PAULDEO",
+    "comunas": [
+      {
+        "codigoComuna": 3066,
+        "nombreComuna": "PAULDEO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2560,
+    "nombreCiudad": "BARROS ARANA",
+    "comunas": [
+      {
+        "codigoComuna": 3265,
+        "nombreComuna": "BARROS ARANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1536,
+    "nombreCiudad": "CAULIN",
+    "comunas": [
+      {
+        "codigoComuna": 3052,
+        "nombreComuna": "CAULIN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2561,
+    "nombreCiudad": "COLONIA MENDOZA",
+    "comunas": [
+      {
+        "codigoComuna": 3266,
+        "nombreComuna": "COLONIA MENDOZA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1537,
+    "nombreCiudad": "MANAO",
+    "comunas": [
+      {
+        "codigoComuna": 3062,
+        "nombreComuna": "MANAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1538,
+    "nombreCiudad": "LINAO",
+    "comunas": [
+      {
+        "codigoComuna": 3061,
+        "nombreComuna": "LINAO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2562,
+    "nombreCiudad": "LOS BOLDOS",
+    "comunas": [
+      {
+        "codigoComuna": 3267,
+        "nombreComuna": "LOS BOLDOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 514,
+    "nombreCiudad": "PENABLANCA",
+    "comunas": [
+      {
+        "codigoComuna": 2728,
+        "nombreComuna": "PENABLANCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1539,
+    "nombreCiudad": "HUELDEN",
+    "comunas": [
+      {
+        "codigoComuna": 3057,
+        "nombreComuna": "HUELDEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2563,
+    "nombreCiudad": "RADAL",
+    "comunas": [
+      {
+        "codigoComuna": 3268,
+        "nombreComuna": "RADAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1540,
+    "nombreCiudad": "CHEPU",
+    "comunas": [
+      {
+        "codigoComuna": 3054,
+        "nombreComuna": "CHEPU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2564,
+    "nombreCiudad": "PEULLA",
+    "comunas": [
+      {
+        "codigoComuna": 3269,
+        "nombreComuna": "PEULLA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 516,
+    "nombreCiudad": "ROSARIO",
+    "comunas": [
+      {
+        "codigoComuna": 2803,
+        "nombreComuna": "ROSARIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1541,
+    "nombreCiudad": "DEGAN",
+    "comunas": [
+      {
+        "codigoComuna": 3055,
+        "nombreComuna": "DEGAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2565,
+    "nombreCiudad": "TABOLANGO",
+    "comunas": [
+      {
+        "codigoComuna": 3270,
+        "nombreComuna": "TABOLANGO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2566,
+    "nombreCiudad": "COPIULEMU",
+    "comunas": [
+      {
+        "codigoComuna": 3271,
+        "nombreComuna": "COPIULEMU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1542,
+    "nombreCiudad": "HUILLINCO",
+    "comunas": [
+      {
+        "codigoComuna": 3058,
+        "nombreComuna": "HUILLINCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 518,
+    "nombreCiudad": "NOGALES",
+    "comunas": [
+      {
+        "codigoComuna": 2724,
+        "nombreComuna": "NOGALES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1543,
+    "nombreCiudad": "MECHAICO",
+    "comunas": [
+      {
+        "codigoComuna": 3063,
+        "nombreComuna": "MECHAICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2567,
+    "nombreCiudad": "MEIPO",
+    "comunas": [
+      {
+        "codigoComuna": 3272,
+        "nombreComuna": "MEIPO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1544,
+    "nombreCiudad": "LAJAS BLANCAS",
+    "comunas": [
+      {
+        "codigoComuna": 3059,
+        "nombreComuna": "LAJAS BLANCAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2568,
+    "nombreCiudad": "PERALES",
+    "comunas": [
+      {
+        "codigoComuna": 3273,
+        "nombreComuna": "PERALES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2569,
+    "nombreCiudad": "GUARILIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3274,
+        "nombreComuna": "GUARILIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1545,
+    "nombreCiudad": "PALOMAR",
+    "comunas": [
+      {
+        "codigoComuna": 3065,
+        "nombreComuna": "PALOMAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2570,
+    "nombreCiudad": "CHECURA",
+    "comunas": [
+      {
+        "codigoComuna": 3275,
+        "nombreComuna": "CHECURA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1546,
+    "nombreCiudad": "LA HAUYCA",
+    "comunas": [
+      {
+        "codigoComuna": 2565,
+        "nombreComuna": "LA HAUYCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 523,
+    "nombreCiudad": "ALTO HOSPICIO",
+    "comunas": [
+      {
+        "codigoComuna": 2554,
+        "nombreComuna": "ALTO HOSPICIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2571,
+    "nombreCiudad": "LEONERA",
+    "comunas": [
+      {
+        "codigoComuna": 3276,
+        "nombreComuna": "LEONERA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1547,
+    "nombreCiudad": "MAMINA",
+    "comunas": [
+      {
+        "codigoComuna": 2567,
+        "nombreComuna": "MAMINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2572,
+    "nombreCiudad": "FILOMENA",
+    "comunas": [
+      {
+        "codigoComuna": 3277,
+        "nombreComuna": "FILOMENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1548,
+    "nombreCiudad": "SAN JUAN",
+    "comunas": [
+      {
+        "codigoComuna": 3074,
+        "nombreComuna": "SAN JUAN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2573,
+    "nombreCiudad": "TOROICO",
+    "comunas": [
+      {
+        "codigoComuna": 3278,
+        "nombreComuna": "TOROICO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2574,
+    "nombreCiudad": "LOS TILOS",
+    "comunas": [
+      {
+        "codigoComuna": 3279,
+        "nombreComuna": "LOS TILOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2594,
+    "nombreCiudad": "CHILCAS",
+    "comunas": [
+      {
+        "codigoComuna": 3299,
+        "nombreComuna": "CHILCAS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2595,
+    "nombreCiudad": "SAN PEDRO DE QUILLOTA",
+    "comunas": [
+      {
+        "codigoComuna": 3300,
+        "nombreComuna": "SAN PEDRO DE QUILLOTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2614,
+    "nombreCiudad": "EL MANZANAR",
+    "comunas": [
+      {
+        "codigoComuna": 3319,
+        "nombreComuna": "EL MANZANAR"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2615,
+    "nombreCiudad": "OCOA",
+    "comunas": [
+      {
+        "codigoComuna": 3320,
+        "nombreComuna": "OCOA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 572,
+    "nombreCiudad": "CALLE LARGA",
+    "comunas": [
+      {
+        "codigoComuna": 2691,
+        "nombreComuna": "CALLE LARGA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 575,
+    "nombreCiudad": "LINDEROS",
+    "comunas": [
+      {
+        "codigoComuna": 3147,
+        "nombreComuna": "LINDEROS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2634,
+    "nombreCiudad": "LOGISTICA REVERSA",
+    "comunas": [
+      {
+        "codigoComuna": 3339,
+        "nombreComuna": "LOGISTICA REVERSA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 588,
+    "nombreCiudad": "ALGARROBO",
+    "comunas": [
+      {
+        "codigoComuna": 2685,
+        "nombreComuna": "ALGARROBO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 589,
+    "nombreCiudad": "EL QUISCO",
+    "comunas": [
+      {
+        "codigoComuna": 2700,
+        "nombreComuna": "EL QUISCO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 591,
+    "nombreCiudad": "CARTAGENA",
+    "comunas": [
+      {
+        "codigoComuna": 2692,
+        "nombreComuna": "CARTAGENA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 592,
+    "nombreCiudad": "LLOLLEO",
+    "comunas": [
+      {
+        "codigoComuna": 644,
+        "nombreComuna": "LLOLLEO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 593,
+    "nombreCiudad": "PUERTO AYSEN",
+    "comunas": [
+      {
+        "codigoComuna": 3107,
+        "nombreComuna": "PUERTO AYSEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 594,
+    "nombreCiudad": "LOS MUERMOS",
+    "comunas": [
+      {
+        "codigoComuna": 3083,
+        "nombreComuna": "LOS MUERMOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 600,
+    "nombreCiudad": "CHOLCHOL",
+    "comunas": [
+      {
+        "codigoComuna": 2957,
+        "nombreComuna": "CHOLCHOL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 601,
+    "nombreCiudad": "CURARREHUE",
+    "comunas": [
+      {
+        "codigoComuna": 2962,
+        "nombreComuna": "CURARREHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 602,
+    "nombreCiudad": "RIO NEGRO",
+    "comunas": [
+      {
+        "codigoComuna": 3091,
+        "nombreComuna": "RIO NEGRO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 603,
+    "nombreCiudad": "LLIFEN",
+    "comunas": [
+      {
+        "codigoComuna": 3000,
+        "nombreComuna": "LLIFEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 604,
+    "nombreCiudad": "BULNES",
+    "comunas": [
+      {
+        "codigoComuna": 2864,
+        "nombreComuna": "BULNES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 605,
+    "nombreCiudad": "FUTRONO",
+    "comunas": [
+      {
+        "codigoComuna": 2999,
+        "nombreComuna": "FUTRONO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 606,
+    "nombreCiudad": "LAGO RANCO",
+    "comunas": [
+      {
+        "codigoComuna": 3002,
+        "nombreComuna": "LAGO RANCO"
+      },
+      {
+        "codigoComuna": 1305,
+        "nombreComuna": "LOS CHILCOS"
+      },
+      {
+        "codigoComuna": 3759,
+        "nombreComuna": "PUERTO NUEVO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2654,
+    "nombreCiudad": "QUILLAITUN",
+    "comunas": [
+      {
+        "codigoComuna": 3359,
+        "nombreComuna": "QUILLAITUN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2655,
+    "nombreCiudad": "CERRO ALTO",
+    "comunas": [
+      {
+        "codigoComuna": 3360,
+        "nombreComuna": "CERRO ALTO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2656,
+    "nombreCiudad": "LA ARAUCANA",
+    "comunas": [
+      {
+        "codigoComuna": 3362,
+        "nombreComuna": "LA ARAUCANA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2674,
+    "nombreCiudad": "TRES PINOS",
+    "comunas": [
+      {
+        "codigoComuna": 3361,
+        "nombreComuna": "TRES PINOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2675,
+    "nombreCiudad": "ANTIHUALA",
+    "comunas": [
+      {
+        "codigoComuna": 3379,
+        "nombreComuna": "ANTIHUALA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2676,
+    "nombreCiudad": "VILLA LOS RIOS",
+    "comunas": [
+      {
+        "codigoComuna": 3380,
+        "nombreComuna": "VILLA LOS RIOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2694,
+    "nombreCiudad": "BOCO DE QUILLOTA",
+    "comunas": [
+      {
+        "codigoComuna": 3400,
+        "nombreComuna": "BOCO DE QUILLOTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2695,
+    "nombreCiudad": "SAN ISIDRO DE QUILLOTA",
+    "comunas": [
+      {
+        "codigoComuna": 3401,
+        "nombreComuna": "SAN ISIDRO DE QUILLOTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2696,
+    "nombreCiudad": "LA PALMA DE QUILLOTA",
+    "comunas": [
+      {
+        "codigoComuna": 3402,
+        "nombreComuna": "LA PALMA DE QUILLOTA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2714,
+    "nombreCiudad": "COLLIGUAY",
+    "comunas": [
+      {
+        "codigoComuna": 3419,
+        "nombreComuna": "COLLIGUAY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2715,
+    "nombreCiudad": "LA RETUCA",
+    "comunas": [
+      {
+        "codigoComuna": 3420,
+        "nombreComuna": "LA RETUCA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2734,
+    "nombreCiudad": "TUNQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3439,
+        "nombreComuna": "TUNQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2754,
+    "nombreCiudad": "QUEBRADA DE ALVARADO",
+    "comunas": [
+      {
+        "codigoComuna": 3459,
+        "nombreComuna": "QUEBRADA DE ALVARADO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2774,
+    "nombreCiudad": "CASMA",
+    "comunas": [
+      {
+        "codigoComuna": 3479,
+        "nombreComuna": "CASMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2794,
+    "nombreCiudad": "YAPE",
+    "comunas": [
+      {
+        "codigoComuna": 3500,
+        "nombreComuna": "YAPE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2814,
+    "nombreCiudad": "PISAGUA",
+    "comunas": [
+      {
+        "codigoComuna": 3499,
+        "nombreComuna": "PISAGUA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2834,
+    "nombreCiudad": "EL ASILO",
+    "comunas": [
+      {
+        "codigoComuna": 3519,
+        "nombreComuna": "EL ASILO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2854,
+    "nombreCiudad": "TRALCAPULLI",
+    "comunas": [
+      {
+        "codigoComuna": 3539,
+        "nombreComuna": "TRALCAPULLI"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2874,
+    "nombreCiudad": "ANCACOMOE",
+    "comunas": [
+      {
+        "codigoComuna": 3540,
+        "nombreComuna": "ANCACOMOE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2875,
+    "nombreCiudad": "PULLINQUE",
+    "comunas": [
+      {
+        "codigoComuna": 3541,
+        "nombreComuna": "PULLINQUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2876,
+    "nombreCiudad": "RIO TRAFUN",
+    "comunas": [
+      {
+        "codigoComuna": 3542,
+        "nombreComuna": "RIO TRAFUN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2877,
+    "nombreCiudad": "PANGUILELFUN",
+    "comunas": [
+      {
+        "codigoComuna": 3544,
+        "nombreComuna": "PANGUILELFUN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2878,
+    "nombreCiudad": "CAYUMAPU",
+    "comunas": [
+      {
+        "codigoComuna": 3546,
+        "nombreComuna": "CAYUMAPU"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2879,
+    "nombreCiudad": "PUNAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3547,
+        "nombreComuna": "PUNAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2880,
+    "nombreCiudad": "MELEFQUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3560,
+        "nombreComuna": "MELEFQUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2881,
+    "nombreCiudad": "LOS CAJONES",
+    "comunas": [
+      {
+        "codigoComuna": 3549,
+        "nombreComuna": "LOS CAJONES"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2882,
+    "nombreCiudad": "LLONGAHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3562,
+        "nombreComuna": "LLONGAHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2894,
+    "nombreCiudad": "LLONGUEN",
+    "comunas": [
+      {
+        "codigoComuna": 3543,
+        "nombreComuna": "LLONGUEN"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2895,
+    "nombreCiudad": "PUERTO FUY",
+    "comunas": [
+      {
+        "codigoComuna": 3545,
+        "nombreComuna": "PUERTO FUY"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2896,
+    "nombreCiudad": "HUERQUEHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3559,
+        "nombreComuna": "HUERQUEHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2897,
+    "nombreCiudad": "RELECO",
+    "comunas": [
+      {
+        "codigoComuna": 3561,
+        "nombreComuna": "RELECO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2898,
+    "nombreCiudad": "PLAYA MONJE",
+    "comunas": [
+      {
+        "codigoComuna": 3548,
+        "nombreComuna": "PLAYA MONJE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2899,
+    "nombreCiudad": "LOS TALLOS",
+    "comunas": [
+      {
+        "codigoComuna": 3550,
+        "nombreComuna": "LOS TALLOS"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2914,
+    "nombreCiudad": "MALALHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3579,
+        "nombreComuna": "MALALHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 2934,
+    "nombreCiudad": "LONGOTOMA",
+    "comunas": [
+      {
+        "codigoComuna": 3619,
+        "nombreComuna": "LONGOTOMA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 888,
+    "nombreCiudad": "LA NEGRA",
+    "comunas": [
+      {
+        "codigoComuna": 2579,
+        "nombreComuna": "LA NEGRA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1007,
+    "nombreCiudad": "ROCAS DE SANTO DOMINGO",
+    "comunas": [
+      {
+        "codigoComuna": 2741,
+        "nombreComuna": "ROCAS DE SANTO DOMINGO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1011,
+    "nombreCiudad": "ARTIFICIO",
+    "comunas": [
+      {
+        "codigoComuna": 2686,
+        "nombreComuna": "ARTIFICIO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1015,
+    "nombreCiudad": "PALMILLA SAN FERNANDO",
+    "comunas": [
+      {
+        "codigoComuna": 2788,
+        "nombreComuna": "PALMILLA SAN FERNANDO"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1016,
+    "nombreCiudad": "PLACILLA (SAN FERNANDO)",
+    "comunas": [
+      {
+        "codigoComuna": 2795,
+        "nombreComuna": "PLACILLA (SAN FERNANDO)"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1018,
+    "nombreCiudad": "SAN FRANCISCO DE MOSTAZAL",
+    "comunas": [
+      {
+        "codigoComuna": 2807,
+        "nombreComuna": "SAN FRANCISCO DE MOSTAZAL"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1019,
+    "nombreCiudad": "HORCON",
+    "comunas": [
+      {
+        "codigoComuna": 2705,
+        "nombreComuna": "HORCON"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1020,
+    "nombreCiudad": "LLANQUIHUE",
+    "comunas": [
+      {
+        "codigoComuna": 3081,
+        "nombreComuna": "LLANQUIHUE"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1021,
+    "nombreCiudad": "FREIRINA",
+    "comunas": [
+      {
+        "codigoComuna": 2600,
+        "nombreComuna": "FREIRINA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1022,
+    "nombreCiudad": "PICA",
+    "comunas": [
+      {
+        "codigoComuna": 2569,
+        "nombreComuna": "PICA"
+      }
+    ]
+  },
+  {
+    "codigoCiudad": 1023,
+    "nombreCiudad": "HUARA",
+    "comunas": [
+      {
+        "codigoComuna": 2562,
+        "nombreComuna": "HUARA"
+      }
+    ]
+  }
+]

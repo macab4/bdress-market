@@ -82,7 +82,7 @@ export default async function PurchasesPage() {
                         <p className="text-xs text-gray-400 mt-1">
                           Seguimiento:{' '}
                           <a
-                            href="https://personas.chilexpress.cl/realizar-envios"
+                            href="https://www.starken.cl/seguimiento"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-mono text-[#5a7a55] underline underline-offset-2 hover:text-black"
@@ -90,7 +90,7 @@ export default async function PurchasesPage() {
                             {order.tracking_number}
                           </a>
                           <span className="block text-[10px] text-gray-300 mt-0.5">
-                            Pega el número en &quot;Rastrea tu envío&quot; en Chilexpress
+                            Pega el número en el buscador de seguimiento de Starken
                           </span>
                         </p>
                       )}
