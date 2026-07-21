@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ShieldCheck } from 'lucide-react'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
@@ -14,6 +15,47 @@ import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 import MakeOfferModal from '@/components/listings/MakeOfferModal'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: listing } = await supabase
+    .from('listings')
+    .select('title, brand, price, photos')
+    .eq('id', id)
+    .single()
+
+  if (!listing) return { title: 'Prenda no encontrada — Bdress Market' }
+
+  const title = `${listing.title}${listing.brand ? ` — ${listing.brand}` : ''} | Bdress Market`
+  const description = `$${listing.price.toLocaleString('es-CL')} · Compra y vende ropa de segunda mano en Bdress Market`
+  const image = listing.photos?.[0]
+  const url = `${SITE_URL}/listings/${id}`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      images: image ? [{ url: image, width: 800, height: 1000 }] : undefined,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  }
+}
 
 export default async function ListingPage({
   params,

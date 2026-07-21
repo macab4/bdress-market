@@ -5,9 +5,23 @@ import Navbar from '@/components/layout/Navbar'
 import MobileTabBar from '@/components/layout/MobileTabBar'
 import AuthHashHandler from '@/components/layout/AuthHashHandler'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
+
 export const metadata: Metadata = {
   title: 'Bdress Market',
   description: 'Compra y vende prendas de la comunidad Bdress',
+  openGraph: {
+    title: 'Bdress Market',
+    description: 'Compra y vende prendas de la comunidad Bdress',
+    url: SITE_URL,
+    images: SITE_URL ? [{ url: `${SITE_URL}/logo.png`, width: 256, height: 85 }] : undefined,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Bdress Market',
+    description: 'Compra y vende prendas de la comunidad Bdress',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
