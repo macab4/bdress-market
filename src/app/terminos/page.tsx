@@ -99,8 +99,8 @@ export default function TerminosPage() {
             <ol className="list-decimal list-inside space-y-2">
               <li>Crea tu cuenta y completa tu perfil, incluyendo tu dirección de despacho (nombre, teléfono, dirección y comuna) — la vas a necesitar para generar etiquetas de envío.</li>
               <li>Publica tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Publicar es gratis y no te cobramos comisión por vender.</li>
-              <li>Cuando alguien compra tu prenda, te avisamos por correo. Entra a «Mis ventas» y genera la etiqueta de envío: se genera automáticamente con Chilexpress y te llega lista para imprimir a tu correo.</li>
-              <li>Imprime la etiqueta, pégala en el paquete y llévalo a cualquier sucursal de Chilexpress.</li>
+              <li>Cuando alguien compra tu prenda, te avisamos por correo. Entra a «Mis ventas» y genera la etiqueta de envío: se genera automáticamente con Starken y te llega lista para imprimir a tu correo.</li>
+              <li>Imprime la etiqueta, pégala en el paquete y llévalo a cualquier sucursal de Starken.</li>
               <li>
                 Cuando la compradora confirma la recepción, esperamos <strong>2 días</strong> por si reporta un
                 problema — si no lo hace, el pago se libera a tu favor. Si nunca confirma, asumimos que todo llegó
@@ -115,12 +115,12 @@ export default function TerminosPage() {
           <section id="envios" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Envíos</h2>
             <p className="mb-2">
-              Todos los envíos de Bdress Market se realizan a través de Chilexpress. El costo se calcula en tiempo
+              Todos los envíos de Bdress Market se realizan a través de Starken. El costo se calcula en tiempo
               real según la comuna de origen (vendedora) y destino (compradora), y lo paga la compradora — se suma
               al precio de la prenda al momento de pagar.
             </p>
             <p>
-              La vendedora es responsable de despachar la prenda en la sucursal Chilexpress dentro de los días
+              La vendedora es responsable de despachar la prenda en la sucursal Starken dentro de los días
               indicados luego de recibir el pago. Si no lo hace a tiempo, la compradora puede solicitar el
               reembolso completo.
             </p>

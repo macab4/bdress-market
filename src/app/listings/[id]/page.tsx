@@ -169,7 +169,7 @@ export default async function ListingPage({
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-[10px] tracking-widest uppercase text-gray-400">{listing.brand || 'Sin marca'}</p>
-                  <h1 className="text-xl font-light tracking-wide mt-0.5">{listing.title}</h1>
+                  <h1 className="font-serif text-xl tracking-wide mt-0.5">{listing.title}</h1>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>

@@ -1,9 +1,24 @@
 import type { Metadata } from 'next'
+import { Noto_Serif, Assistant } from 'next/font/google'
 import Link from 'next/link'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
 import MobileTabBar from '@/components/layout/MobileTabBar'
 import AuthHashHandler from '@/components/layout/AuthHashHandler'
+
+const notoSerif = Noto_Serif({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-noto-serif',
+  display: 'swap',
+})
+
+const assistant = Assistant({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-assistant',
+  display: 'swap',
+})
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
 
@@ -26,8 +41,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className="h-full antialiased">
-      <body className="min-h-full flex flex-col bg-[#EBEBEB]">
+    <html lang="es" className={`h-full antialiased ${notoSerif.variable} ${assistant.variable}`}>
+      <body className="min-h-full flex flex-col bg-[#EBEBEB] font-sans">
         <AuthHashHandler />
         <Navbar />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>

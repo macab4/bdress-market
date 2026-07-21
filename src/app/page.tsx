@@ -207,12 +207,24 @@ export default async function HomePage({
                 <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white">
                   <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
                     {listing.photos[0] ? (
-                      <Image
-                        src={listing.photos[0]}
-                        alt={listing.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition duration-300"
-                      />
+                      <>
+                        <Image
+                          src={listing.photos[0]}
+                          alt={listing.title}
+                          fill
+                          className={`object-cover transition duration-300 ${
+                            listing.photos[1] ? 'group-hover:opacity-0' : 'group-hover:scale-105'
+                          }`}
+                        />
+                        {listing.photos[1] && (
+                          <Image
+                            src={listing.photos[1]}
+                            alt={listing.title}
+                            fill
+                            className="object-cover absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-300"
+                          />
+                        )}
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
                         Sin foto
