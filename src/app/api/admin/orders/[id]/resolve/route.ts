@@ -66,7 +66,10 @@ export async function POST(
 
   const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.payment_ref}/refunds`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` },
+    headers: {
+      Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+      'X-Idempotency-Key': crypto.randomUUID(),
+    },
   })
 
   if (!refundRes.ok) {
