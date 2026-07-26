@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createShipment, getShipmentLabel } from '@/lib/starken'
 import { sendEmail, emailLayout } from '@/lib/email'
+import { MANUAL_LABEL_MODE } from '@/lib/catalog'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -35,6 +36,38 @@ export async function POST(
     return Response.json({ error: 'Completa tu dirección de despacho en tu perfil antes de generar la etiqueta' }, { status: 409 })
   }
   if (!listing) return Response.json({ error: 'Prenda no encontrada' }, { status: 404 })
+
+  // MVP mientras Chilexpress/Starken no entregan credenciales de producción
+  // (ver MANUAL_LABEL_MODE en catalog.ts): en vez de llamar a la API del
+  // courier, avisamos a la admin para que genere la etiqueta a mano y se la
+  // mande a la vendedora, quien luego ingresa el seguimiento con AddTrackingForm.
+  if (MANUAL_LABEL_MODE) {
+    if (process.env.ADMIN_EMAIL) {
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: `Generar etiqueta a mano — ${listing.title}`,
+        html: emailLayout('Etiqueta pendiente (modo manual)', `
+          <p style="font-size: 14px; color: #444; line-height: 1.6;">
+            La vendedora pidió la etiqueta de envío de la orden <strong>${order.id}</strong> (${listing.title},
+            valor declarado $${listing.price.toLocaleString('es-CL')}, tamaño <strong>${listing.shipping_size}</strong>).
+            Genérala en el Portal Empresas Chilexpress y envíasela directo a la vendedora.
+          </p>
+          <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
+            <strong>Retiro (origen)</strong><br/>
+            ${seller.name} · ${seller.phone}<br/>
+            ${seller.address}, ${seller.comuna}
+          </p>
+          <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
+            <strong>Entrega (destino)</strong><br/>
+            ${order.shipping_name} · ${order.shipping_phone}<br/>
+            ${order.shipping_address}${order.shipping_address_extra ? `, ${order.shipping_address_extra}` : ''}, ${order.shipping_comuna}
+          </p>
+        `),
+      })
+    }
+
+    return Response.json({ ok: true, manual: true })
+  }
 
   const shipment = await createShipment({
     originComuna: seller.comuna,

@@ -6,6 +6,7 @@ import { Listing, Order } from '@/types'
 import PauseListingButton from '@/components/dashboard/PauseListingButton'
 import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
 import GenerateLabelButton from '@/components/dashboard/GenerateLabelButton'
+import AddTrackingForm from '@/components/dashboard/AddTrackingForm'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { daysUntilRelease } from '@/lib/catalog'
 
@@ -119,6 +120,10 @@ export default async function SalesPage() {
                         </div>
 
                         <GenerateLabelButton orderId={order.id} />
+                        <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-3 mb-1">
+                          ¿Ya tienes el número de seguimiento?
+                        </p>
+                        <AddTrackingForm orderId={order.id} />
                       </div>
                     </div>
                   </div>

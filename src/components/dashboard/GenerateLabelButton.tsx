@@ -19,7 +19,11 @@ export default function GenerateLabelButton({ orderId }: { orderId: string }) {
       setLoading(false)
       return
     }
-    alert('¡Etiqueta generada! Te la mandamos a tu correo para que la imprimas.')
+    alert(
+      data.manual
+        ? 'Recibimos tu pedido — Bdress te enviará la etiqueta a tu correo en las próximas horas.'
+        : '¡Etiqueta generada! Te la mandamos a tu correo para que la imprimas.'
+    )
     router.refresh()
   }
 

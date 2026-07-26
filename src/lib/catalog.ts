@@ -258,6 +258,13 @@ export function paymentProcessingFee(price: number): number {
   return Math.round(price * PROCESSING_FEE_PCT) + PROCESSING_FEE_FIXED
 }
 
+// MVP mientras Chilexpress/Starken no entregan credenciales de producción:
+// en vez de generar la etiqueta automáticamente, avisamos a ADMIN_EMAIL para
+// que la genere a mano en el Portal Empresas y se la envíe a la vendedora.
+// La vendedora ingresa ese número de seguimiento con AddTrackingForm.
+// Volver a false apenas algún courier entregue credenciales reales.
+export const MANUAL_LABEL_MODE = true
+
 // Sistema de ofertas — negociación de precio entre compradora y vendedora.
 // No se puede ofertar menos de este % del precio publicado.
 export const OFFER_MIN_PCT = 0.5
