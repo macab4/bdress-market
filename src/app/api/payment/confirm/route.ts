@@ -109,6 +109,19 @@ async function handleNotification(request: Request) {
           `),
         })
       }
+
+      if (process.env.ADMIN_EMAIL) {
+        await sendEmail({
+          to: process.env.ADMIN_EMAIL,
+          subject: `Nueva compra pagada — ${listingTitle}`,
+          html: emailLayout('Nueva compra pagada', `
+            <p style="font-size: 14px; color: #444; line-height: 1.6;">
+              Se pagó la orden <strong>${orderId}</strong> por <strong>${listingTitle}</strong> (${amountFmt}).
+              Compradora: ${buyer?.name ?? buyer?.email ?? 'sin datos'}. Vendedora: ${seller?.name ?? seller?.email ?? 'sin datos'}.
+            </p>
+          `),
+        })
+      }
     }
   } else if ((payment.status === 'rejected' || payment.status === 'cancelled') && orderId) {
     const supabase = createAdminClient()

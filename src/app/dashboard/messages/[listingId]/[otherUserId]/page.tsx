@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import MessageComposer from '@/components/messages/MessageComposer'
 import ThreadRefresher from '@/components/messages/ThreadRefresher'
+import SecurityTipsModal from '@/components/messages/SecurityTipsModal'
 import OfferResponseActions from '@/components/dashboard/OfferResponseActions'
 import { OFFER_STATUS_CONFIG, OFFER_MAX_ROUNDS, minOfferPrice } from '@/lib/catalog'
 
@@ -84,6 +85,7 @@ export default async function MessageThreadPage({
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
       <ThreadRefresher listingId={listingId} otherUserId={otherUserId} />
+      <SecurityTipsModal autoShow />
       <div className="max-w-2xl mx-auto px-4 py-10">
         <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-6">
           <Link href="/dashboard/messages" className="hover:text-black">Mensajes</Link>
@@ -189,7 +191,11 @@ export default async function MessageThreadPage({
           <div className="p-4">
             <MessageComposer listingId={listingId} receiverId={otherUserId} />
             <p className="text-[9px] text-gray-300 text-center mt-2">
-              No compartas tu teléfono, dirección ni datos de pago — Bdress ya se encarga de eso en la compra.
+              No compartas tu teléfono, dirección ni datos de pago — Bdress ya se encarga de eso en la compra.{' '}
+              <SecurityTipsModal
+                trigger={<span className="underline underline-offset-2 hover:text-gray-400">Ver consejos de seguridad</span>}
+                triggerClassName="inline"
+              />
             </p>
           </div>
         </div>

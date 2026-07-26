@@ -16,6 +16,7 @@ const SECTIONS = [
   { id: 'envios', label: 'Envíos' },
   { id: 'pagos', label: 'Pagos y comisión' },
   { id: 'mensajes', label: 'Mensajería' },
+  { id: 'seguridad', label: 'Seguridad y estafas' },
   { id: 'disputas', label: 'Devoluciones y disputas' },
   { id: 'cuentas', label: 'Cuentas y conducta' },
   { id: 'contacto', label: 'Contacto' },
@@ -188,6 +189,36 @@ export default function TerminosPage() {
               Para hacer cumplir esto, filtramos automáticamente los mensajes que parecen contener este tipo de
               información y bloqueamos su envío. Los intentos repetidos de saltarse la plataforma pueden resultar
               en la suspensión de la cuenta.
+            </p>
+          </section>
+
+          <section id="seguridad" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Seguridad y estafas</h2>
+            <p className="mb-3">
+              Como en cualquier marketplace, algunas personas intentan aprovecharse de compradoras y vendedoras
+              nuevas. Estos son los trucos más comunes y cómo protegerte:
+            </p>
+            <ul className="list-disc list-inside space-y-2 mb-3">
+              <li>
+                <strong>Te piden coordinar por fuera</strong> ("pásame tu whatsapp para no pagar comisión", "te
+                transfiero directo"). Bdress Market no cobra comisión y ya resuelve el envío y el pago dentro de la
+                plataforma — no hay ninguna razón real para salir del chat.
+              </li>
+              <li>
+                <strong>Correos o links falsos</strong> que imitan a Bdress pidiéndote verificar tu tarjeta o tus
+                datos. Los correos reales siempre llegan desde <strong>@bdressmarket.cl</strong> y sus links apuntan
+                a <strong>bdressmarket.cl</strong>. Nunca te pedimos el número de tu tarjeta por correo, chat ni
+                WhatsApp.
+              </li>
+              <li>
+                <strong>Códigos QR o links de pago</strong> enviados por otra usuaria para "completar" una compra o
+                venta. En Bdress Market el pago siempre se hace dentro del checkout oficial — nunca a través de un
+                link o QR que te manda otra persona.
+              </li>
+            </ul>
+            <p>
+              Si recibes un mensaje o correo sospechoso, no respondas ni hagas clic en nada y escríbenos desde{' '}
+              <Link href="/contacto" className="text-[#5a7a55] underline underline-offset-2">nuestra página de contacto</Link>.
             </p>
           </section>
 
