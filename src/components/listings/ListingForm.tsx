@@ -12,7 +12,7 @@ import { Listing } from '@/types'
 
 type PhotoItem =
   | { id: string; kind: 'existing'; url: string }
-  | { id: string; kind: 'new'; file: File; preview: string }
+  | { id: string; kind: 'new'; file: File; preview: string; original?: { file: File; preview: string } }
 
 interface ListingPrefill {
   title: string
@@ -50,6 +50,7 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
   )
   const [enhancingId, setEnhancingId] = useState<string | null>(null)
+  const [enhanceErrors, setEnhanceErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -94,27 +95,36 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     if (!item || item.kind !== 'new') return
 
     setEnhancingId(id)
-    setError('')
+    setEnhanceErrors(prev => { const next = { ...prev }; delete next[id]; return next })
     try {
       const body = new FormData()
       body.append('photo', item.file)
       const res = await fetch('/api/listings/enhance-photo', { method: 'POST', body })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
-        throw new Error(data?.error || 'Error al mejorar la foto')
+        throw new Error(data?.error || `Error al mejorar la foto (${res.status})`)
       }
       const blob = await res.blob()
       const enhancedFile = new File([blob], item.file.name, { type: 'image/png' })
-      URL.revokeObjectURL(item.preview)
       const newPreview = URL.createObjectURL(enhancedFile)
       setPhotos(prev => prev.map(p =>
-        p.id === id && p.kind === 'new' ? { ...p, file: enhancedFile, preview: newPreview } : p
+        p.id === id && p.kind === 'new'
+          ? { ...p, file: enhancedFile, preview: newPreview, original: p.original ?? { file: p.file, preview: p.preview } }
+          : p
       ))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al mejorar la foto')
+      setEnhanceErrors(prev => ({ ...prev, [id]: err instanceof Error ? err.message : 'Error al mejorar la foto' }))
     } finally {
       setEnhancingId(null)
     }
+  }
+
+  function revertPhoto(id: string) {
+    setPhotos(prev => prev.map(p => {
+      if (p.id !== id || p.kind !== 'new' || !p.original) return p
+      URL.revokeObjectURL(p.preview)
+      return { id: p.id, kind: 'new', file: p.original.file, preview: p.original.preview }
+    }))
   }
 
   const sensors = useSensors(
@@ -232,7 +242,9 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
                       isCover={i === 0}
                       onRemove={() => removePhoto(item.id)}
                       onEnhance={item.kind === 'new' ? () => enhancePhoto(item.id) : undefined}
+                      onRevert={item.kind === 'new' && item.original ? () => revertPhoto(item.id) : undefined}
                       enhancing={enhancingId === item.id}
+                      enhanceError={enhanceErrors[item.id]}
                     />
                   ))}
                   {totalPhotos < 5 && (
@@ -429,46 +441,66 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   )
 }
 
-function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, enhancing }: {
+function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, onRevert, enhancing, enhanceError }: {
   item: PhotoItem
   isCover: boolean
   onRemove: () => void
   onEnhance?: () => void
+  onRevert?: () => void
   enhancing?: boolean
+  enhanceError?: string
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+  const isEnhanced = item.kind === 'new' && !!item.original
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}
-      className="relative aspect-square bg-gray-100 touch-none cursor-grab active:cursor-grabbing">
-      <Image src={item.kind === 'existing' ? item.url : item.preview} alt="" fill className="object-cover pointer-events-none" />
+    <div className="flex flex-col gap-1">
+      <div ref={setNodeRef} style={style} {...attributes} {...listeners}
+        className="relative aspect-square bg-gray-100 touch-none cursor-grab active:cursor-grabbing">
+        <Image src={item.kind === 'existing' ? item.url : item.preview} alt="" fill className="object-cover pointer-events-none" />
 
-      {isCover && (
-        <span className="absolute top-1 left-1 bg-[#7fab87] text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5">
-          Portada
-        </span>
-      )}
+        {isCover && (
+          <span className="absolute top-1 left-1 bg-[#7fab87] text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5">
+            Portada
+          </span>
+        )}
 
-      <button
-        type="button"
-        onPointerDown={e => e.stopPropagation()}
-        onClick={e => { e.stopPropagation(); onRemove() }}
-        className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center z-10"
-      >
-        ×
-      </button>
-
-      {onEnhance && (
         <button
           type="button"
           onPointerDown={e => e.stopPropagation()}
-          onClick={e => { e.stopPropagation(); onEnhance() }}
-          disabled={enhancing}
-          className="absolute bottom-1 left-1 right-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition disabled:opacity-60 z-10"
+          onClick={e => { e.stopPropagation(); onRemove() }}
+          className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center z-10"
         >
-          {enhancing ? 'Mejorando...' : 'Mejorar foto'}
+          ×
         </button>
+
+        {onEnhance && !isEnhanced && (
+          <button
+            type="button"
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); onEnhance() }}
+            disabled={enhancing}
+            className="absolute bottom-1 left-1 right-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition disabled:opacity-60 z-10"
+          >
+            {enhancing ? 'Mejorando...' : 'Mejorar foto'}
+          </button>
+        )}
+
+        {isEnhanced && onRevert && (
+          <button
+            type="button"
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); onRevert() }}
+            className="absolute bottom-1 left-1 right-1 bg-[#5a7a55] text-white text-[8px] tracking-widest uppercase py-1 hover:bg-[#4a6647] transition z-10"
+          >
+            ✓ Mejorada · Deshacer
+          </button>
+        )}
+      </div>
+
+      {enhanceError && (
+        <p className="text-[9px] text-red-500 leading-tight">{enhanceError}</p>
       )}
     </div>
   )
