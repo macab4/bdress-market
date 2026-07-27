@@ -312,9 +312,13 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
 
           {/* Fotos */}
           <div>
-            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-3">
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
               Fotos (hasta 5)
             </label>
+            <p className="text-[11px] text-[#5a7a55] mb-3">
+              La <strong>foto de portada</strong> (la primera) es la más importante — es la que ven las
+              compradoras al explorar el catálogo, antes de entrar a ver el resto.
+            </p>
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
               <SortableContext items={photos.map(p => p.id)} strategy={rectSortingStrategy}>
                 <div className="grid grid-cols-5 gap-2 mb-3">
@@ -619,6 +623,12 @@ function SortablePhotoThumb({
           </div>
         )}
       </div>
+
+      {enhancing && (
+        <p className="text-[9px] text-gray-400 leading-tight">
+          Puede tardar hasta un minuto — espera, no cierres esta página.
+        </p>
+      )}
 
       {isEnhanced && onRevert && (
         <button
