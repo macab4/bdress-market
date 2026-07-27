@@ -65,12 +65,26 @@ export async function enhancePhoto(
   }
 
   const data = await res.json()
-  const parts = data?.candidates?.[0]?.content?.parts ?? []
-  const imagePart = parts.find((p: { inline_data?: { data?: string } }) => p.inline_data?.data)
+  const candidate = data?.candidates?.[0]
+  const parts = candidate?.content?.parts ?? []
+  type ImagePart = { inlineData?: { data?: string }; inline_data?: { data?: string } }
+  const imagePart = parts.find((p: ImagePart) => p.inlineData?.data || p.inline_data?.data)
+  const inline = imagePart?.inlineData ?? imagePart?.inline_data
 
-  if (!imagePart) {
-    throw new Error('Gemini no devolvió una imagen')
+  if (!inline?.data) {
+    // No vino imagen — juntamos toda la pista posible (texto de respuesta,
+    // razón de corte, bloqueo de seguridad) para saber por qué, en vez de
+    // un error genérico que no dice nada.
+    const textParts = parts.map((p: { text?: string }) => p.text).filter(Boolean).join(' ')
+    const reason = candidate?.finishReason
+    const blockReason = data?.promptFeedback?.blockReason
+    const details = [
+      textParts && `Gemini dijo: "${textParts}"`,
+      reason && reason !== 'STOP' && `finishReason: ${reason}`,
+      blockReason && `blockReason: ${blockReason}`,
+    ].filter(Boolean).join(' — ')
+    throw new Error(details || 'Gemini no devolvió una imagen (sin más detalle en la respuesta)')
   }
 
-  return Buffer.from(imagePart.inline_data.data, 'base64')
+  return Buffer.from(inline.data, 'base64')
 }
