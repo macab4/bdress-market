@@ -49,6 +49,7 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   const [photos, setPhotos] = useState<PhotoItem[]>(
     (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
   )
+  const [enhancingId, setEnhancingId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -86,6 +87,34 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
 
   function removePhoto(id: string) {
     setPhotos(prev => prev.filter(p => p.id !== id))
+  }
+
+  async function enhancePhoto(id: string) {
+    const item = photos.find(p => p.id === id)
+    if (!item || item.kind !== 'new') return
+
+    setEnhancingId(id)
+    setError('')
+    try {
+      const body = new FormData()
+      body.append('photo', item.file)
+      const res = await fetch('/api/listings/enhance-photo', { method: 'POST', body })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Error al mejorar la foto')
+      }
+      const blob = await res.blob()
+      const enhancedFile = new File([blob], item.file.name, { type: 'image/png' })
+      URL.revokeObjectURL(item.preview)
+      const newPreview = URL.createObjectURL(enhancedFile)
+      setPhotos(prev => prev.map(p =>
+        p.id === id && p.kind === 'new' ? { ...p, file: enhancedFile, preview: newPreview } : p
+      ))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al mejorar la foto')
+    } finally {
+      setEnhancingId(null)
+    }
   }
 
   const sensors = useSensors(
@@ -197,7 +226,14 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
               <SortableContext items={photos.map(p => p.id)} strategy={rectSortingStrategy}>
                 <div className="grid grid-cols-5 gap-2 mb-3">
                   {photos.map((item, i) => (
-                    <SortablePhotoThumb key={item.id} item={item} isCover={i === 0} onRemove={() => removePhoto(item.id)} />
+                    <SortablePhotoThumb
+                      key={item.id}
+                      item={item}
+                      isCover={i === 0}
+                      onRemove={() => removePhoto(item.id)}
+                      onEnhance={item.kind === 'new' ? () => enhancePhoto(item.id) : undefined}
+                      enhancing={enhancingId === item.id}
+                    />
                   ))}
                   {totalPhotos < 5 && (
                     <button type="button" onClick={() => fileRef.current?.click()}
@@ -393,7 +429,13 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   )
 }
 
-function SortablePhotoThumb({ item, isCover, onRemove }: { item: PhotoItem; isCover: boolean; onRemove: () => void }) {
+function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, enhancing }: {
+  item: PhotoItem
+  isCover: boolean
+  onRemove: () => void
+  onEnhance?: () => void
+  enhancing?: boolean
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
 
@@ -416,6 +458,18 @@ function SortablePhotoThumb({ item, isCover, onRemove }: { item: PhotoItem; isCo
       >
         ×
       </button>
+
+      {onEnhance && (
+        <button
+          type="button"
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); onEnhance() }}
+          disabled={enhancing}
+          className="absolute bottom-1 left-1 right-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition disabled:opacity-60 z-10"
+        >
+          {enhancing ? 'Mejorando...' : 'Mejorar foto'}
+        </button>
+      )}
     </div>
   )
 }
