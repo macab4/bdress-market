@@ -116,18 +116,42 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     setPhotos(prev => prev.filter(p => p.id !== id))
   }
 
-  async function enhancePhoto(id: string, action: PhotoEnhanceAction) {
+  // Las fotos ya guardadas (kind 'existing', solo una URL de Storage) no
+  // tienen un File local para editar — las convertimos primero descargando
+  // el archivo real. De ahí en adelante se comportan como cualquier foto
+  // recién subida (incluyendo poder "deshacer" de vuelta a esta versión).
+  async function ensureEditableFile(id: string): Promise<{ file: File; preview: string } | null> {
     const item = photos.find(p => p.id === id)
-    if (!item || item.kind !== 'new') return
+    if (!item) return null
+    if (item.kind === 'new') return { file: item.file, preview: item.preview }
 
+    try {
+      const res = await fetch(item.url)
+      if (!res.ok) throw new Error('No se pudo cargar la foto')
+      const blob = await res.blob()
+      const file = new File([blob], 'foto.jpg', { type: blob.type || 'image/jpeg' })
+      const preview = URL.createObjectURL(file)
+      setPhotos(prev => prev.map(p => (p.id === id ? { id, kind: 'new', file, preview } : p)))
+      return { file, preview }
+    } catch {
+      setEnhanceErrors(prev => ({ ...prev, [id]: 'No se pudo cargar la foto para editarla' }))
+      return null
+    }
+  }
+
+  async function enhancePhoto(id: string, action: PhotoEnhanceAction) {
     setMenuOpenId(null)
     setEnhancingId(id)
     setEnhanceErrors(prev => { const next = { ...prev }; delete next[id]; return next })
+
+    const fileInfo = await ensureEditableFile(id)
+    if (!fileInfo) { setEnhancingId(null); return }
+
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 45_000)
     try {
       const body = new FormData()
-      body.append('photo', item.file)
+      body.append('photo', fileInfo.file)
       body.append('action', action)
       const res = await fetch('/api/listings/enhance-photo', { method: 'POST', body, signal: controller.signal })
       if (!res.ok) {
@@ -135,7 +159,7 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
         throw new Error(data?.error || `Error al mejorar la foto (${res.status})`)
       }
       const blob = await res.blob()
-      const enhancedFile = new File([blob], item.file.name, { type: 'image/png' })
+      const enhancedFile = new File([blob], fileInfo.file.name, { type: 'image/png' })
       const newPreview = URL.createObjectURL(enhancedFile)
       setPhotos(prev => prev.map(p =>
         p.id === id && p.kind === 'new'
@@ -159,6 +183,11 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       URL.revokeObjectURL(p.preview)
       return { id: p.id, kind: 'new', file: p.original.file, preview: p.original.preview }
     }))
+  }
+
+  async function openCropModal(id: string) {
+    const fileInfo = await ensureEditableFile(id)
+    if (fileInfo) setCropTargetId(id)
   }
 
   async function applyCrop(id: string, area: Area) {
@@ -295,9 +324,9 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
                       item={item}
                       isCover={i === 0}
                       onRemove={() => removePhoto(item.id)}
-                      onEnhance={item.kind === 'new' ? (action: PhotoEnhanceAction) => enhancePhoto(item.id, action) : undefined}
+                      onEnhance={(action: PhotoEnhanceAction) => enhancePhoto(item.id, action)}
                       onRevert={item.kind === 'new' && item.original ? () => revertPhoto(item.id) : undefined}
-                      onCrop={item.kind === 'new' ? () => setCropTargetId(item.id) : undefined}
+                      onCrop={() => openCropModal(item.id)}
                       enhancing={enhancingId === item.id}
                       enhanceError={enhanceErrors[item.id]}
                       menuOpen={menuOpenId === item.id}
@@ -568,7 +597,7 @@ function SortablePhotoThumb({
           </>
         )}
 
-        {onCrop && onEnhance && !isEnhanced && (
+        {onCrop && onEnhance && (
           <div className="absolute bottom-1 left-1 right-1 flex gap-0.5 z-10">
             <button
               type="button"
@@ -589,18 +618,17 @@ function SortablePhotoThumb({
             </button>
           </div>
         )}
-
-        {isEnhanced && onRevert && (
-          <button
-            type="button"
-            onPointerDown={e => e.stopPropagation()}
-            onClick={e => { e.stopPropagation(); onRevert() }}
-            className="absolute bottom-1 left-1 right-1 bg-[#5a7a55] text-white text-[8px] tracking-widest uppercase py-1 hover:bg-[#4a6647] transition z-10"
-          >
-            ✓ Editada · Deshacer
-          </button>
-        )}
       </div>
+
+      {isEnhanced && onRevert && (
+        <button
+          type="button"
+          onClick={onRevert}
+          className="text-[9px] text-[#5a7a55] underline underline-offset-2 text-left"
+        >
+          ✓ Editada · Deshacer todo
+        </button>
+      )}
 
       {enhanceError && (
         <p className="text-[9px] text-red-500 leading-tight">{enhanceError}</p>
@@ -631,7 +659,7 @@ function CropModal({ src, onCancel, onSave }: {
           onCropComplete={(_, pixels) => setArea(pixels)}
         />
       </div>
-      <div className="bg-white p-4 space-y-3">
+      <div className="bg-white p-4 space-y-3" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
         <input
           type="range"
           min={1}
