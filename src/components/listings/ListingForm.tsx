@@ -3,12 +3,36 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Cropper, { type Area } from 'react-easy-crop'
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, arrayMove, useSortable, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import { PHOTO_ENHANCE_ACTIONS, PhotoEnhanceAction } from '@/lib/nanoBanana'
 import { Listing } from '@/types'
+
+// Recorta una imagen a partir del área elegida en el editor y devuelve un JPEG.
+async function getCroppedImageBlob(imageSrc: string, area: Area): Promise<Blob> {
+  const image = document.createElement('img')
+  image.crossOrigin = 'anonymous'
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve()
+    image.onerror = () => reject(new Error('No se pudo cargar la imagen'))
+    image.src = imageSrc
+  })
+
+  const canvas = document.createElement('canvas')
+  canvas.width = area.width
+  canvas.height = area.height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('No se pudo procesar el recorte')
+  ctx.drawImage(image, area.x, area.y, area.width, area.height, 0, 0, area.width, area.height)
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => (blob ? resolve(blob) : reject(new Error('No se pudo procesar el recorte'))), 'image/jpeg', 0.92)
+  })
+}
 
 type PhotoItem =
   | { id: string; kind: 'existing'; url: string }
@@ -51,6 +75,8 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   )
   const [enhancingId, setEnhancingId] = useState<string | null>(null)
   const [enhanceErrors, setEnhanceErrors] = useState<Record<string, string>>({})
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [cropTargetId, setCropTargetId] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -90,16 +116,20 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     setPhotos(prev => prev.filter(p => p.id !== id))
   }
 
-  async function enhancePhoto(id: string) {
+  async function enhancePhoto(id: string, action: PhotoEnhanceAction) {
     const item = photos.find(p => p.id === id)
     if (!item || item.kind !== 'new') return
 
+    setMenuOpenId(null)
     setEnhancingId(id)
     setEnhanceErrors(prev => { const next = { ...prev }; delete next[id]; return next })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 45_000)
     try {
       const body = new FormData()
       body.append('photo', item.file)
-      const res = await fetch('/api/listings/enhance-photo', { method: 'POST', body })
+      body.append('action', action)
+      const res = await fetch('/api/listings/enhance-photo', { method: 'POST', body, signal: controller.signal })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         throw new Error(data?.error || `Error al mejorar la foto (${res.status})`)
@@ -113,8 +143,12 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
           : p
       ))
     } catch (err) {
-      setEnhanceErrors(prev => ({ ...prev, [id]: err instanceof Error ? err.message : 'Error al mejorar la foto' }))
+      const message = err instanceof Error && err.name === 'AbortError'
+        ? 'Tardó demasiado — intenta con otra foto o de nuevo'
+        : err instanceof Error ? err.message : 'Error al mejorar la foto'
+      setEnhanceErrors(prev => ({ ...prev, [id]: message }))
     } finally {
+      clearTimeout(timeout)
       setEnhancingId(null)
     }
   }
@@ -125,6 +159,26 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       URL.revokeObjectURL(p.preview)
       return { id: p.id, kind: 'new', file: p.original.file, preview: p.original.preview }
     }))
+  }
+
+  async function applyCrop(id: string, area: Area) {
+    const item = photos.find(p => p.id === id)
+    if (!item || item.kind !== 'new') return
+
+    try {
+      const blob = await getCroppedImageBlob(item.preview, area)
+      const croppedFile = new File([blob], item.file.name, { type: 'image/jpeg' })
+      const newPreview = URL.createObjectURL(croppedFile)
+      setPhotos(prev => prev.map(p =>
+        p.id === id && p.kind === 'new'
+          ? { ...p, file: croppedFile, preview: newPreview, original: p.original ?? { file: p.file, preview: p.preview } }
+          : p
+      ))
+    } catch (err) {
+      setEnhanceErrors(prev => ({ ...prev, [id]: err instanceof Error ? err.message : 'Error al recortar la foto' }))
+    } finally {
+      setCropTargetId(null)
+    }
   }
 
   const sensors = useSensors(
@@ -241,10 +295,13 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
                       item={item}
                       isCover={i === 0}
                       onRemove={() => removePhoto(item.id)}
-                      onEnhance={item.kind === 'new' ? () => enhancePhoto(item.id) : undefined}
+                      onEnhance={item.kind === 'new' ? (action: PhotoEnhanceAction) => enhancePhoto(item.id, action) : undefined}
                       onRevert={item.kind === 'new' && item.original ? () => revertPhoto(item.id) : undefined}
+                      onCrop={item.kind === 'new' ? () => setCropTargetId(item.id) : undefined}
                       enhancing={enhancingId === item.id}
                       enhanceError={enhanceErrors[item.id]}
+                      menuOpen={menuOpenId === item.id}
+                      onToggleMenu={() => setMenuOpenId(prev => (prev === item.id ? null : item.id))}
                     />
                   ))}
                   {totalPhotos < 5 && (
@@ -258,6 +315,18 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
             </DndContext>
             <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} className="hidden" />
             <p className="text-[10px] text-gray-400">Arrastra para reordenar. La primera foto es la portada.</p>
+
+            {cropTargetId && (() => {
+              const target = photos.find(p => p.id === cropTargetId)
+              if (!target || target.kind !== 'new') return null
+              return (
+                <CropModal
+                  src={target.preview}
+                  onCancel={() => setCropTargetId(null)}
+                  onSave={area => applyCrop(cropTargetId, area)}
+                />
+              )
+            })()}
           </div>
 
           {/* Categoría */}
@@ -441,14 +510,19 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   )
 }
 
-function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, onRevert, enhancing, enhanceError }: {
+function SortablePhotoThumb({
+  item, isCover, onRemove, onEnhance, onRevert, onCrop, enhancing, enhanceError, menuOpen, onToggleMenu,
+}: {
   item: PhotoItem
   isCover: boolean
   onRemove: () => void
-  onEnhance?: () => void
+  onEnhance?: (action: PhotoEnhanceAction) => void
   onRevert?: () => void
+  onCrop?: () => void
   enhancing?: boolean
   enhanceError?: string
+  menuOpen?: boolean
+  onToggleMenu?: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id })
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
@@ -475,16 +549,45 @@ function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, onRevert, enha
           ×
         </button>
 
-        {onEnhance && !isEnhanced && (
-          <button
-            type="button"
-            onPointerDown={e => e.stopPropagation()}
-            onClick={e => { e.stopPropagation(); onEnhance() }}
-            disabled={enhancing}
-            className="absolute bottom-1 left-1 right-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition disabled:opacity-60 z-10"
-          >
-            {enhancing ? 'Mejorando...' : 'Mejorar foto'}
-          </button>
+        {menuOpen && onEnhance && (
+          <>
+            <div className="fixed inset-0 z-20" onPointerDown={e => { e.stopPropagation(); onToggleMenu?.() }} />
+            <div className="absolute bottom-7 left-0 right-0 bg-white shadow-lg border border-gray-200 z-30 overflow-hidden">
+              {Object.entries(PHOTO_ENHANCE_ACTIONS).map(([key, { label }]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => { e.stopPropagation(); onEnhance(key as PhotoEnhanceAction) }}
+                  className="block w-full text-left px-2 py-1.5 text-[9px] text-gray-700 hover:bg-gray-100 transition"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {onCrop && onEnhance && !isEnhanced && (
+          <div className="absolute bottom-1 left-1 right-1 flex gap-0.5 z-10">
+            <button
+              type="button"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); onCrop() }}
+              className="flex-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={e => { e.stopPropagation(); onToggleMenu?.() }}
+              disabled={enhancing}
+              className="flex-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition disabled:opacity-60"
+            >
+              {enhancing ? '...' : 'Mejorar ▾'}
+            </button>
+          </div>
         )}
 
         {isEnhanced && onRevert && (
@@ -494,7 +597,7 @@ function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, onRevert, enha
             onClick={e => { e.stopPropagation(); onRevert() }}
             className="absolute bottom-1 left-1 right-1 bg-[#5a7a55] text-white text-[8px] tracking-widest uppercase py-1 hover:bg-[#4a6647] transition z-10"
           >
-            ✓ Mejorada · Deshacer
+            ✓ Editada · Deshacer
           </button>
         )}
       </div>
@@ -502,6 +605,60 @@ function SortablePhotoThumb({ item, isCover, onRemove, onEnhance, onRevert, enha
       {enhanceError && (
         <p className="text-[9px] text-red-500 leading-tight">{enhanceError}</p>
       )}
+    </div>
+  )
+}
+
+function CropModal({ src, onCancel, onSave }: {
+  src: string
+  onCancel: () => void
+  onSave: (area: Area) => void
+}) {
+  const [crop, setCrop] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(1)
+  const [area, setArea] = useState<Area | null>(null)
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
+      <div className="relative flex-1">
+        <Cropper
+          image={src}
+          crop={crop}
+          zoom={zoom}
+          aspect={3 / 4}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={(_, pixels) => setArea(pixels)}
+        />
+      </div>
+      <div className="bg-white p-4 space-y-3">
+        <input
+          type="range"
+          min={1}
+          max={3}
+          step={0.05}
+          value={zoom}
+          onChange={e => setZoom(Number(e.target.value))}
+          className="w-full"
+        />
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 border border-gray-200 text-xs tracking-widest uppercase py-2.5 hover:border-gray-400 transition"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => area && onSave(area)}
+            disabled={!area}
+            className="flex-1 bg-[#7fab87] text-white text-xs tracking-widest uppercase py-2.5 hover:bg-[#6f9678] transition disabled:opacity-50"
+          >
+            Guardar recorte
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
