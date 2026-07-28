@@ -1,0 +1,79 @@
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
+import { createClient } from '@/lib/supabase/server'
+import { Notification } from '@/types'
+
+type NotificationWithRelations = Notification & {
+  actor: { name: string } | null
+  listing: { title: string; photos: string[] } | null
+}
+
+export default async function NotificationsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/auth/login')
+
+  const { data: notifications } = await supabase
+    .from('notifications')
+    .select('*, actor:profiles!notifications_actor_id_fkey(name), listing:listings(title, photos)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false }) as unknown as { data: NotificationWithRelations[] | null }
+
+  const list = notifications ?? []
+  const unreadIds = list.filter(n => !n.read_at).map(n => n.id)
+  if (unreadIds.length > 0) {
+    await supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .in('id', unreadIds)
+  }
+
+  return (
+    <div className="min-h-screen bg-[#EBEBEB]">
+      <div className="max-w-2xl mx-auto px-4 py-10">
+        <h1 className="text-xl font-light tracking-widest uppercase mb-8">Notificaciones</h1>
+
+        {list.length > 0 ? (
+          <div className="space-y-2">
+            {list.map(n => (
+              <Link
+                key={n.id}
+                href={n.listing_id ? `/listings/${n.listing_id}` : '#'}
+                className="flex items-center gap-3 bg-white p-4 hover:bg-gray-50 transition"
+              >
+                <div className="w-12 h-16 bg-gray-100 flex-shrink-0 overflow-hidden relative">
+                  {n.listing?.photos?.[0] ? (
+                    <Image src={n.listing.photos[0]} alt={n.listing.title} fill className="object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-[9px]">Sin foto</div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm">
+                    <span className="font-medium">{n.actor?.name ?? 'Alguien que sigues'}</span>{' '}
+                    publicó una prenda nueva
+                    {n.listing?.title && <>: <span className="font-medium">{n.listing.title}</span></>}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    {new Date(n.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+                {!n.read_at && (
+                  <span className="w-2 h-2 rounded-full bg-[#7fab87] flex-shrink-0" />
+                )}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-white">
+            <p className="text-gray-400 text-sm mb-2">Todavía no tienes notificaciones.</p>
+            <p className="text-gray-400 text-xs">
+              Sigue a tus vendedoras favoritas para enterarte cuando publiquen algo nuevo.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
