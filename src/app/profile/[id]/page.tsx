@@ -6,6 +6,10 @@ import { Listing, Profile, Review } from '@/types'
 import { conditionGroupLabel } from '@/lib/catalog'
 import StarRating from '@/components/reviews/StarRating'
 import FollowButton from '@/components/profile/FollowButton'
+import PauseListingButton from '@/components/dashboard/PauseListingButton'
+import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
+import RenewListingButton from '@/components/dashboard/RenewListingButton'
+import FeatureListingButton from '@/components/dashboard/FeatureListingButton'
 
 type ReviewWithReviewer = Review & { reviewer: { name: string; avatar_url: string | null } | null }
 
@@ -17,18 +21,12 @@ export default async function ProfilePage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: profile }, { data: listings }, { data: { user } }, { data: reviews }, { count: followerCount }] = await Promise.all([
+  const [{ data: profile }, { data: { user } }, { data: reviews }, { count: followerCount }] = await Promise.all([
     supabase
       .from('profiles')
       .select('*')
       .eq('id', id)
       .single() as unknown as Promise<{ data: Profile | null }>,
-    supabase
-      .from('listings')
-      .select('*')
-      .eq('seller_id', id)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false }) as unknown as Promise<{ data: Listing[] | null }>,
     supabase.auth.getUser(),
     supabase
       .from('reviews')
@@ -42,6 +40,16 @@ export default async function ProfilePage({
   ])
 
   const isOwnProfile = user?.id === id
+
+  let listingsQuery = supabase
+    .from('listings')
+    .select('*')
+    .eq('seller_id', id)
+    .order('created_at', { ascending: false })
+  listingsQuery = isOwnProfile
+    ? listingsQuery.in('status', ['active', 'paused'])
+    : listingsQuery.eq('status', 'active')
+  const { data: listings } = await listingsQuery as unknown as { data: Listing[] | null }
 
   let isFollowing = false
   if (user && !isOwnProfile) {
@@ -116,9 +124,6 @@ export default async function ProfilePage({
         {/* Accesos de cuenta — en desktop ya viven en el menú superior */}
         {isOwnProfile && (
           <div className="md:hidden flex flex-wrap gap-4 mb-10 text-xs">
-            <Link href="/dashboard/listings" className="text-gray-500 hover:text-black tracking-widest uppercase">
-              Mis prendas
-            </Link>
             <Link href="/dashboard/sales" className="text-gray-500 hover:text-black tracking-widest uppercase">
               Mis ventas
             </Link>
@@ -148,46 +153,91 @@ export default async function ProfilePage({
           </div>
         )}
 
-        {/* Prendas activas */}
-        <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
-          Prendas publicadas {listings && listings.length > 0 && `(${listings.length})`}
-        </p>
+        {/* Prendas */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[10px] tracking-widest uppercase text-gray-400">
+            Prendas publicadas {listings && listings.length > 0 && `(${listings.length})`}
+          </p>
+          {isOwnProfile && (
+            <Link href="/listings/new"
+              className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
+              + Publicar
+            </Link>
+          )}
+        </div>
 
         {listings && listings.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {listings.map((listing) => (
-              <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white">
-                <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
-                  {listing.photos[0] ? (
-                    <Image
-                      src={listing.photos[0]}
-                      alt={listing.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
-                      Sin foto
+              <div key={listing.id} className="group bg-white">
+                <Link href={`/listings/${listing.id}`}>
+                  <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
+                    {listing.photos[0] ? (
+                      <Image
+                        src={listing.photos[0]}
+                        alt={listing.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
+                        Sin foto
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+                      <span className="bg-white text-[9px] tracking-widest uppercase px-2 py-1">
+                        {conditionGroupLabel(listing.condition)}
+                      </span>
+                      {listing.status === 'paused' && (
+                        <span className="bg-gray-700 text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                          Pausada
+                        </span>
+                      )}
+                      {listing.featured_until && new Date(listing.featured_until) > new Date() && (
+                        <span className="bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                          Destacada
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                    {conditionGroupLabel(listing.condition)}
-                  </span>
-                </div>
-                <div className="p-3">
-                  <p className="text-[10px] tracking-widest text-gray-400 uppercase">{listing.brand || 'Sin marca'}</p>
-                  <p className="text-sm font-medium truncate mt-0.5">{listing.title}</p>
-                  <div className="flex items-center justify-between mt-1">
-                    <p className="text-sm font-semibold">${listing.price.toLocaleString('es-CL')}</p>
-                    <p className="text-[10px] text-gray-400">T. {listing.size}</p>
                   </div>
-                </div>
-              </Link>
+                  <div className="p-3 pb-1">
+                    <p className="text-[10px] tracking-widest text-gray-400 uppercase">{listing.brand || 'Sin marca'}</p>
+                    <p className="text-sm font-medium truncate mt-0.5">{listing.title}</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-sm font-semibold">${listing.price.toLocaleString('es-CL')}</p>
+                      <p className="text-[10px] text-gray-400">T. {listing.size}</p>
+                    </div>
+                  </div>
+                </Link>
+
+                {isOwnProfile && (
+                  <div className="px-3 pb-3 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <Link href={`/listings/${listing.id}/edit`}
+                        className="flex-1 text-center bg-[#7fab87] text-white text-[9px] tracking-widest uppercase py-1.5 hover:bg-[#6f9678] transition">
+                        Editar
+                      </Link>
+                      <PauseListingButton listingId={listing.id} currentStatus={listing.status as 'active' | 'paused'} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      {listing.status === 'active' && (
+                        <RenewListingButton listingId={listing.id} bumpedAt={listing.bumped_at} />
+                      )}
+                      <DeleteListingButton listingId={listing.id} listingTitle={listing.title} />
+                    </div>
+                    {listing.status === 'active' && (
+                      <FeatureListingButton listingId={listing.id} featuredUntil={listing.featured_until} />
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-16 bg-white">
-            <p className="text-gray-400 text-sm">{profile.name} no tiene prendas publicadas por ahora.</p>
+            <p className="text-gray-400 text-sm">
+              {isOwnProfile ? 'Aún no tienes prendas publicadas.' : `${profile.name} no tiene prendas publicadas por ahora.`}
+            </p>
           </div>
         )}
 

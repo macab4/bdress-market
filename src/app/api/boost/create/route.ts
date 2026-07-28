@@ -61,9 +61,9 @@ export async function POST(request: Request) {
       payer: { email: user.email },
       external_reference: `boost:${boost.id}`,
       back_urls: {
-        success: `${SITE_URL}/dashboard/listings`,
-        pending: `${SITE_URL}/dashboard/listings`,
-        failure: `${SITE_URL}/dashboard/listings`,
+        success: `${SITE_URL}/profile/${user.id}`,
+        pending: `${SITE_URL}/profile/${user.id}`,
+        failure: `${SITE_URL}/profile/${user.id}`,
       },
       auto_return: 'approved',
       notification_url: `${SITE_URL}/api/payment/confirm`,

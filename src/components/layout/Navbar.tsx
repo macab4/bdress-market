@@ -40,9 +40,6 @@ export default async function Navbar() {
                 className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
                 + Vender
               </Link>
-              <Link href="/dashboard/listings" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
-                Mis prendas
-              </Link>
               <Link href="/dashboard/sales" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis ventas
               </Link>
