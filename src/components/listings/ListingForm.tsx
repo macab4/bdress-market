@@ -12,6 +12,35 @@ import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, MAX_
 import { PHOTO_ENHANCE_ACTIONS, PhotoEnhanceAction } from '@/lib/nanoBanana'
 import { Listing } from '@/types'
 
+// Reduce el peso de una foto recién subida (redimensiona y comprime a JPEG)
+// antes de guardarla — así no dependemos de que Vercel la optimice al vuelo.
+// Si algo falla o el resultado queda más pesado que el original, se usa tal cual.
+async function compressImage(file: File, maxDimension = 1600, quality = 0.85): Promise<File> {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file
+
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => null)
+  if (!bitmap) return file
+
+  let { width, height } = bitmap
+  if (width > maxDimension || height > maxDimension) {
+    const scale = maxDimension / Math.max(width, height)
+    width = Math.round(width * scale)
+    height = Math.round(height * scale)
+  }
+
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return file
+  ctx.drawImage(bitmap, 0, 0, width, height)
+
+  const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', quality))
+  if (!blob || blob.size >= file.size) return file
+
+  return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' })
+}
+
 // Recorta una imagen a partir del área elegida en el editor y devuelve un JPEG.
 async function getCroppedImageBlob(imageSrc: string, area: Area): Promise<Blob> {
   const image = document.createElement('img')
@@ -100,10 +129,11 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     })
   }
 
-  function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const availableSlots = 5 - photos.length
     const files = Array.from(e.target.files || []).slice(0, availableSlots)
-    const newItems: PhotoItem[] = files.map(file => ({
+    const compressedFiles = await Promise.all(files.map(file => compressImage(file)))
+    const newItems: PhotoItem[] = compressedFiles.map(file => ({
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       kind: 'new',
       file,
