@@ -451,3 +451,32 @@ create policy "Vendedora ve sus boosts" on public.listing_boosts
 
 create policy "Vendedora crea sus boosts" on public.listing_boosts
   for insert with check (auth.uid() = seller_id);
+
+-- ============================================================
+-- Nueva taxonomía de categorías (Departamento > Categoría > Tipo de
+-- producto) + características separadas (largo, ocasión, temporada,
+-- estilo, material). Todo aditivo y nullable: category/subcategory
+-- viejos quedan intactos hasta que la nueva clasificación esté
+-- verificada. pending_review marca las prendas migradas desde el
+-- subcategory viejo que no se pudieron mapear con certeza (ver script
+-- de migración). Los índices son para que los filtros del catálogo no
+-- hagan table scan a medida que crece la cantidad de prendas.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.listings add column product_category text;
+alter table public.listings add column product_type text;
+alter table public.listings add column length text;
+alter table public.listings add column occasion text[] not null default '{}';
+alter table public.listings add column season text;
+alter table public.listings add column style text;
+alter table public.listings add column material text;
+alter table public.listings add column pending_review boolean not null default false;
+
+create index listings_category_idx on public.listings (category);
+create index listings_product_category_idx on public.listings (product_category);
+create index listings_product_type_idx on public.listings (product_type);
+create index listings_brand_idx on public.listings (brand);
+create index listings_size_idx on public.listings (size);
+create index listings_status_idx on public.listings (status);
+create index listings_price_idx on public.listings (price);
+create index listings_bumped_at_idx on public.listings (bumped_at);

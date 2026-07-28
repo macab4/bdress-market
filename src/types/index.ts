@@ -42,6 +42,14 @@ export interface Listing {
   created_at: string
   bumped_at: string
   featured_until: string | null
+  product_category: string | null
+  product_type: string | null
+  length: string | null
+  occasion: string[]
+  season: string | null
+  style: string | null
+  material: string | null
+  pending_review: boolean
   seller?: Profile
 }
 

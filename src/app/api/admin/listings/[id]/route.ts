@@ -14,7 +14,7 @@ export async function PATCH(
   if (!(await checkAdmin())) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   const { id } = await params
 
-  const update: { status?: string; photos?: string[] } = {}
+  const update: { status?: string; photos?: string[]; product_category?: string; product_type?: string; pending_review?: boolean } = {}
   try {
     const body = await request.json()
     if (body.status !== undefined) {
@@ -24,6 +24,18 @@ export async function PATCH(
     if (body.photos !== undefined) {
       if (!Array.isArray(body.photos) || body.photos.length === 0 || !body.photos.every((p: unknown) => typeof p === 'string')) throw new Error()
       update.photos = body.photos
+    }
+    if (body.product_category !== undefined) {
+      if (typeof body.product_category !== 'string' || !body.product_category) throw new Error()
+      update.product_category = body.product_category
+    }
+    if (body.product_type !== undefined) {
+      if (typeof body.product_type !== 'string' || !body.product_type) throw new Error()
+      update.product_type = body.product_type
+    }
+    if (body.pending_review !== undefined) {
+      if (typeof body.pending_review !== 'boolean') throw new Error()
+      update.pending_review = body.pending_review
     }
     if (Object.keys(update).length === 0) throw new Error()
   } catch {

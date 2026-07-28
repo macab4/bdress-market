@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Cropper, { type Area } from 'react-easy-crop'
@@ -8,9 +8,16 @@ import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, us
 import { SortableContext, arrayMove, useSortable, sortableKeyboardCoordinates, rectSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES, SIZES_BY_CATEGORY, CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue, sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import {
+  CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue,
+  sellerPayout, PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED,
+  sizeOptionsFor, LENGTH_APPLICABLE_TYPES, LENGTHS, OCCASIONS, SEASONS, STYLES, MATERIALS,
+} from '@/lib/catalog'
 import { PHOTO_ENHANCE_ACTIONS, PhotoEnhanceAction } from '@/lib/nanoBanana'
 import { Listing } from '@/types'
+import CategoryPicker, { type CategoryPickerValue } from '@/components/listings/CategoryPicker'
+
+const ROPA_CATEGORIES = ['ropa', 'nina_ropa', 'nino_ropa']
 
 // Reduce el peso de una foto recién subida (redimensiona y comprime a JPEG)
 // antes de guardarla — así no dependemos de que Vercel la optimice al vuelo.
@@ -75,6 +82,13 @@ interface ListingPrefill {
   brand: string
   colors: string[]
   shipping_size: Listing['shipping_size']
+  product_category?: string | null
+  product_type?: string | null
+  length?: string | null
+  occasion?: string[]
+  season?: string | null
+  style?: string | null
+  material?: string | null
 }
 
 interface ListingFormProps {
@@ -91,14 +105,21 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     title: listing?.title ?? prefill?.title ?? '',
     description: listing?.description ?? '',
     category: (listing?.category ?? prefill?.category ?? '') as CategoryValue | '',
-    subcategory: listing?.subcategory ?? prefill?.subcategory ?? '',
+    productCategory: listing?.product_category ?? prefill?.product_category ?? '',
+    productType: listing?.product_type ?? prefill?.product_type ?? '',
     size: listing?.size ?? prefill?.size ?? '',
     brand: listing?.brand ?? prefill?.brand ?? '',
     condition: listing?.condition ?? 'muy_bueno',
     colors: (listing?.colors ?? prefill?.colors ?? []) as string[],
     shipping_size: listing?.shipping_size ?? prefill?.shipping_size ?? 'mediano',
     price: listing ? String(listing.price) : '',
+    length: listing?.length ?? prefill?.length ?? '',
+    occasion: (listing?.occasion ?? prefill?.occasion ?? []) as string[],
+    season: listing?.season ?? prefill?.season ?? '',
+    style: listing?.style ?? prefill?.style ?? '',
+    material: listing?.material ?? prefill?.material ?? '',
   })
+  const [brandSuggestions, setBrandSuggestions] = useState<string[]>([])
   const [photos, setPhotos] = useState<PhotoItem[]>(
     (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
   )
@@ -115,8 +136,14 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  function setCategory(value: CategoryValue) {
-    setForm(prev => ({ ...prev, category: value, subcategory: '', size: '' }))
+  function handleCategoryChange(value: CategoryPickerValue) {
+    setForm(prev => ({
+      ...prev,
+      category: value.department,
+      productCategory: value.productCategory,
+      productType: value.productType,
+      size: '',
+    }))
   }
 
   function toggleColor(value: string) {
@@ -128,6 +155,34 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       return { ...prev, colors: [...prev.colors, value] }
     })
   }
+
+  function toggleOccasion(value: string) {
+    setForm(prev => ({
+      ...prev,
+      occasion: prev.occasion.includes(value)
+        ? prev.occasion.filter(o => o !== value)
+        : [...prev.occasion, value],
+    }))
+  }
+
+  // Sugerencias de marca a partir de lo que ya escribieron otras vendedoras —
+  // sin tabla de marcas nueva, solo valores distintos ya existentes.
+  useEffect(() => {
+    let cancelled = false
+    async function loadBrands() {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('listings')
+        .select('brand')
+        .not('brand', 'eq', '')
+        .limit(500)
+      if (cancelled || !data) return
+      const unique = Array.from(new Set(data.map(r => r.brand).filter(Boolean))).sort()
+      setBrandSuggestions(unique)
+    }
+    loadBrands()
+    return () => { cancelled = true }
+  }, [])
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const availableSlots = 5 - photos.length
@@ -258,8 +313,10 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (totalPhotos === 0) { setError('Agrega al menos una foto'); return }
-    if (!form.category) { setError('Selecciona una categoría'); return }
-    if (!form.subcategory) { setError('Selecciona una subcategoría'); return }
+    if (!form.category || !form.productCategory || !form.productType) {
+      setError('Completa la categoría hasta elegir un tipo de producto')
+      return
+    }
     if (form.colors.length === 0) { setError('Selecciona al menos un color'); return }
     setLoading(true)
     setError('')
@@ -285,11 +342,15 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       orderedUrls.push(publicUrl)
     }
 
+    const isRopa = ROPA_CATEGORIES.includes(form.productCategory)
+    const isLengthApplicable = LENGTH_APPLICABLE_TYPES.includes(form.productType)
+
     const payload = {
       title: form.title,
       description: form.description,
       category: form.category,
-      subcategory: form.subcategory,
+      product_category: form.productCategory,
+      product_type: form.productType,
       size: form.size,
       brand: form.brand,
       condition: form.condition,
@@ -297,6 +358,12 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       shipping_size: form.shipping_size,
       price: parseInt(form.price),
       photos: orderedUrls,
+      length: isLengthApplicable ? (form.length || null) : null,
+      occasion: isRopa ? form.occasion : [],
+      season: isRopa ? (form.season || null) : null,
+      style: isRopa ? (form.style || null) : null,
+      material: form.material || null,
+      pending_review: false,
     }
 
     if (listing) {
@@ -320,8 +387,9 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     }
   }
 
-  const sizeOptions = form.category ? SIZES_BY_CATEGORY[form.category] : []
-  const subcategoryOptions = CATEGORIES.find(c => c.value === form.category)?.subcategories ?? []
+  const sizeOptions = form.category && form.productCategory ? sizeOptionsFor(form.category, form.productCategory) : []
+  const isRopa = ROPA_CATEGORIES.includes(form.productCategory)
+  const isLengthApplicable = LENGTH_APPLICABLE_TYPES.includes(form.productType)
 
   return (
     <div className="min-h-screen bg-[#EBEBEB] py-10 px-4">
@@ -395,31 +463,14 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
           {/* Categoría */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">Categoría</label>
-            <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map(c => (
-                <button key={c.value} type="button" onClick={() => setCategory(c.value)}
-                  className={`text-sm py-2 border transition ${
-                    form.category === c.value
-                      ? 'border-[#7fab87] bg-[#7fab87] text-white'
-                      : 'border-gray-200 hover:border-gray-400'
-                  }`}>
-                  {c.label}
-                </button>
-              ))}
-            </div>
+            <CategoryPicker
+              mode="form"
+              value={{ department: form.category, productCategory: form.productCategory, productType: form.productType }}
+              onChange={handleCategoryChange}
+              triggerClassName="w-full border border-gray-200 px-3 py-2 text-sm bg-white text-left hover:border-gray-400"
+              triggerLabel="Elige departamento, categoría y tipo de producto"
+            />
           </div>
-
-          {/* Subcategoría */}
-          {form.category && (
-            <div>
-              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Subcategoría</label>
-              <select value={form.subcategory} onChange={e => set('subcategory', e.target.value)} required
-                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-                <option value="">Selecciona</option>
-                {subcategoryOptions.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-          )}
 
           {/* Título */}
           <div>
@@ -433,20 +484,88 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Marca</label>
             <input value={form.brand} onChange={e => set('brand', e.target.value)}
-              placeholder="Ej: Zara, H&M, Mango..."
+              list="brand-suggestions"
+              placeholder="Ej: Zara, H&M, Mango... o Sin marca"
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+            <datalist id="brand-suggestions">
+              {brandSuggestions.map(b => <option key={b} value={b} />)}
+            </datalist>
           </div>
 
-          {/* Talla */}
-          <div>
-            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Talla</label>
-            <select value={form.size} onChange={e => set('size', e.target.value)} required
-              disabled={!form.category}
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white disabled:bg-gray-50 disabled:text-gray-300">
-              <option value="">{form.category ? 'Selecciona' : 'Primero elige una categoría'}</option>
-              {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
+          {/* Talla — solo si el tipo de producto elegido usa talla */}
+          {form.productCategory && sizeOptions.length > 0 && (
+            <div>
+              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Talla</label>
+              <select value={form.size} onChange={e => set('size', e.target.value)} required
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+                <option value="">Selecciona</option>
+                {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Largo — solo Vestidos y Faldas */}
+          {isLengthApplicable && (
+            <div>
+              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Largo</label>
+              <select value={form.length} onChange={e => set('length', e.target.value)}
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+                <option value="">Selecciona</option>
+                {LENGTHS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+          )}
+
+          {/* Ocasión, temporada y estilo — solo para ropa */}
+          {isRopa && (
+            <>
+              <div>
+                <label className="block text-xs tracking-widest uppercase text-gray-500 mb-2">
+                  Ocasión <span className="normal-case text-gray-400">(puedes elegir varias)</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {OCCASIONS.map(o => (
+                    <button key={o} type="button" onClick={() => toggleOccasion(o)}
+                      className={`text-xs px-3 py-1.5 border transition ${
+                        form.occasion.includes(o) ? 'border-[#7fab87] bg-[#7fab87] text-white' : 'border-gray-200 hover:border-gray-400'
+                      }`}>
+                      {o}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Temporada</label>
+                <select value={form.season} onChange={e => set('season', e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+                  <option value="">Selecciona</option>
+                  {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Estilo</label>
+                <select value={form.style} onChange={e => set('style', e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+                  <option value="">Selecciona</option>
+                  {STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </>
+          )}
+
+          {/* Material */}
+          {form.productCategory && (
+            <div>
+              <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Material</label>
+              <select value={form.material} onChange={e => set('material', e.target.value)}
+                className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
+                <option value="">Selecciona</option>
+                {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+          )}
 
           {/* Estado */}
           <div>

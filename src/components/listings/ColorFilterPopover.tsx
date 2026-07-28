@@ -3,35 +3,63 @@
 import { useEffect, useRef, useState } from 'react'
 import { COLORS } from '@/lib/catalog'
 
-export default function ColorFilterPopover({ defaultValue }: { defaultValue?: string }) {
+interface ColorFilterPopoverProps {
+  defaultValue?: string
+  onApply?: (value: string) => void
+  triggerClassName?: string
+}
+
+export default function ColorFilterPopover({ defaultValue, onApply, triggerClassName }: ColorFilterPopoverProps) {
   const [selected, setSelected] = useState<string[]>(defaultValue ? defaultValue.split(',') : [])
+  const [syncedDefault, setSyncedDefault] = useState(defaultValue)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+
+  // Igual que en CatalogFilters: reflejar un defaultValue que cambió por
+  // fuera (navegación atrás/adelante, "Limpiar todo") sin pasar por un
+  // useEffect que dispare un render extra.
+  if (defaultValue !== syncedDefault) {
+    setSyncedDefault(defaultValue)
+    setSelected(defaultValue ? defaultValue.split(',') : [])
+  }
 
   useEffect(() => {
     if (!open) return
     function onClickOutside(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onClickOutside)
+      document.removeEventListener('keydown', onKeyDown)
+    }
   }, [open])
 
   function toggle(value: string) {
-    setSelected(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
+    setSelected(prev => {
+      const next = prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+      onApply?.(next.join(','))
+      return next
+    })
+  }
+
+  function clear() {
+    setSelected([])
+    onApply?.('')
   }
 
   return (
     <div className="relative" ref={ref}>
-      <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Color</label>
-      <input type="hidden" name="color" value={selected.join(',')} />
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white flex items-center gap-2 min-w-[110px] justify-between"
+        className={triggerClassName ?? 'border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white flex items-center gap-2 min-w-[110px] justify-between'}
       >
-        <span>{selected.length === 0 ? 'Todos' : `${selected.length} color${selected.length > 1 ? 'es' : ''}`}</span>
-        <span className="text-gray-400 text-xs">{open ? '▲' : '▼'}</span>
+        <span>{selected.length === 0 ? 'Color' : `${selected.length} color${selected.length > 1 ? 'es' : ''}`}</span>
       </button>
 
       {open && (
@@ -61,17 +89,17 @@ export default function ColorFilterPopover({ defaultValue }: { defaultValue?: st
           <div className="flex items-center justify-between gap-3 mt-4 pt-3 border-t border-gray-100">
             <button
               type="button"
-              onClick={() => setSelected([])}
+              onClick={clear}
               className="text-xs text-gray-400 hover:text-black underline"
             >
               Limpiar
             </button>
             <button
-              type="submit"
+              type="button"
               onClick={() => setOpen(false)}
               className="flex-1 bg-[#7fab87] text-white text-xs tracking-widest uppercase py-2 hover:bg-[#6f9678] transition"
             >
-              Ver resultados
+              Cerrar
             </button>
           </div>
         </div>

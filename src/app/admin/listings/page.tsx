@@ -6,6 +6,7 @@ import { Listing } from '@/types'
 import { conditionLabel } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
 import AdminListingActions from '@/components/admin/AdminListingActions'
+import AdminReclassifyListing from '@/components/admin/AdminReclassifyListing'
 
 type AdminListing = Listing & { seller: { name: string } | null }
 
@@ -31,13 +32,17 @@ export default async function AdminListingsPage({
     .limit(1000) as unknown as { data: AdminListing[] | null }
 
   const everyListing = listings ?? []
-  const all = status ? everyListing.filter(l => l.status === status) : everyListing
+  const all = status === 'pending_review'
+    ? everyListing.filter(l => l.pending_review)
+    : status ? everyListing.filter(l => l.status === status) : everyListing
+  const pendingCount = everyListing.filter(l => l.pending_review).length
 
   const TABS: { value: string | undefined; label: string }[] = [
     { value: undefined, label: 'Todas' },
     { value: 'active', label: 'Activas' },
     { value: 'sold', label: 'Vendidas' },
     { value: 'paused', label: 'Pausadas' },
+    { value: 'pending_review', label: 'Pendientes de revisión' },
   ]
 
   return (
@@ -50,7 +55,9 @@ export default async function AdminListingsPage({
 
         <div className="flex gap-6 mb-6">
           {TABS.map(tab => {
-            const count = tab.value ? everyListing.filter(l => l.status === tab.value).length : everyListing.length
+            const count = tab.value === 'pending_review'
+              ? pendingCount
+              : tab.value ? everyListing.filter(l => l.status === tab.value).length : everyListing.length
             return (
               <Link
                 key={tab.label}
@@ -64,7 +71,9 @@ export default async function AdminListingsPage({
         </div>
 
         <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
-          {status ? `Prendas ${STATUS_LABEL[status]?.label.toLowerCase() ?? status}` : 'Todas las prendas'} ({all.length})
+          {status === 'pending_review'
+            ? 'Pendientes de revisión'
+            : status ? `Prendas ${STATUS_LABEL[status]?.label.toLowerCase() ?? status}` : 'Todas las prendas'} ({all.length})
         </h2>
 
         {all.length === 0 ? (
@@ -99,6 +108,14 @@ export default async function AdminListingsPage({
                   >
                     Editar fotos
                   </Link>
+                  {listing.pending_review && (
+                    <AdminReclassifyListing
+                      listingId={listing.id}
+                      department={listing.category}
+                      productCategory={listing.product_category}
+                      productType={listing.product_type}
+                    />
+                  )}
                   <AdminListingActions listingId={listing.id} status={listing.status} />
                 </div>
               )

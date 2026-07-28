@@ -8,7 +8,7 @@ import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ShareButton from '@/components/listings/ShareButton'
-import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime, productCategoryLabel } from '@/lib/catalog'
 import { getShippingQuote } from '@/lib/starken'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
@@ -135,6 +135,8 @@ export default async function ListingPage({
 
   const conditionDetail = CONDITIONS.find(c => c.value === listing.condition) ?? { label: listing.condition, description: '' }
   const categoryLabel = CATEGORIES.find(c => c.value === listing.category)?.label
+  const pcLabel = listing.product_category ? productCategoryLabel(listing.category, listing.product_category) : null
+  const typeLabel = listing.product_type || listing.subcategory || null
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -148,7 +150,8 @@ export default async function ListingPage({
               <Link href={`/?category=${listing.category}`} className="hover:text-black">{categoryLabel}</Link>
             </>
           )}
-          {listing.subcategory && ` · ${listing.subcategory}`}
+          {pcLabel && ` · ${pcLabel}`}
+          {typeLabel && ` · ${typeLabel}`}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -229,7 +232,39 @@ export default async function ListingPage({
                 {categoryLabel && (
                   <div className="flex justify-between px-4 py-2.5">
                     <span className="text-gray-400">Categoría</span>
-                    <span className="text-gray-700">{categoryLabel}{listing.subcategory && ` · ${listing.subcategory}`}</span>
+                    <span className="text-gray-700">
+                      {categoryLabel}{pcLabel && ` · ${pcLabel}`}{typeLabel && ` · ${typeLabel}`}
+                    </span>
+                  </div>
+                )}
+                {listing.length && (
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Largo</span>
+                    <span className="text-gray-700">{listing.length}</span>
+                  </div>
+                )}
+                {listing.occasion && listing.occasion.length > 0 && (
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Ocasión</span>
+                    <span className="text-gray-700">{listing.occasion.join(', ')}</span>
+                  </div>
+                )}
+                {listing.season && (
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Temporada</span>
+                    <span className="text-gray-700">{listing.season}</span>
+                  </div>
+                )}
+                {listing.style && (
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Estilo</span>
+                    <span className="text-gray-700">{listing.style}</span>
+                  </div>
+                )}
+                {listing.material && (
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Material</span>
+                    <span className="text-gray-700">{listing.material}</span>
                   </div>
                 )}
                 <div className="flex justify-between px-4 py-2.5">

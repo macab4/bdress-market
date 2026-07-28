@@ -2,14 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
-import { CATEGORIES, CONDITION_GROUPS, conditionGroupLabel } from '@/lib/catalog'
+import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategoryLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
-import ColorFilterPopover from '@/components/listings/ColorFilterPopover'
+import CatalogFilters from '@/components/listings/CatalogFilters'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
 
-const SIZES = ['XS','S','M','L','XL','XXL']
 const PAGE_SIZE = 48
 
 function getPageRange(current: number, total: number): (number | '…')[] {
@@ -25,17 +24,16 @@ function getPageRange(current: number, total: number): (number | '…')[] {
   return range
 }
 
-const SORT_OPTIONS = [
-  { value: 'recientes', label: 'Más recientes' },
-  { value: 'antiguas', label: 'Más antiguas' },
-  { value: 'precio_asc', label: 'Precio: menor a mayor' },
-  { value: 'precio_desc', label: 'Precio: mayor a menor' },
-] as const
+interface HomeSearchParams {
+  q?: string; category?: string; productCategory?: string; productType?: string
+  size?: string; brand?: string; min?: string; max?: string; condition?: string; color?: string
+  material?: string; occasion?: string; length?: string; sort?: string; page?: string
+}
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; category?: string; size?: string; min?: string; max?: string; condition?: string; color?: string; sort?: string; page?: string }>
+  searchParams: Promise<HomeSearchParams>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -51,38 +49,83 @@ export default async function HomePage({
     // La coma y el paréntesis rompen la gramática del filtro or() de PostgREST,
     // así que se descartan del término en vez de tener que escaparlos.
     const term = params.q.replace(/[,()]/g, ' ').trim()
-    if (term) query = query.or(`title.ilike.%${term}%,brand.ilike.%${term}%,description.ilike.%${term}%`)
+    if (term) query = query.or(`title.ilike.%${term}%,brand.ilike.%${term}%,description.ilike.%${term}%,material.ilike.%${term}%,style.ilike.%${term}%`)
   }
   if (params.category) query = query.eq('category', params.category)
+  if (params.productCategory) query = query.eq('product_category', params.productCategory)
+  if (params.productType) query = query.eq('product_type', params.productType)
   if (params.size) query = query.eq('size', params.size)
+  if (params.brand) query = query.eq('brand', params.brand)
   if (params.condition) {
     const group = CONDITION_GROUPS.find(g => g.value === params.condition)
     if (group) query = query.in('condition', group.conditions)
   }
   if (params.color) query = query.overlaps('colors', params.color.split(','))
+  if (params.material) query = query.eq('material', params.material)
+  if (params.occasion) query = query.overlaps('occasion', params.occasion.split(','))
+  if (params.length) query = query.eq('length', params.length)
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
 
-  switch (params.sort) {
-    case 'antiguas':
-      query = query.order('created_at', { ascending: true })
-      break
-    case 'precio_asc':
-      query = query.order('price', { ascending: true })
-      break
-    case 'precio_desc':
-      query = query.order('price', { ascending: false })
-      break
-    default:
-      query = query.order('bumped_at', { ascending: false })
+  // "Más guardados" no tiene una columna que ordenar directamente en la base
+  // de datos (no se agregó un contador a favorites para no tocar ese
+  // sistema) — se resuelve trayendo los ids que matchean el resto de los
+  // filtros, contando sus favoritos aparte (solo lectura) y paginando en
+  // memoria. Con el tamaño actual del catálogo esto es liviano; si el
+  // catálogo crece mucho, esto debería pasar a una columna contador.
+  type ListingWithSeller = Listing & { seller: { name: string; city: string } }
+  let listings: ListingWithSeller[] | null = null
+  let totalCount = 0
+
+  if (params.sort === 'guardados') {
+    const { data: matchIds } = await query.select('id')
+    const ids = (matchIds ?? []).map(r => r.id)
+    totalCount = ids.length
+
+    let orderedIds = ids
+    if (ids.length > 0) {
+      const { data: favRows } = await supabase.from('favorites').select('listing_id').in('listing_id', ids)
+      const counts = new Map<string, number>()
+      for (const row of favRows ?? []) counts.set(row.listing_id, (counts.get(row.listing_id) ?? 0) + 1)
+      orderedIds = [...ids].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
+    }
+    const from = (page - 1) * PAGE_SIZE
+    const pageIds = orderedIds.slice(from, from + PAGE_SIZE)
+    if (pageIds.length > 0) {
+      const { data } = await supabase
+        .from('listings')
+        .select('*, seller:profiles(id, name, city, avatar_url)')
+        .in('id', pageIds)
+      const byId = new Map((data ?? []).map(l => [l.id, l]))
+      listings = pageIds.map(id => byId.get(id)).filter((l): l is ListingWithSeller => !!l)
+    } else {
+      listings = []
+    }
+  } else {
+    switch (params.sort) {
+      case 'antiguas':
+        query = query.order('created_at', { ascending: true })
+        break
+      case 'precio_asc':
+        query = query.order('price', { ascending: true })
+        break
+      case 'precio_desc':
+        query = query.order('price', { ascending: false })
+        break
+      default:
+        query = query.order('bumped_at', { ascending: false })
+    }
+    const from = (page - 1) * PAGE_SIZE
+    const { data, count } = await query.range(from, from + PAGE_SIZE - 1)
+    listings = data as typeof listings
+    totalCount = count ?? 0
   }
 
-  const from = (page - 1) * PAGE_SIZE
-  const isDefaultView = page === 1 && !params.q && !params.category && !params.size &&
-    !params.condition && !params.color && !params.min && !params.max && !params.sort
+  const isDefaultView = page === 1 && !params.q && !params.category && !params.productCategory && !params.productType &&
+    !params.size && !params.brand && !params.condition && !params.color && !params.material && !params.occasion &&
+    !params.length && !params.min && !params.max && !params.sort
 
-  const [{ data: listings, count }, { data: { user } }, { data: featuredListings }] = await Promise.all([
-    query.range(from, from + PAGE_SIZE - 1),
+  const [{ data: { user } }, { data: featuredListings }] = await Promise.all([
     supabase.auth.getUser(),
     isDefaultView
       ? supabase
@@ -95,16 +138,21 @@ export default async function HomePage({
       : Promise.resolve({ data: null }),
   ])
 
-  const totalCount = count ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   function pageUrl(targetPage: number) {
     const usp = new URLSearchParams()
     if (params.q) usp.set('q', params.q)
     if (params.category) usp.set('category', params.category)
+    if (params.productCategory) usp.set('productCategory', params.productCategory)
+    if (params.productType) usp.set('productType', params.productType)
     if (params.size) usp.set('size', params.size)
+    if (params.brand) usp.set('brand', params.brand)
     if (params.condition) usp.set('condition', params.condition)
     if (params.color) usp.set('color', params.color)
+    if (params.material) usp.set('material', params.material)
+    if (params.occasion) usp.set('occasion', params.occasion)
+    if (params.length) usp.set('length', params.length)
     if (params.min) usp.set('min', params.min)
     if (params.max) usp.set('max', params.max)
     if (params.sort) usp.set('sort', params.sort)
@@ -112,6 +160,11 @@ export default async function HomePage({
     const qs = usp.toString()
     return qs ? `/?${qs}` : '/'
   }
+
+  const dept = params.category ? departmentEntry(params.category) : undefined
+  const pcLabel = dept && params.productCategory ? productCategoryLabel(params.category!, params.productCategory) : null
+  const breadcrumbParts = [dept?.label, pcLabel, params.productType].filter(Boolean)
+  const pageTitle = params.productType || pcLabel || dept?.label || 'Todas las prendas'
 
   let favoritedIds = new Set<string>()
   if (user && listings && listings.length > 0) {
@@ -139,73 +192,7 @@ export default async function HomePage({
       </div>
 
       {/* Filtros */}
-      <form method="GET" className="bg-white border-b border-gray-100 px-4 py-4">
-        <div className="max-w-5xl mx-auto flex flex-wrap gap-3 items-end">
-          <div className="flex-1 min-w-[180px]">
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Buscar</label>
-            <input
-              name="q"
-              defaultValue={params.q}
-              placeholder="Marca, título, descripción..."
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Categoría</label>
-            <select name="category" defaultValue={params.category} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-              <option value="">Todas</option>
-              {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Talla</label>
-            <select name="size" defaultValue={params.size} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-              <option value="">Todas</option>
-              {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Estado</label>
-            <select name="condition" defaultValue={params.condition} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-              <option value="">Todos</option>
-              {CONDITION_GROUPS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
-            </select>
-          </div>
-
-          <ColorFilterPopover defaultValue={params.color} />
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Precio mín.</label>
-            <input name="min" defaultValue={params.min} placeholder="$0" type="number"
-              className="w-24 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
-          </div>
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Precio máx.</label>
-            <input name="max" defaultValue={params.max} placeholder="$999.999" type="number"
-              className="w-24 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
-          </div>
-
-          <div>
-            <label className="block text-[10px] tracking-widest uppercase text-gray-400 mb-1">Ordenar por</label>
-            <select name="sort" defaultValue={params.sort ?? 'recientes'} className="border border-gray-200 px-3 py-2 text-sm focus:outline-none bg-white">
-              {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-          </div>
-
-          <button type="submit"
-            className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-5 py-2 hover:bg-[#6f9678] transition">
-            Filtrar
-          </button>
-
-          {(params.q || params.category || params.size || params.condition || params.color || params.min || params.max || params.sort) && (
-            <Link href="/" className="text-xs text-gray-400 hover:text-black underline">Limpiar</Link>
-          )}
-        </div>
-      </form>
+      <CatalogFilters />
 
       {/* Destacadas */}
       {featuredListings && featuredListings.length > 0 && (
@@ -237,13 +224,22 @@ export default async function HomePage({
 
       {/* Grid */}
       <div className="max-w-5xl mx-auto px-4 py-8">
+        {breadcrumbParts.length > 0 && (
+          <div className="mb-4">
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">
+              <Link href="/" className="hover:text-black">Inicio</Link>
+              {breadcrumbParts.map((part, i) => <span key={i}> / {part}</span>)}
+            </p>
+            <h1 className="font-serif text-xl">{pageTitle}</h1>
+          </div>
+        )}
         {listings && listings.length > 0 ? (
           <>
             <p className="text-xs text-gray-400 mb-6">
               {totalCount} {totalCount === 1 ? 'prenda disponible' : 'prendas disponibles'}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {(listings as (Listing & { seller: { name: string; city: string } })[]).map((listing) => (
+              {listings.map((listing) => (
                 <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white">
                   <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
                     {listing.photos[0] ? (
@@ -349,8 +345,9 @@ export default async function HomePage({
           </>
         ) : (
           <div className="text-center py-20">
-            <p className="text-gray-400 text-sm">No hay prendas que coincidan con tu búsqueda.</p>
-            <Link href="/" className="text-[#7fab87] text-xs underline mt-2 inline-block">Ver todas</Link>
+            <p className="text-gray-700 text-sm font-medium">No encontramos prendas con estos filtros.</p>
+            <p className="text-gray-400 text-xs mt-1">Prueba eliminando algunos filtros o revisa todas las prendas disponibles.</p>
+            <Link href="/" className="text-[#7fab87] text-xs underline mt-3 inline-block">Ver todas las prendas</Link>
           </div>
         )}
       </div>

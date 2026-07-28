@@ -80,6 +80,171 @@ export const SIZES_BY_CATEGORY: Record<CategoryValue, string[]> = {
   unisex: LETTER_SIZES,
 }
 
+// ============================================================
+// Taxonomía jerárquica (Departamento > Categoría > Tipo de producto).
+// Reemplaza, para publicar/editar y para los filtros del catálogo, al
+// selector plano de `subcategories` de arriba — ese campo (`subcategory`
+// en la base de datos) queda intacto por compatibilidad mientras se
+// verifica la migración, pero deja de usarse en la UI nueva.
+//
+// Niños se representa con el mismo shape de 3 niveles que Mujer/Hombre
+// (categoría > tipo): en vez de agregar un cuarto nivel de datos para
+// "Niña"/"Niño", esa distinción vive dentro del valor de `product_category`
+// (ej. "Niña · Ropa"), así el modelo de datos sigue siendo
+// category / product_category / product_type en todos los departamentos.
+// ============================================================
+export interface TaxonomyType {
+  value: string
+  label: string
+}
+
+export interface TaxonomyProductCategory {
+  value: string
+  label: string
+  types: TaxonomyType[]
+}
+
+export interface TaxonomyDepartment {
+  value: CategoryValue
+  label: string
+  productCategories: TaxonomyProductCategory[]
+}
+
+function asTypes(labels: string[]): TaxonomyType[] {
+  return labels.map(label => ({ value: label, label }))
+}
+
+export const TAXONOMY: TaxonomyDepartment[] = [
+  {
+    value: 'mujer',
+    label: 'Mujer',
+    productCategories: [
+      {
+        value: 'ropa', label: 'Ropa',
+        types: asTypes(['Vestidos', 'Conjuntos', 'Monos', 'Tops y blusas', 'Faldas', 'Pantalones y jeans', 'Chaquetas y abrigos', 'Túnicas', 'Tejidos', 'Trajes de baño', 'Ropa deportiva', 'Otras prendas']),
+      },
+      {
+        value: 'calzado', label: 'Calzado',
+        types: asTypes(['Tacos', 'Sandalias', 'Zapatos planos', 'Botas', 'Zapatillas', 'Otro calzado']),
+      },
+      {
+        value: 'bolsos', label: 'Bolsos',
+        types: asTypes(['Clutches', 'Carteras', 'Mini bags', 'Mochilas', 'Otros bolsos']),
+      },
+      {
+        value: 'accesorios', label: 'Accesorios',
+        types: asTypes(['Joyas', 'Cinturones', 'Tocados', 'Accesorios para el pelo', 'Chales y capas', 'Anteojos', 'Otros accesorios']),
+      },
+    ],
+  },
+  {
+    value: 'hombre',
+    label: 'Hombre',
+    productCategories: [
+      {
+        value: 'ropa', label: 'Ropa',
+        types: asTypes(['Trajes', 'Blazers', 'Camisas', 'Pantalones', 'Chaquetas y abrigos', 'Poleras', 'Otras prendas']),
+      },
+      {
+        value: 'calzado', label: 'Calzado',
+        types: asTypes(['Zapatos', 'Zapatillas', 'Botas', 'Otro calzado']),
+      },
+      {
+        value: 'accesorios', label: 'Accesorios',
+        types: asTypes(['Corbatas', 'Corbatines', 'Cinturones', 'Pañuelos', 'Otros accesorios']),
+      },
+    ],
+  },
+  {
+    value: 'ninos',
+    label: 'Niños',
+    productCategories: [
+      { value: 'nina_ropa', label: 'Niña · Ropa', types: asTypes(['Vestidos', 'Conjuntos', 'Abrigos', 'Otras prendas']) },
+      { value: 'nina_calzado', label: 'Niña · Calzado', types: asTypes(['Calzado']) },
+      { value: 'nina_accesorios', label: 'Niña · Accesorios', types: asTypes(['Accesorios']) },
+      { value: 'nino_ropa', label: 'Niño · Ropa', types: asTypes(['Trajes', 'Camisas', 'Pantalones', 'Abrigos', 'Otras prendas']) },
+      { value: 'nino_calzado', label: 'Niño · Calzado', types: asTypes(['Calzado']) },
+      { value: 'nino_accesorios', label: 'Niño · Accesorios', types: asTypes(['Accesorios']) },
+    ],
+  },
+  {
+    value: 'unisex',
+    label: 'Unisex',
+    productCategories: [
+      {
+        value: 'ropa', label: 'Ropa',
+        types: asTypes(['Poleras y camisetas', 'Buzos y hoodies', 'Pantalones y jeans', 'Chaquetas y abrigos', 'Ropa deportiva', 'Otras prendas']),
+      },
+      { value: 'calzado', label: 'Calzado', types: asTypes(['Zapatillas', 'Otro calzado']) },
+      { value: 'accesorios', label: 'Accesorios', types: asTypes(['Otros accesorios']) },
+    ],
+  },
+]
+
+export function departmentEntry(department: string): TaxonomyDepartment | undefined {
+  return TAXONOMY.find(d => d.value === department)
+}
+
+export function productCategoryEntry(department: string, productCategory: string): TaxonomyProductCategory | undefined {
+  return departmentEntry(department)?.productCategories.find(c => c.value === productCategory)
+}
+
+export function productCategoryLabel(department: string, productCategory: string | null): string {
+  if (!productCategory) return ''
+  return productCategoryEntry(department, productCategory)?.label ?? productCategory
+}
+
+// Tallas según la categoría de producto elegida (no el departamento) —
+// una cartera no tiene talla, un zapato usa numeración de calzado, y la
+// ropa infantil usa rangos etarios sin importar la categoría de producto.
+const ROPA_SIZES = [
+  'XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL',
+  '32', '34', '36', '38', '40', '42', '44', '46', '48',
+  'Talla única', 'Otra', 'No indica',
+]
+const SHOE_SIZES = ['34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', 'Otra']
+const NINOS_SIZES = SIZES_BY_CATEGORY.ninos
+
+export function sizeOptionsFor(department: CategoryValue, productCategory: string): string[] {
+  if (department === 'ninos') return NINOS_SIZES
+  if (productCategory === 'calzado') return SHOE_SIZES
+  if (productCategory === 'bolsos') return []
+  if (productCategory === 'accesorios') return ['Talla única', 'Otra']
+  return ROPA_SIZES
+}
+
+// Usado por el filtro de talla del catálogo cuando todavía no se eligió una
+// categoría de producto — antes el filtro solo mostraba tallas de letra y
+// nunca incluía los rangos etarios de niños ni la numeración de calzado.
+export const ALL_SIZES = Array.from(new Set([...ROPA_SIZES, ...SHOE_SIZES, ...NINOS_SIZES]))
+
+// Solo aplica a Vestidos y Faldas — el resto de los tipos de producto no
+// lo muestran ni en el formulario ni como filtro.
+export const LENGTH_APPLICABLE_TYPES = ['Vestidos', 'Faldas']
+
+export const LENGTHS = ['Mini', 'Midi', 'Largo', 'Asimétrico']
+
+export const OCCASIONS = [
+  'Matrimonio de día', 'Matrimonio de noche', 'Fiesta', 'Gala', 'Graduación', 'Civil',
+  'Novia', 'Madrina', 'Invitada', 'Cóctel', 'Evento de día', 'Evento de noche',
+  'Casual', 'Trabajo', 'Vacaciones', 'Otra',
+]
+
+export const SEASONS = ['Toda temporada', 'Primavera', 'Verano', 'Otoño', 'Invierno']
+
+export const STYLES = [
+  'Elegante', 'Formal', 'Romántico', 'Minimalista', 'Clásico', 'Moderno',
+  'Sexy', 'Bohemio', 'Casual', 'Vintage', 'Otro',
+]
+
+// No se especificó una lista de materiales — esta es una selección
+// razonable de materiales comunes en moda; es solo una constante de
+// código, fácil de ajustar sin migración.
+export const MATERIALS = [
+  'Algodón', 'Poliéster', 'Lino', 'Seda', 'Lana', 'Cuero', 'Cuero sintético',
+  'Denim', 'Encaje', 'Terciopelo', 'Tul', 'Chiffón', 'Satín', 'Elastano/Lycra', 'Otro',
+]
+
 export const CONDITIONS = [
   {
     value: 'nuevo_con_etiquetas',
