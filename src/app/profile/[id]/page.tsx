@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Listing, Profile, Review } from '@/types'
 import { conditionGroupLabel } from '@/lib/catalog'
 import StarRating from '@/components/reviews/StarRating'
+import FollowButton from '@/components/profile/FollowButton'
 
 type ReviewWithReviewer = Review & { reviewer: { name: string; avatar_url: string | null } | null }
 
@@ -16,7 +17,7 @@ export default async function ProfilePage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: profile }, { data: listings }, { data: { user } }, { data: reviews }] = await Promise.all([
+  const [{ data: profile }, { data: listings }, { data: { user } }, { data: reviews }, { count: followerCount }] = await Promise.all([
     supabase
       .from('profiles')
       .select('*')
@@ -34,9 +35,24 @@ export default async function ProfilePage({
       .select('*, reviewer:profiles!reviews_reviewer_id_fkey(name, avatar_url)')
       .eq('reviewed_id', id)
       .order('created_at', { ascending: false }) as unknown as Promise<{ data: ReviewWithReviewer[] | null }>,
+    supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('followed_id', id),
   ])
 
   const isOwnProfile = user?.id === id
+
+  let isFollowing = false
+  if (user && !isOwnProfile) {
+    const { data: followRow } = await supabase
+      .from('follows')
+      .select('id')
+      .eq('follower_id', user.id)
+      .eq('followed_id', id)
+      .maybeSingle()
+    isFollowing = !!followRow
+  }
   const reviewList = reviews ?? []
   const avgRating = reviewList.length > 0
     ? reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length
@@ -72,6 +88,11 @@ export default async function ProfilePage({
             <h1 className="text-lg font-medium">{profile.name}</h1>
             {profile.city && <p className="text-xs text-gray-400">{profile.city}</p>}
             <p className="text-[10px] text-gray-400 mt-1">En Bdress desde {memberSince}</p>
+            {(followerCount ?? 0) > 0 && (
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                {followerCount} {followerCount === 1 ? 'seguidora' : 'seguidoras'}
+              </p>
+            )}
             {reviewList.length > 0 && (
               <div className="flex items-center gap-1.5 mt-1.5">
                 <StarRating rating={avgRating} />
@@ -87,11 +108,17 @@ export default async function ProfilePage({
               Editar perfil
             </Link>
           )}
+          {!isOwnProfile && (
+            <FollowButton followedId={id} initialFollowing={isFollowing} isLoggedIn={!!user} />
+          )}
         </div>
 
         {/* Accesos de cuenta — en desktop ya viven en el menú superior */}
         {isOwnProfile && (
           <div className="md:hidden flex flex-wrap gap-4 mb-10 text-xs">
+            <Link href="/dashboard/listings" className="text-gray-500 hover:text-black tracking-widest uppercase">
+              Mis prendas
+            </Link>
             <Link href="/dashboard/sales" className="text-gray-500 hover:text-black tracking-widest uppercase">
               Mis ventas
             </Link>

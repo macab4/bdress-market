@@ -74,13 +74,25 @@ export default async function HomePage({
       query = query.order('price', { ascending: false })
       break
     default:
-      query = query.order('created_at', { ascending: false })
+      query = query.order('bumped_at', { ascending: false })
   }
 
   const from = (page - 1) * PAGE_SIZE
-  const [{ data: listings, count }, { data: { user } }] = await Promise.all([
+  const isDefaultView = page === 1 && !params.q && !params.category && !params.size &&
+    !params.condition && !params.color && !params.min && !params.max && !params.sort
+
+  const [{ data: listings, count }, { data: { user } }, { data: featuredListings }] = await Promise.all([
     query.range(from, from + PAGE_SIZE - 1),
     supabase.auth.getUser(),
+    isDefaultView
+      ? supabase
+          .from('listings')
+          .select('*, seller:profiles(id, name, city, avatar_url)')
+          .eq('status', 'active')
+          .gt('featured_until', new Date().toISOString())
+          .order('featured_until', { ascending: false })
+          .limit(8) as unknown as Promise<{ data: (Listing & { seller: { name: string; city: string } })[] | null }>
+      : Promise.resolve({ data: null }),
   ])
 
   const totalCount = count ?? 0
@@ -195,6 +207,34 @@ export default async function HomePage({
         </div>
       </form>
 
+      {/* Destacadas */}
+      {featuredListings && featuredListings.length > 0 && (
+        <div className="max-w-5xl mx-auto px-4 pt-8">
+          <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">Destacadas</p>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {featuredListings.map((listing) => (
+              <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white flex-shrink-0 w-36">
+                <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
+                  {listing.photos[0] ? (
+                    <Image src={listing.photos[0]} alt={listing.title} fill className="object-cover group-hover:scale-105 transition duration-300" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                  )}
+                  <span className="absolute top-2 left-2 bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                    Destacada
+                  </span>
+                </div>
+                <div className="p-2">
+                  <p className="text-[10px] tracking-widest text-gray-400 uppercase truncate">{listing.brand || 'Sin marca'}</p>
+                  <p className="text-xs font-medium truncate">{listing.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">${listing.price.toLocaleString('es-CL')}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Grid */}
       <div className="max-w-5xl mx-auto px-4 py-8">
         {listings && listings.length > 0 ? (
@@ -230,9 +270,16 @@ export default async function HomePage({
                         Sin foto
                       </div>
                     )}
-                    <span className="absolute top-2 left-2 bg-white text-[9px] tracking-widest uppercase px-2 py-1">
-                      {conditionGroupLabel(listing.condition)}
-                    </span>
+                    <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+                      <span className="bg-white text-[9px] tracking-widest uppercase px-2 py-1">
+                        {conditionGroupLabel(listing.condition)}
+                      </span>
+                      {listing.featured_until && new Date(listing.featured_until) > new Date() && (
+                        <span className="bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                          Destacada
+                        </span>
+                      )}
+                    </div>
                     <div className="absolute bottom-2 right-2">
                       <FavoriteButton
                         listingId={listing.id}

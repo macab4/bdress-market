@@ -40,6 +40,8 @@ export interface Listing {
   photos: string[]
   status: ListingStatus
   created_at: string
+  bumped_at: string
+  featured_until: string | null
   seller?: Profile
 }
 
@@ -127,4 +129,25 @@ export interface Review {
   comment: string | null
   created_at: string
   reviewer?: Profile
+}
+
+export interface Follow {
+  id: string
+  follower_id: string
+  followed_id: string
+  created_at: string
+}
+
+export type NotificationType = 'new_listing'
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  actor_id: string
+  listing_id: string | null
+  read_at: string | null
+  created_at: string
+  actor?: Profile
+  listing?: Listing
 }

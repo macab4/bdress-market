@@ -355,3 +355,99 @@ alter table public.page_views enable row level security;
 alter table public.orders add column completed_at timestamptz;
 alter table public.orders add column buyer_review_reminded_at timestamptz;
 alter table public.orders add column seller_review_reminded_at timestamptz;
+
+-- ============================================================
+-- Seguir vendedoras + notificaciones in-app. Al publicar (o reactivar)
+-- una prenda, se notifica automáticamente a quienes siguen a esa
+-- vendedora. El trigger corre security definer para poder insertar en
+-- notifications sin que cada seguidora necesite permiso de insert ahí.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create table public.follows (
+  id           uuid default gen_random_uuid() primary key,
+  follower_id  uuid references public.profiles(id) on delete cascade not null,
+  followed_id  uuid references public.profiles(id) on delete cascade not null,
+  created_at   timestamptz default now(),
+  unique (follower_id, followed_id),
+  check (follower_id <> followed_id)
+);
+alter table public.follows enable row level security;
+
+create policy "Cualquiera ve relaciones de seguimiento" on public.follows
+  for select using (true);
+
+create policy "Usuaria sigue a otra" on public.follows
+  for insert with check (auth.uid() = follower_id);
+
+create policy "Usuaria deja de seguir" on public.follows
+  for delete using (auth.uid() = follower_id);
+
+create table public.notifications (
+  id          uuid default gen_random_uuid() primary key,
+  user_id     uuid references public.profiles(id) on delete cascade not null,
+  type        text not null default 'new_listing',
+  actor_id    uuid references public.profiles(id) on delete cascade not null,
+  listing_id  uuid references public.listings(id) on delete cascade,
+  read_at     timestamptz,
+  created_at  timestamptz default now()
+);
+alter table public.notifications enable row level security;
+create index notifications_user_id_idx on public.notifications (user_id);
+
+create policy "Usuaria ve sus notificaciones" on public.notifications
+  for select using (auth.uid() = user_id);
+
+create policy "Usuaria marca sus notificaciones como leidas" on public.notifications
+  for update using (auth.uid() = user_id);
+
+create function public.notify_followers_new_listing()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status = 'active' and (tg_op = 'INSERT' or old.status is distinct from 'active') then
+    insert into public.notifications (user_id, type, actor_id, listing_id)
+    select follower_id, 'new_listing', new.seller_id, new.id
+    from public.follows
+    where followed_id = new.seller_id;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger listings_notify_followers
+  after insert or update of status on public.listings
+  for each row execute function public.notify_followers_new_listing();
+
+-- ============================================================
+-- Renovar (bump gratis) + Destacar (boost pagado). bumped_at ordena
+-- "más recientes" en vez de created_at, y se actualiza cada vez que la
+-- vendedora renueva su prenda (máximo una vez cada BUMP_COOLDOWN_DAYS,
+-- ver src/lib/catalog.ts). featured_until marca hasta cuándo una prenda
+-- aparece en la fila "Destacadas" de la home tras un boost pagado.
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.listings add column bumped_at timestamptz not null default now();
+update public.listings set bumped_at = created_at;
+
+alter table public.listings add column featured_until timestamptz;
+
+create table public.listing_boosts (
+  id           uuid default gen_random_uuid() primary key,
+  listing_id   uuid references public.listings(id) on delete cascade not null,
+  seller_id    uuid references public.profiles(id) on delete cascade not null,
+  amount       integer not null check (amount > 0),
+  status       text not null default 'pending_payment' check (status in ('pending_payment','paid','cancelled')),
+  payment_ref  text,
+  created_at   timestamptz default now(),
+  paid_at      timestamptz
+);
+alter table public.listing_boosts enable row level security;
+
+create policy "Vendedora ve sus boosts" on public.listing_boosts
+  for select using (auth.uid() = seller_id);
+
+create policy "Vendedora crea sus boosts" on public.listing_boosts
+  for insert with check (auth.uid() = seller_id);

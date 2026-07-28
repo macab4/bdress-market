@@ -306,3 +306,12 @@ export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string 
   disputed:        { label: 'En disputa',     color: 'bg-red-50 text-red-600' },
   cancelled:       { label: 'Cancelado',      color: 'bg-gray-100 text-gray-400' },
 }
+
+// Renovar — gratis, mueve la prenda al tope de "Más recientes" actualizando
+// bumped_at. Máximo una vez cada BUMP_COOLDOWN_DAYS por prenda para evitar spam.
+export const BUMP_COOLDOWN_DAYS = 7
+
+// Destacar — boost pagado vía Mercado Pago que pone la prenda en la fila
+// "Destacadas" de la home por BOOST_DURATION_DAYS días (ver featured_until).
+export const BOOST_PRICE = 1990
+export const BOOST_DURATION_DAYS = 3

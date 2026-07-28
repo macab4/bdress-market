@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, MessageCircle } from 'lucide-react'
+import { Heart, MessageCircle, Bell } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function Navbar() {
@@ -8,13 +8,22 @@ export default async function Navbar() {
   const { data: { user } } = await supabase.auth.getUser()
 
   let unreadCount = 0
+  let unreadNotifications = 0
   if (user) {
-    const { count } = await supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('receiver_id', user.id)
-      .is('read_at', null)
-    unreadCount = count ?? 0
+    const [{ count: messagesCount }, { count: notifCount }] = await Promise.all([
+      supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id)
+        .is('read_at', null),
+      supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .is('read_at', null),
+    ])
+    unreadCount = messagesCount ?? 0
+    unreadNotifications = notifCount ?? 0
   }
 
   return (
@@ -30,6 +39,9 @@ export default async function Navbar() {
               <Link href="/listings/new"
                 className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
                 + Vender
+              </Link>
+              <Link href="/dashboard/listings" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
+                Mis prendas
               </Link>
               <Link href="/dashboard/sales" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis ventas
@@ -51,6 +63,14 @@ export default async function Navbar() {
               </Link>
               <Link href="/favorites" aria-label="Favoritos" className="text-gray-500 hover:text-black">
                 <Heart size={18} />
+              </Link>
+              <Link href="/notifications" aria-label="Notificaciones" className="relative text-gray-500 hover:text-black">
+                <Bell size={18} />
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#7fab87] text-white text-[9px] flex items-center justify-center">
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  </span>
+                )}
               </Link>
               <Link href={`/profile/${user.id}`} className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mi perfil

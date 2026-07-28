@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout } from '@/lib/email'
-import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, BOOST_DURATION_DAYS } from '@/lib/catalog'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -38,7 +38,31 @@ async function handleNotification(request: Request) {
   }
 
   const payment = await paymentRes.json()
-  const orderId = payment.external_reference
+  const externalRef: string | undefined = payment.external_reference
+
+  if (payment.status === 'approved' && externalRef?.startsWith('boost:')) {
+    const boostId = externalRef.slice('boost:'.length)
+    const supabase = createAdminClient()
+    const { data: updatedBoost } = await supabase
+      .from('listing_boosts')
+      .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
+      .eq('id', boostId)
+      .eq('status', 'pending_payment')
+      .select('listing_id')
+      .maybeSingle()
+
+    if (updatedBoost) {
+      const featuredUntil = new Date(Date.now() + BOOST_DURATION_DAYS * 24 * 60 * 60 * 1000)
+      await supabase
+        .from('listings')
+        .update({ featured_until: featuredUntil.toISOString() })
+        .eq('id', updatedBoost.listing_id)
+    }
+
+    return Response.json({ status: 'ok' })
+  }
+
+  const orderId = externalRef
 
   if (payment.status === 'approved' && orderId) {
     const supabase = createAdminClient()

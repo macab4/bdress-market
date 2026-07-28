@@ -1,10 +1,7 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
-import { Listing, Order } from '@/types'
-import PauseListingButton from '@/components/dashboard/PauseListingButton'
-import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
+import { Order } from '@/types'
 import GenerateLabelButton from '@/components/dashboard/GenerateLabelButton'
 import AddTrackingForm from '@/components/dashboard/AddTrackingForm'
 import ReviewForm from '@/components/reviews/ReviewForm'
@@ -20,21 +17,13 @@ export default async function SalesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [listingsResult, ordersResult] = await Promise.all([
-    supabase
-      .from('listings')
-      .select('*')
-      .eq('seller_id', user.id)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('orders')
-      .select('*, listing:listings(title, photos), buyer:profiles!orders_buyer_id_fkey(name)')
-      .eq('seller_id', user.id)
-      .order('created_at', { ascending: false }),
-  ])
+  const { data: ordersData } = await supabase
+    .from('orders')
+    .select('*, listing:listings(title, photos), buyer:profiles!orders_buyer_id_fkey(name)')
+    .eq('seller_id', user.id)
+    .order('created_at', { ascending: false })
 
-  const listings = (listingsResult.data ?? []) as Listing[]
-  const orders = (ordersResult.data ?? []) as OrderWithRelations[]
+  const orders = (ordersData ?? []) as OrderWithRelations[]
 
   const { data: myReviews } = await supabase
     .from('reviews')
@@ -42,20 +31,6 @@ export default async function SalesPage() {
     .eq('reviewer_id', user.id)
   const reviewedOrderIds = new Set((myReviews ?? []).map(r => r.order_id))
 
-  const activeListings = listings.filter(l => l.status === 'active' || l.status === 'paused')
-
-  type RepopOrder = { id: string; amount: number; listing: { title: string; brand: string; photos: string[] } | null }
-  let repopOrders: RepopOrder[] = []
-  if (activeListings.length === 0) {
-    const { data } = await supabase
-      .from('orders')
-      .select('id, amount, listing:listings(title, brand, photos)')
-      .eq('buyer_id', user.id)
-      .in('status', ['delivered', 'completed'])
-      .order('created_at', { ascending: false })
-      .limit(4) as unknown as { data: RepopOrder[] | null }
-    repopOrders = data ?? []
-  }
   const pendingOrders = orders.filter(o => o.status === 'paid')
   const shippedOrders = orders.filter(o => o.status === 'shipped')
   const deliveredOrders = orders.filter(o => o.status === 'delivered')
@@ -222,103 +197,6 @@ export default async function SalesPage() {
             </div>
           </section>
         )}
-
-        {/* Mis prendas */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] tracking-widest uppercase text-gray-400">
-              Mis prendas ({activeListings.length})
-            </h2>
-            <Link href="/listings/new"
-              className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-4 py-2 hover:bg-[#6f9678] transition">
-              + Publicar
-            </Link>
-          </div>
-
-          {activeListings.length === 0 ? (
-            <div className="bg-white p-10 text-center">
-              <p className="text-sm text-gray-400 mb-4">Aún no tienes prendas publicadas.</p>
-
-              {repopOrders.length > 0 && (
-                <div className="mt-6 text-left">
-                  <p className="text-xs font-medium mb-1">¿No sabes qué publicar?</p>
-                  <p className="text-xs text-gray-400 mb-4">
-                    Revende algo que ya compraste — precargamos los datos por ti.
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {repopOrders.map(order => {
-                      const photo = order.listing?.photos?.[0]
-                      return (
-                        <div key={order.id} className="text-left">
-                          <div className="aspect-square bg-gray-100 relative overflow-hidden mb-2">
-                            {photo ? (
-                              <Image src={photo} alt={order.listing?.title ?? ''} fill className="object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
-                            )}
-                          </div>
-                          <p className="text-xs font-medium truncate">{order.listing?.brand || order.listing?.title}</p>
-                          <p className="text-[10px] text-gray-400 mb-2">
-                            Comprado: ${order.amount.toLocaleString('es-CL')}
-                          </p>
-                          <Link
-                            href={`/listings/new?fromOrder=${order.id}`}
-                            className="block text-center bg-[#7fab87] text-white text-[9px] tracking-widest uppercase py-2 hover:bg-[#6f9678] transition"
-                          >
-                            Revender
-                          </Link>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {activeListings.map(listing => {
-                const photo = listing.photos?.[0]
-                return (
-                  <div key={listing.id} className="bg-white p-4 flex gap-4 items-center">
-                    <div className="w-14 h-16 bg-gray-100 relative flex-shrink-0 overflow-hidden">
-                      {photo ? (
-                        <Image src={photo} alt={listing.title} fill className="object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{listing.title}</p>
-                      <p className="text-xs text-gray-400">{listing.brand} · T. {listing.size}</p>
-                      <p className="text-sm font-semibold mt-0.5">${listing.price.toLocaleString('es-CL')}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${
-                          listing.status === 'active' ? 'bg-[#7fab87]/10 text-[#5a7a55]' : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          {listing.status === 'active' ? 'Activa' : 'Pausada'}
-                        </span>
-                        <Link href={`/listings/${listing.id}/edit`}
-                          className="bg-[#7fab87] text-white text-[10px] tracking-widest uppercase px-3 py-1.5 hover:bg-[#6f9678] transition">
-                          Editar
-                        </Link>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <PauseListingButton listingId={listing.id} currentStatus={listing.status as 'active' | 'paused'} />
-                        <Link href={`/listings/${listing.id}`}
-                          className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
-                          Ver
-                        </Link>
-                        <DeleteListingButton listingId={listing.id} listingTitle={listing.title} />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </section>
 
         {/* Historial */}
         {completedOrders.length > 0 && (
