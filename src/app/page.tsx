@@ -6,6 +6,7 @@ import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategory
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import CatalogFilters from '@/components/listings/CatalogFilters'
+import SaveSearchButton from '@/components/listings/SaveSearchButton'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
 
@@ -224,13 +225,18 @@ export default async function HomePage({
 
       {/* Grid */}
       <div className="max-w-5xl mx-auto px-4 py-8">
-        {breadcrumbParts.length > 0 && (
-          <div className="mb-4">
-            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">
-              <Link href="/" className="hover:text-black">Inicio</Link>
-              {breadcrumbParts.map((part, i) => <span key={i}> / {part}</span>)}
-            </p>
-            <h1 className="font-serif text-xl">{pageTitle}</h1>
+        {(breadcrumbParts.length > 0 || (user && !isDefaultView)) && (
+          <div className="mb-4 flex items-start justify-between gap-4">
+            {breadcrumbParts.length > 0 ? (
+              <div>
+                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">
+                  <Link href="/" className="hover:text-black">Inicio</Link>
+                  {breadcrumbParts.map((part, i) => <span key={i}> / {part}</span>)}
+                </p>
+                <h1 className="font-serif text-xl">{pageTitle}</h1>
+              </div>
+            ) : <div />}
+            {user && !isDefaultView && <SaveSearchButton />}
           </div>
         )}
         {listings && listings.length > 0 ? (

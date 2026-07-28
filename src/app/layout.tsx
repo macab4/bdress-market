@@ -3,6 +3,7 @@ import { Noto_Serif, Assistant } from 'next/font/google'
 import Link from 'next/link'
 import './globals.css'
 import Navbar from '@/components/layout/Navbar'
+import MainNav from '@/components/layout/MainNav'
 import MobileTabBar from '@/components/layout/MobileTabBar'
 import AuthHashHandler from '@/components/layout/AuthHashHandler'
 
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col bg-[#EBEBEB] font-sans">
         <AuthHashHandler />
         <Navbar />
+        <MainNav />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
         <footer className="bg-black text-gray-500 text-center pt-6 pb-20 md:py-6 text-[10px] tracking-widest uppercase space-y-2">
           <p>Bdress Market · Santiago, Chile</p>

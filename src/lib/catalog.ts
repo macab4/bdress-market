@@ -194,6 +194,35 @@ export function productCategoryLabel(department: string, productCategory: string
   return productCategoryEntry(department, productCategory)?.label ?? productCategory
 }
 
+// Resumen legible de una búsqueda guardada, ej. "Mujer · Ropa · Vestidos ·
+// Talla M ·  Verde" — usado como label por defecto en /dashboard/saved-searches
+// y como texto del botón "Guardar búsqueda".
+export function describeSearchParams(params: URLSearchParams): string {
+  const parts: string[] = []
+  const department = params.get('category')
+  const productCategory = params.get('productCategory')
+  const productType = params.get('productType')
+
+  if (department) {
+    const dept = departmentEntry(department)
+    parts.push(dept?.label ?? department)
+    if (productCategory) parts.push(productCategoryLabel(department, productCategory))
+    if (productType) parts.push(productType)
+  }
+  if (params.get('q')) parts.push(`"${params.get('q')}"`)
+  if (params.get('size')) parts.push(`Talla ${params.get('size')}`)
+  if (params.get('brand')) parts.push(params.get('brand')!)
+  if (params.get('color')) parts.push(params.get('color')!.split(',').join(', '))
+  if (params.get('material')) parts.push(params.get('material')!)
+  if (params.get('occasion')) parts.push(params.get('occasion')!.split(',')[0])
+  if (params.get('length')) parts.push(`Largo ${params.get('length')}`)
+  if (params.get('min') || params.get('max')) {
+    parts.push(`$${params.get('min') ?? '0'}–$${params.get('max') ?? '∞'}`)
+  }
+
+  return parts.length > 0 ? parts.join(' · ') : 'Todas las prendas'
+}
+
 // Tallas según la categoría de producto elegida (no el departamento) —
 // una cartera no tiene talla, un zapato usa numeración de calzado, y la
 // ropa infantil usa rangos etarios sin importar la categoría de producto.
@@ -229,6 +258,12 @@ export const OCCASIONS = [
   'Novia', 'Madrina', 'Invitada', 'Cóctel', 'Evento de día', 'Evento de noche',
   'Casual', 'Trabajo', 'Vacaciones', 'Otra',
 ]
+
+// Usado por el link "Novias y eventos" del menú principal — todas las
+// ocasiones de OCCASIONS salvo las claramente casuales/cotidianas.
+export const BRIDAL_EVENT_OCCASIONS = OCCASIONS.filter(
+  o => !['Casual', 'Trabajo', 'Vacaciones', 'Otra'].includes(o)
+)
 
 export const SEASONS = ['Toda temporada', 'Primavera', 'Verano', 'Otoño', 'Invierno']
 

@@ -146,6 +146,14 @@ export interface Follow {
   created_at: string
 }
 
+export interface SavedSearch {
+  id: string
+  user_id: string
+  label: string | null
+  params: string
+  created_at: string
+}
+
 export type NotificationType = 'new_listing'
 
 export interface Notification {

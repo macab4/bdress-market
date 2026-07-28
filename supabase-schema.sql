@@ -480,3 +480,27 @@ create index listings_size_idx on public.listings (size);
 create index listings_status_idx on public.listings (status);
 create index listings_price_idx on public.listings (price);
 create index listings_bumped_at_idx on public.listings (bumped_at);
+
+-- ============================================================
+-- Guardar búsqueda (MVP) — guarda la querystring de filtros del catálogo
+-- para volver a aplicarla después. Sin avisos automáticos todavía (eso
+-- sería una fase aparte, en paralelo al sistema de follows/notifications).
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create table public.saved_searches (
+  id         uuid default gen_random_uuid() primary key,
+  user_id    uuid references public.profiles(id) on delete cascade not null,
+  label      text,
+  params     text not null,
+  created_at timestamptz default now()
+);
+alter table public.saved_searches enable row level security;
+
+create policy "Usuaria ve sus búsquedas guardadas" on public.saved_searches
+  for select using (auth.uid() = user_id);
+
+create policy "Usuaria guarda una búsqueda" on public.saved_searches
+  for insert with check (auth.uid() = user_id);
+
+create policy "Usuaria elimina su búsqueda guardada" on public.saved_searches
+  for delete using (auth.uid() = user_id);
