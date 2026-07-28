@@ -24,7 +24,7 @@ export function emailLayout(title: string, bodyHtml: string): string {
       </p>
       <p style="text-align: center; margin-top: 12px;">
         <span style="font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-right: 6px;">Síguenos</span>
-        <a href="https://www.instagram.com/bdress.cl" style="font-size: 14px; text-decoration: none;">📷</a>
+        <a href="https://www.instagram.com/bdressmarket/" style="font-size: 14px; text-decoration: none;">📷</a>
       </p>
     </div>
   `
