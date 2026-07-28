@@ -44,6 +44,50 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
   }
 }
 
+// Correo de lanzamiento para vendedoras del marketplace antiguo (Shopify) que
+// nunca se han logueado en la plataforma nueva — su email ya está confirmado
+// desde la migración, pero no tienen contraseña conocida, así que el primer
+// paso es "olvidé mi contraseña". Sus prendas siguen en "paused" desde la
+// migración. Se dispara manualmente desde /api/admin/campaign/activate-account.
+export async function sendActivateAccountEmail({
+  to,
+  name,
+}: {
+  to: string
+  name: string | null
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  await sendEmail({
+    to,
+    subject: 'Bdress Market ya está en línea — activa tu cuenta y tus prendas',
+    html: emailLayout('Ya estamos en línea', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, ¡ya lanzamos el nuevo Bdress Market al público! Tus prendas
+        de la plataforma anterior ya están cargadas en tu cuenta, pero siguen
+        pausadas — nadie puede verlas todavía.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        <strong>Para activarlas:</strong>
+      </p>
+      <ol style="font-size: 14px; color: #444; line-height: 1.8; padding-left: 20px;">
+        <li>Entra a bdressmarket.cl y haz clic en "¿Olvidaste tu contraseña?" con
+          tu correo (${to}) para crear una contraseña nueva — es tu primera vez
+          entrando a la plataforma nueva.</li>
+        <li>Una vez dentro, ve a tu perfil y activa cada prenda pausada.</li>
+      </ol>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Recuerda: vender ahora es <strong>100% gratis</strong>, sin comisión.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/auth/forgot-password" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Activar mi cuenta
+        </a>
+      </p>
+    `),
+  })
+}
+
 // Se dispara cuando una orden pasa a "completed" (cron de auto-liberación o
 // resolución manual de una disputa) y de nuevo, una sola vez, si a los
 // REVIEW_FOLLOWUP_DAYS nadie dejó su reseña — ver
