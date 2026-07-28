@@ -55,6 +55,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="https://www.bdress.cl" target="_blank" rel="noopener noreferrer" className="hover:text-white">
               B-dress Arriendo
             </a>
+            <a href="https://www.instagram.com/bdressmarket/" target="_blank" rel="noopener noreferrer" className="hover:text-white">
+              Instagram
+            </a>
           </p>
         </footer>
         <MobileTabBar />
