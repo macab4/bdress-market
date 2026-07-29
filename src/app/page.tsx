@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
-import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategoryLabel } from '@/lib/catalog'
+import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategoryLabel, groupBrands } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import CatalogFilters from '@/components/listings/CatalogFilters'
@@ -56,7 +56,17 @@ export default async function HomePage({
   if (params.productCategory) query = query.eq('product_category', params.productCategory)
   if (params.productType) query = query.eq('product_type', params.productType)
   if (params.size) query = query.eq('size', params.size)
-  if (params.brand) query = query.eq('brand', params.brand)
+
+  // La marca es texto libre al publicar (puede haber "María Cher" / "Maria
+  // Cher" / "MARIA CHER" para la misma marca) — el filtro llega como un slug
+  // normalizado (ver brandSlug en catalog.ts) y se resuelve contra todas las
+  // variantes de escritura que existan hoy antes de filtrar.
+  let brandGroup: { slug: string; label: string; variants: string[] } | undefined
+  if (params.brand) {
+    const { data: brandRows } = await supabase.from('listings').select('brand').eq('status', 'active').not('brand', 'eq', '')
+    brandGroup = groupBrands((brandRows ?? []).map(r => r.brand)).find(g => g.slug === params.brand)
+    query = query.in('brand', brandGroup ? brandGroup.variants : ['__sin_coincidencia__'])
+  }
   if (params.condition) {
     const group = CONDITION_GROUPS.find(g => g.value === params.condition)
     if (group) query = query.in('condition', group.conditions)
@@ -164,8 +174,10 @@ export default async function HomePage({
 
   const dept = params.category ? departmentEntry(params.category) : undefined
   const pcLabel = dept && params.productCategory ? productCategoryLabel(params.category!, params.productCategory) : null
-  const breadcrumbParts = [dept?.label, pcLabel, params.productType].filter(Boolean)
-  const pageTitle = params.productType || pcLabel || dept?.label || 'Todas las prendas'
+  const breadcrumbParts = dept?.label
+    ? [dept.label, pcLabel, params.productType].filter(Boolean)
+    : brandGroup ? ['Marcas', brandGroup.label] : []
+  const pageTitle = params.productType || pcLabel || dept?.label || brandGroup?.label || 'Todas las prendas'
 
   let favoritedIds = new Set<string>()
   if (user && listings && listings.length > 0) {

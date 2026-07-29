@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   CONDITION_GROUPS, CategoryValue, ALL_SIZES, sizeOptionsFor,
   LENGTHS, LENGTH_APPLICABLE_TYPES, OCCASIONS, MATERIALS,
-  departmentEntry, productCategoryLabel,
+  departmentEntry, productCategoryLabel, groupBrands,
 } from '@/lib/catalog'
 import CategoryPicker, { type CategoryPickerValue } from '@/components/listings/CategoryPicker'
 import ColorFilterPopover from '@/components/listings/ColorFilterPopover'
@@ -25,7 +25,7 @@ export default function CatalogFilters() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [, startTransition] = useTransition()
-  const [brands, setBrands] = useState<string[]>([])
+  const [brands, setBrands] = useState<{ slug: string; label: string }[]>([])
   const urlQ = searchParams.get('q') ?? ''
   const [qInput, setQInput] = useState(urlQ)
   const [syncedQ, setSyncedQ] = useState(urlQ)
@@ -45,7 +45,8 @@ export default function CatalogFilters() {
       const supabase = createClient()
       const { data } = await supabase.from('listings').select('brand').not('brand', 'eq', '').limit(1000)
       if (cancelled || !data) return
-      setBrands(Array.from(new Set(data.map(r => r.brand).filter(Boolean))).sort())
+      const grouped = groupBrands(data.map(r => r.brand)).sort((a, b) => a.label.localeCompare(b.label, 'es'))
+      setBrands(grouped.map(g => ({ slug: g.slug, label: g.label })))
     }
     loadBrands()
     return () => { cancelled = true }
@@ -112,7 +113,7 @@ export default function CatalogFilters() {
     chips.push({ key: 'category', label, onRemove: () => pushParams(usp => { usp.delete('category'); usp.delete('productCategory'); usp.delete('productType') }) })
   }
   if (size) chips.push({ key: 'size', label: `Talla ${size}`, onRemove: () => removeParam('size') })
-  if (brand) chips.push({ key: 'brand', label: brand, onRemove: () => removeParam('brand') })
+  if (brand) chips.push({ key: 'brand', label: brands.find(b => b.slug === brand)?.label ?? brand, onRemove: () => removeParam('brand') })
   if (condition) chips.push({ key: 'condition', label: CONDITION_GROUPS.find(g => g.value === condition)?.label ?? condition, onRemove: () => removeParam('condition') })
   if (color) chips.push({ key: 'color', label: color.split(',').join(', '), onRemove: () => removeParam('color') })
   if (material) chips.push({ key: 'material', label: material, onRemove: () => removeParam('material') })
@@ -153,7 +154,7 @@ export default function CatalogFilters() {
 
           <select value={brand} onChange={e => setParam('brand', e.target.value)} className={capsuleClass}>
             <option value="">Marca</option>
-            {brands.map(b => <option key={b} value={b}>{b}</option>)}
+            {brands.map(b => <option key={b.slug} value={b.slug}>{b.label}</option>)}
           </select>
 
           <select value={condition} onChange={e => setParam('condition', e.target.value)} className={capsuleClass}>

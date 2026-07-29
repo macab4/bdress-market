@@ -194,6 +194,37 @@ export function productCategoryLabel(department: string, productCategory: string
   return productCategoryEntry(department, productCategory)?.label ?? productCategory
 }
 
+// La marca se guarda como texto libre al publicar, así que la misma marca
+// puede quedar escrita de formas distintas ("María Cher" / "Maria Cher" /
+// "MARIA CHER"). Para navegar por marca (ver listings/[id] y /marcas) hay que
+// tratarlas como una sola — se agrupan por esta forma normalizada en vez de
+// agregar una tabla de marcas nueva.
+export function normalizeBrand(brand: string): string {
+  return brand.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ')
+}
+
+export function brandSlug(brand: string): string {
+  return normalizeBrand(brand).replace(/\s+/g, '-')
+}
+
+// Agrupa una lista de marcas (texto libre) por su forma normalizada. La
+// etiqueta visible de cada grupo es la variante de escritura más repetida.
+export function groupBrands(rawBrands: (string | null | undefined)[]): { slug: string; label: string; count: number; variants: string[] }[] {
+  const groups = new Map<string, Map<string, number>>()
+  for (const raw of rawBrands) {
+    if (!raw) continue
+    const slug = brandSlug(raw)
+    if (!groups.has(slug)) groups.set(slug, new Map())
+    const variants = groups.get(slug)!
+    variants.set(raw, (variants.get(raw) ?? 0) + 1)
+  }
+  return Array.from(groups.entries()).map(([slug, variants]) => {
+    const label = Array.from(variants.entries()).sort((a, b) => b[1] - a[1])[0][0]
+    const count = Array.from(variants.values()).reduce((a, b) => a + b, 0)
+    return { slug, label, count, variants: Array.from(variants.keys()) }
+  })
+}
+
 // Resumen legible de una búsqueda guardada, ej. "Mujer · Ropa · Vestidos ·
 // Talla M ·  Verde" — usado como label por defecto en /dashboard/saved-searches
 // y como texto del botón "Guardar búsqueda".
@@ -211,7 +242,7 @@ export function describeSearchParams(params: URLSearchParams): string {
   }
   if (params.get('q')) parts.push(`"${params.get('q')}"`)
   if (params.get('size')) parts.push(`Talla ${params.get('size')}`)
-  if (params.get('brand')) parts.push(params.get('brand')!)
+  if (params.get('brand')) parts.push(params.get('brand')!.split('-').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' '))
   if (params.get('color')) parts.push(params.get('color')!.split(',').join(', '))
   if (params.get('material')) parts.push(params.get('material')!)
   if (params.get('occasion')) parts.push(params.get('occasion')!.split(',')[0])

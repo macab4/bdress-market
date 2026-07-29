@@ -8,7 +8,7 @@ import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ShareButton from '@/components/listings/ShareButton'
-import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime, productCategoryLabel } from '@/lib/catalog'
+import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime, productCategoryLabel, brandSlug } from '@/lib/catalog'
 import { getShippingQuote } from '@/lib/starken'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
@@ -17,6 +17,12 @@ import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
+
+// Estilo compartido para los atributos navegables de la ficha (marca,
+// categoría, ocasión, color) — negro suave en vez de azul de link tradicional,
+// con foco visible para navegación por teclado.
+const BREADCRUMB_LINK = 'hover:text-black hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm'
+const ATTR_LINK = 'text-gray-700 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm'
 
 export async function generateMetadata({
   params,
@@ -143,15 +149,32 @@ export default async function ListingPage({
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Breadcrumb */}
         <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-6">
-          <Link href="/" className="hover:text-black">Inicio</Link>
+          <Link href="/" className={BREADCRUMB_LINK}>Inicio</Link>
           {categoryLabel && (
             <>
               {' · '}
-              <Link href={`/?category=${listing.category}`} className="hover:text-black">{categoryLabel}</Link>
+              <Link href={`/?category=${listing.category}`} className={BREADCRUMB_LINK}>{categoryLabel}</Link>
             </>
           )}
-          {pcLabel && ` · ${pcLabel}`}
-          {typeLabel && ` · ${typeLabel}`}
+          {pcLabel && (
+            <>
+              {' · '}
+              <Link href={`/?category=${listing.category}&productCategory=${listing.product_category}`} className={BREADCRUMB_LINK}>{pcLabel}</Link>
+            </>
+          )}
+          {typeLabel && (
+            listing.product_type ? (
+              <>
+                {' · '}
+                <Link
+                  href={`/?category=${listing.category}&productCategory=${listing.product_category}&productType=${encodeURIComponent(listing.product_type)}`}
+                  className={BREADCRUMB_LINK}
+                >
+                  {typeLabel}
+                </Link>
+              </>
+            ) : ` · ${typeLabel}`
+          )}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -171,7 +194,16 @@ export default async function ListingPage({
             <div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[10px] tracking-widest uppercase text-gray-400">{listing.brand || 'Sin marca'}</p>
+                  {listing.brand ? (
+                    <Link
+                      href={`/?brand=${brandSlug(listing.brand)}`}
+                      className={`text-[10px] tracking-widest uppercase text-gray-400 ${BREADCRUMB_LINK}`}
+                    >
+                      {listing.brand}
+                    </Link>
+                  ) : (
+                    <p className="text-[10px] tracking-widest uppercase text-gray-400">Sin marca</p>
+                  )}
                   <h1 className="font-serif text-xl tracking-wide mt-0.5">{listing.title}</h1>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -203,7 +235,13 @@ export default async function ListingPage({
               <div className="bg-white divide-y divide-gray-100 text-sm">
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="text-gray-400">Marca</span>
-                  <span className="text-gray-700">{listing.brand || 'Sin marca'}</span>
+                  {listing.brand ? (
+                    <Link href={`/?brand=${brandSlug(listing.brand)}`} className={ATTR_LINK}>
+                      {listing.brand}
+                    </Link>
+                  ) : (
+                    <span className="text-gray-700">Sin marca</span>
+                  )}
                 </div>
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="text-gray-400">Talla</span>
@@ -218,13 +256,13 @@ export default async function ListingPage({
                     <span className="text-gray-400">Color</span>
                     <span className="text-gray-700 flex items-center gap-3">
                       {listing.colors.map(color => (
-                        <span key={color} className="flex items-center gap-1.5">
+                        <Link key={color} href={`/?color=${color}`} className={`flex items-center gap-1.5 ${ATTR_LINK}`}>
                           <span
                             className="w-3 h-3 rounded-full border border-gray-300 inline-block"
                             style={{ backgroundColor: colorHex(color) }}
                           />
                           {colorLabel(color)}
-                        </span>
+                        </Link>
                       ))}
                     </span>
                   </div>
@@ -233,7 +271,26 @@ export default async function ListingPage({
                   <div className="flex justify-between px-4 py-2.5">
                     <span className="text-gray-400">Categoría</span>
                     <span className="text-gray-700">
-                      {categoryLabel}{pcLabel && ` · ${pcLabel}`}{typeLabel && ` · ${typeLabel}`}
+                      <Link href={`/?category=${listing.category}`} className={ATTR_LINK}>{categoryLabel}</Link>
+                      {pcLabel && (
+                        <>
+                          {' · '}
+                          <Link href={`/?category=${listing.category}&productCategory=${listing.product_category}`} className={ATTR_LINK}>{pcLabel}</Link>
+                        </>
+                      )}
+                      {typeLabel && (
+                        listing.product_type ? (
+                          <>
+                            {' · '}
+                            <Link
+                              href={`/?category=${listing.category}&productCategory=${listing.product_category}&productType=${encodeURIComponent(listing.product_type)}`}
+                              className={ATTR_LINK}
+                            >
+                              {typeLabel}
+                            </Link>
+                          </>
+                        ) : ` · ${typeLabel}`
+                      )}
                     </span>
                   </div>
                 )}
@@ -246,7 +303,14 @@ export default async function ListingPage({
                 {listing.occasion && listing.occasion.length > 0 && (
                   <div className="flex justify-between px-4 py-2.5">
                     <span className="text-gray-400">Ocasión</span>
-                    <span className="text-gray-700">{listing.occasion.join(', ')}</span>
+                    <span className="text-gray-700 flex flex-wrap justify-end gap-x-1">
+                      {listing.occasion.map((o, i) => (
+                        <span key={o}>
+                          <Link href={`/?occasion=${encodeURIComponent(o)}`} className={ATTR_LINK}>{o}</Link>
+                          {i < listing.occasion!.length - 1 && ','}
+                        </span>
+                      ))}
+                    </span>
                   </div>
                 )}
                 {listing.season && (
