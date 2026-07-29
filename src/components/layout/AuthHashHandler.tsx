@@ -21,10 +21,25 @@ export default function AuthHashHandler() {
     const supabase = createClient()
     supabase.auth.setSession({ access_token, refresh_token }).then(({ data, error }) => {
       if (error || !data.session) return
-      // router.refresh() no alcanza a reflejar la cookie recién escrita en los
-      // Server Components (Navbar incluido) — forzamos una recarga real.
       const cleanPath = window.location.pathname + window.location.search
-      window.location.href = type === 'recovery' ? '/auth/reset-password' : cleanPath
+
+      // El link de recuperación ya apunta directo a /auth/reset-password
+      // (ver redirectTo en forgot-password/page.tsx) — o sea ya estamos ahí,
+      // no hace falta navegar a ningún lado. Antes forzábamos una recarga
+      // completa igual, "para limpiar la URL", pero eso hacía perder la
+      // sesión recién creada en navegadores in-app restrictivos (ej. el
+      // navegador integrado de Gmail) que no siempre persisten storage/cookies
+      // a través de una recarga completa de documento. Alcanza con limpiar
+      // el hash de la barra de direcciones sin recargar nada.
+      if (type === 'recovery') {
+        window.history.replaceState(null, '', '/auth/reset-password')
+        return
+      }
+
+      // Para el resto de los casos (magic link, etc.) sí necesitamos una
+      // recarga real: router.refresh() no alcanza a reflejar la cookie recién
+      // escrita en los Server Components (Navbar incluido).
+      window.location.href = cleanPath
     })
   }, [])
 
