@@ -197,7 +197,7 @@ export default async function ListingPage({
                   {listing.brand ? (
                     <Link
                       href={`/?brand=${brandSlug(listing.brand)}`}
-                      className={`text-[10px] tracking-widest uppercase text-gray-400 ${BREADCRUMB_LINK}`}
+                      className="text-[10px] tracking-widest uppercase text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
                     >
                       {listing.brand}
                     </Link>
@@ -236,7 +236,10 @@ export default async function ListingPage({
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="text-gray-400">Marca</span>
                   {listing.brand ? (
-                    <Link href={`/?brand=${brandSlug(listing.brand)}`} className={ATTR_LINK}>
+                    <Link
+                      href={`/?brand=${brandSlug(listing.brand)}`}
+                      className="text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
+                    >
                       {listing.brand}
                     </Link>
                   ) : (
