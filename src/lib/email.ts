@@ -88,6 +88,45 @@ export async function sendActivateAccountEmail({
   })
 }
 
+// Seguimiento para las vendedoras migradas que sí intentaron "olvidé mi
+// contraseña" tras sendActivateAccountEmail pero nunca lograron entrar —
+// el cliente de Supabase usaba PKCE sin ningún endpoint que intercambiara
+// el code (ver src/lib/supabase/client.ts), así que el reset fallaba en
+// silencio. Se dispara manualmente desde
+// /api/admin/campaign/password-reset-fixed, solo a esa lista puntual.
+export async function sendPasswordResetFixedEmail({
+  to,
+  name,
+}: {
+  to: string
+  name: string | null
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  await sendEmail({
+    to,
+    subject: 'Arreglamos el problema para crear tu contraseña — vuelve a intentarlo',
+    html: emailLayout('Ya puedes entrar', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, detectamos que el link para crear tu contraseña no estaba
+        funcionando bien y ya lo arreglamos.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Vuelve a intentarlo: entra a bdressmarket.cl → "¿Olvidaste tu contraseña?" →
+        ingresa tu correo (${to}) para crear una contraseña nueva.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Una vez dentro, no olvides activar tus prendas pausadas en tu perfil.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/auth/forgot-password" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Reintentar
+        </a>
+      </p>
+    `),
+  })
+}
+
 // Se dispara cuando una orden pasa a "completed" (cron de auto-liberación o
 // resolución manual de una disputa) y de nuevo, una sola vez, si a los
 // REVIEW_FOLLOWUP_DAYS nadie dejó su reseña — ver
