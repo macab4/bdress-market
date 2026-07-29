@@ -19,10 +19,10 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 export default async function AdminListingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; q?: string }>
 }) {
   await requireAdminUser()
-  const { status } = await searchParams
+  const { status, q } = await searchParams
   const admin = createAdminClient()
 
   const { data: listings } = await admin
@@ -32,9 +32,13 @@ export default async function AdminListingsPage({
     .limit(1000) as unknown as { data: AdminListing[] | null }
 
   const everyListing = listings ?? []
-  const all = status === 'pending_review'
+  const byStatus = status === 'pending_review'
     ? everyListing.filter(l => l.pending_review)
     : status ? everyListing.filter(l => l.status === status) : everyListing
+  const needle = q?.trim().toLowerCase()
+  const all = needle
+    ? byStatus.filter(l => l.title.toLowerCase().includes(needle) || (l.seller?.name ?? '').toLowerCase().includes(needle))
+    : byStatus
   const pendingCount = everyListing.filter(l => l.pending_review).length
 
   const TABS: { value: string | undefined; label: string }[] = [
@@ -55,13 +59,19 @@ export default async function AdminListingsPage({
 
         <div className="flex gap-6 mb-6">
           {TABS.map(tab => {
-            const count = tab.value === 'pending_review'
-              ? pendingCount
-              : tab.value ? everyListing.filter(l => l.status === tab.value).length : everyListing.length
+            const inTab = tab.value === 'pending_review'
+              ? everyListing.filter(l => l.pending_review)
+              : tab.value ? everyListing.filter(l => l.status === tab.value) : everyListing
+            const count = needle
+              ? inTab.filter(l => l.title.toLowerCase().includes(needle) || (l.seller?.name ?? '').toLowerCase().includes(needle)).length
+              : inTab.length
+            const href = tab.value
+              ? `/admin/listings?status=${tab.value}${q ? `&q=${encodeURIComponent(q)}` : ''}`
+              : q ? `/admin/listings?q=${encodeURIComponent(q)}` : '/admin/listings'
             return (
               <Link
                 key={tab.label}
-                href={tab.value ? `/admin/listings?status=${tab.value}` : '/admin/listings'}
+                href={href}
                 className={`text-[10px] tracking-widest uppercase pb-1 ${status === tab.value ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
               >
                 {tab.label} ({count})
@@ -69,6 +79,17 @@ export default async function AdminListingsPage({
             )
           })}
         </div>
+
+        <form action="/admin/listings" method="get" className="mb-4">
+          {status && <input type="hidden" name="status" value={status} />}
+          <input
+            type="text"
+            name="q"
+            defaultValue={q ?? ''}
+            placeholder="Buscar por nombre de prenda o vendedora…"
+            className="w-full max-w-sm border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+          />
+        </form>
 
         <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
           {status === 'pending_review'
