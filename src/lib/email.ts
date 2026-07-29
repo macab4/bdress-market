@@ -113,10 +113,11 @@ export async function sendPasswordResetFixedEmail({
       </p>
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
         Vuelve a intentarlo: entra a bdressmarket.cl → "¿Olvidaste tu contraseña?" →
-        ingresa tu correo (${to}) para crear una contraseña nueva.
+        ingresa tu correo (${to}) para crear una contraseña nueva y así puedas
+        activar tu cuenta y tus prendas.
       </p>
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Una vez dentro, no olvides activar tus prendas pausadas en tu perfil.
+        Una vez dentro, ve a tu perfil y activa cada prenda pausada.
       </p>
       <p style="text-align: center; margin-top: 24px;">
         <a href="${siteUrl}/auth/forgot-password" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
