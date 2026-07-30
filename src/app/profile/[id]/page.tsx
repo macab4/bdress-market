@@ -208,7 +208,7 @@ export default async function ProfilePage({
                     <p className="text-sm font-medium truncate mt-0.5">{listing.title}</p>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-sm font-semibold">${listing.price.toLocaleString('es-CL')}</p>
-                      <p className="text-[10px] text-gray-400">T. {listing.size}</p>
+                      <p className="text-[10px] text-gray-400">{listing.size}</p>
                     </div>
                   </div>
                 </Link>
