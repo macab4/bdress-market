@@ -44,6 +44,7 @@ export default async function OffersPage() {
     const status = OFFER_STATUS_CONFIG[offer.status] ?? { label: offer.status, color: 'bg-gray-100 text-gray-500' }
     const photo = offer.listing?.photos?.[0]
     const counterpartyName = role === 'buyer' ? offer.seller?.name : offer.buyer?.name
+    const otherUserId = role === 'buyer' ? offer.seller_id : offer.buyer_id
     const myTurn = offer.status === 'pending' && offer.proposed_by !== role
 
     return (
@@ -67,6 +68,13 @@ export default async function OffersPage() {
 
             <p className="text-xs text-gray-400 mb-1">
               {role === 'buyer' ? 'Vendedora' : 'Compradora'}: {counterpartyName ?? '—'} · Ronda {offer.round}/{OFFER_MAX_ROUNDS}
+              {' · '}
+              <Link
+                href={`/dashboard/messages/${offer.listing_id}/${otherUserId}`}
+                className="underline underline-offset-2 hover:text-black"
+              >
+                Ir al chat
+              </Link>
             </p>
 
             <p className="text-sm">
