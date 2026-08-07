@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { compressImage, getCroppedImageBlob } from '@/lib/imageUpload'
 import { PHOTO_ENHANCE_ACTIONS, PhotoEnhanceAction } from '@/lib/nanoBanana'
 import { CropModal } from '@/components/listings/ListingForm'
+import { useBrandField } from '@/components/listings/useBrandField'
 import {
   CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue,
   sizeOptionsFor, TAXONOMY,
@@ -43,7 +44,6 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
     productCategory: listing?.product_category ?? '',
     productType: listing?.product_type ?? '',
     size: listing?.size ?? '',
-    brand: listing?.brand ?? '',
     condition: listing?.condition ?? 'nuevo_con_etiquetas',
     colors: (listing?.colors ?? []) as string[],
     shipping_size: listing?.shipping_size ?? 'mediano',
@@ -63,6 +63,7 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
     external_seller_name: sourcing?.external_seller_name ?? '',
     external_location: sourcing?.external_location ?? '',
   })
+  const { brandInput, setBrandInput, resolveBrand, brandOptions } = useBrandField(listing?.brand ?? '')
   const [photos, setPhotos] = useState<PhotoItem[]>(
     (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
   )
@@ -216,7 +217,7 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
     e.preventDefault()
     setError('')
 
-    if (!form.title.trim() || !form.category || !form.size || !form.brand.trim()) {
+    if (!form.title.trim() || !form.category || !form.size || !brandInput.trim()) {
       setError('Completa título, categoría, talla y marca')
       return
     }
@@ -257,6 +258,15 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
     }
     setUploading(false)
 
+    let resolvedBrand: { id: string; display_name: string } | null
+    try {
+      resolvedBrand = await resolveBrand()
+    } catch {
+      setError('No se pudo verificar la marca — intenta de nuevo')
+      setLoading(false)
+      return
+    }
+
     const payload = {
       title: form.title,
       description: form.description,
@@ -264,7 +274,8 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
       product_category: form.productCategory || null,
       product_type: form.productType || null,
       size: form.size,
-      brand: form.brand,
+      brand: resolvedBrand?.display_name ?? '',
+      brand_id: resolvedBrand?.id ?? null,
       condition: form.condition,
       colors: form.colors,
       shipping_size: form.shipping_size,
@@ -372,8 +383,12 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
           </div>
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Marca</label>
-            <input value={form.brand} onChange={e => set('brand', e.target.value)} required
+            <input value={brandInput} onChange={e => setBrandInput(e.target.value)} required
+              list="intl-brand-suggestions"
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+            <datalist id="intl-brand-suggestions">
+              {brandOptions.map(b => <option key={b.id} value={b.display_name} />)}
+            </datalist>
           </div>
         </div>
 

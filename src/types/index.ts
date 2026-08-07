@@ -44,6 +44,11 @@ export interface Listing {
   subcategory: string
   size: string
   brand: string
+  // Fuente de verdad de la marca — nullable a propósito mientras se
+  // completa el backfill (ver src/lib/brands.ts). `brand` (texto) se
+  // mantiene por compatibilidad, pero deja de ser la identidad real de la
+  // marca apenas brand_id está asignado.
+  brand_id: string | null
   condition: ListingCondition
   colors: ListingColor[]
   shipping_size: ListingShippingSize
@@ -66,6 +71,27 @@ export interface Listing {
   international_lead_time_max_days: number | null
   international_shipping_notes: string | null
   seller?: Profile
+  brand_ref?: Brand | null
+}
+
+// Marca canónica — ver supabase/migrations/20260807000000_brand_canonical_model.sql
+// y src/lib/brands.ts. `normalized_name` no es accent-insensitive a propósito
+// (ver ese archivo) — nunca se usa para fusionar automáticamente.
+export interface Brand {
+  id: string
+  display_name: string
+  slug: string
+  normalized_name: string
+  created_at: string
+  updated_at: string
+}
+
+export interface BrandAlias {
+  id: string
+  brand_id: string
+  alias: string
+  normalized_alias: string
+  created_at: string
 }
 
 // Datos administrativos/sensibles de un listing internacional — 1:1 con

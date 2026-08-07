@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
 import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategoryLabel, groupBrands } from '@/lib/catalog'
+import { bareKey } from '@/lib/brands'
 import { INTERNATIONAL_BADGE_LABEL } from '@/lib/international/content'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
@@ -44,29 +45,54 @@ export default async function HomePage({
 
   let query = supabase
     .from('listings')
-    .select('*, seller:profiles(id, name, city, avatar_url)', { count: 'exact' })
+    .select('*, seller:profiles(id, name, city, avatar_url), brand_ref:brands(id, display_name, slug)', { count: 'exact' })
     .eq('status', 'active')
 
   if (params.q) {
     // La coma y el paréntesis rompen la gramática del filtro or() de PostgREST,
     // así que se descartan del término en vez de tener que escaparlos.
     const term = params.q.replace(/[,()]/g, ' ').trim()
-    if (term) query = query.or(`title.ilike.%${term}%,brand.ilike.%${term}%,description.ilike.%${term}%,material.ilike.%${term}%,style.ilike.%${term}%`)
+    if (term) {
+      const orParts = [
+        `title.ilike.%${term}%`, `brand.ilike.%${term}%`, `description.ilike.%${term}%`,
+        `material.ilike.%${term}%`, `style.ilike.%${term}%`,
+      ]
+      // Si el término calza (tras normalizar formato — nunca por similitud)
+      // con un alias de marca ya registrado, también trae los productos de
+      // esa marca aunque su texto crudo no contenga el término tal cual se
+      // tipeó (ej. buscar "The Are" debe encontrar listings guardados como
+      // "THE-ARE"). Ver src/lib/brands.ts.
+      const { data: aliasMatch } = await supabase
+        .from('brand_aliases')
+        .select('brand_id')
+        .eq('normalized_alias', bareKey(term))
+        .maybeSingle()
+      if (aliasMatch) orParts.push(`brand_id.eq.${aliasMatch.brand_id}`)
+
+      query = query.or(orParts.join(','))
+    }
   }
   if (params.category) query = query.eq('category', params.category)
   if (params.productCategory) query = query.eq('product_category', params.productCategory)
   if (params.productType) query = query.eq('product_type', params.productType)
   if (params.size) query = query.eq('size', params.size)
 
-  // La marca es texto libre al publicar (puede haber "María Cher" / "Maria
-  // Cher" / "MARIA CHER" para la misma marca) — el filtro llega como un slug
-  // normalizado (ver brandSlug en catalog.ts) y se resuelve contra todas las
-  // variantes de escritura que existan hoy antes de filtrar.
-  let brandGroup: { slug: string; label: string; variants: string[] } | undefined
+  // El filtro llega como un slug. Primero intenta resolver contra una marca
+  // canónica real (brand_id — ver src/lib/brands.ts). Si no existe ninguna
+  // marca con ese slug (listings todavía no migrados al backfill), cae al
+  // agrupamiento viejo por texto para no romper el link mientras tanto.
+  let brandGroup: { slug: string; label: string } | undefined
   if (params.brand) {
-    const { data: brandRows } = await supabase.from('listings').select('brand').eq('status', 'active').not('brand', 'eq', '')
-    brandGroup = groupBrands((brandRows ?? []).map(r => r.brand)).find(g => g.slug === params.brand)
-    query = query.in('brand', brandGroup ? brandGroup.variants : ['__sin_coincidencia__'])
+    const { data: brandRow } = await supabase.from('brands').select('id, display_name, slug').eq('slug', params.brand).maybeSingle()
+    if (brandRow) {
+      query = query.eq('brand_id', brandRow.id)
+      brandGroup = { slug: brandRow.slug, label: brandRow.display_name }
+    } else {
+      const { data: brandRows } = await supabase.from('listings').select('brand').eq('status', 'active').not('brand', 'eq', '')
+      const legacyGroup = groupBrands((brandRows ?? []).map(r => r.brand)).find(g => g.slug === params.brand)
+      query = query.in('brand', legacyGroup ? legacyGroup.variants : ['__sin_coincidencia__'])
+      brandGroup = legacyGroup
+    }
   }
   if (params.condition) {
     const group = CONDITION_GROUPS.find(g => g.value === params.condition)
@@ -106,7 +132,7 @@ export default async function HomePage({
     if (pageIds.length > 0) {
       const { data } = await supabase
         .from('listings')
-        .select('*, seller:profiles(id, name, city, avatar_url)')
+        .select('*, seller:profiles(id, name, city, avatar_url), brand_ref:brands(id, display_name, slug)')
         .in('id', pageIds)
       const byId = new Map((data ?? []).map(l => [l.id, l]))
       listings = pageIds.map(id => byId.get(id)).filter((l): l is ListingWithSeller => !!l)
@@ -142,7 +168,7 @@ export default async function HomePage({
     isDefaultView
       ? supabase
           .from('listings')
-          .select('*, seller:profiles(id, name, city, avatar_url)')
+          .select('*, seller:profiles(id, name, city, avatar_url), brand_ref:brands(id, display_name, slug)')
           .eq('status', 'active')
           .gt('featured_until', new Date().toISOString())
           .order('featured_until', { ascending: false })
@@ -231,7 +257,7 @@ export default async function HomePage({
                   )}
                 </div>
                 <div className="p-2">
-                  <p className="text-[10px] tracking-widest text-gray-400 uppercase truncate">{listing.brand || 'Sin marca'}</p>
+                  <p className="text-[10px] tracking-widest text-gray-400 uppercase truncate">{listing.brand_ref?.display_name || listing.brand || 'Sin marca'}</p>
                   <p className="text-xs font-medium truncate">{listing.title}</p>
                   <p className="text-xs text-gray-500 mt-0.5">${listing.price.toLocaleString('es-CL')}</p>
                 </div>
@@ -314,7 +340,7 @@ export default async function HomePage({
                     </div>
                   </div>
                   <div className="p-3">
-                    <p className="text-[10px] tracking-widest text-gray-400 uppercase">{listing.brand || 'Sin marca'}</p>
+                    <p className="text-[10px] tracking-widest text-gray-400 uppercase">{listing.brand_ref?.display_name || listing.brand || 'Sin marca'}</p>
                     <p className="text-sm font-medium truncate mt-0.5">{listing.title}</p>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs text-gray-400">${listing.price.toLocaleString('es-CL')}</p>

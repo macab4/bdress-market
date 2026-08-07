@@ -716,3 +716,41 @@ grant execute on function public.create_or_reuse_pending_order(
 alter table public.listing_sourcing drop constraint if exists listing_sourcing_source_platform_check;
 alter table public.listing_sourcing add constraint listing_sourcing_source_platform_check
   check (source_platform in ('vinted', 'depop', 'manual', 'other'));
+
+-- ============================================================
+-- Migración: modelo de marca canónica (brand_id) — reemplaza depender
+-- solo del texto libre listings.brand para identidad de marca. 100%
+-- aditiva: listings.brand no se toca. Mismo contenido que
+-- supabase/migrations/20260807000000_brand_canonical_model.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create table public.brands (
+  id               uuid default gen_random_uuid() primary key,
+  display_name     text not null,
+  slug             text not null unique,
+  normalized_name  text not null unique,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+create index brands_normalized_name_idx on public.brands (normalized_name);
+
+alter table public.brands enable row level security;
+create policy "Marcas visibles para todas" on public.brands
+  for select using (true);
+
+create table public.brand_aliases (
+  id                uuid default gen_random_uuid() primary key,
+  brand_id          uuid references public.brands(id) on delete cascade not null,
+  alias             text not null unique,
+  normalized_alias  text not null,
+  created_at        timestamptz not null default now()
+);
+create index brand_aliases_brand_id_idx on public.brand_aliases (brand_id);
+create index brand_aliases_normalized_alias_idx on public.brand_aliases (normalized_alias);
+
+alter table public.brand_aliases enable row level security;
+create policy "Alias de marca visibles para todas" on public.brand_aliases
+  for select using (true);
+
+alter table public.listings add column brand_id uuid references public.brands(id) on delete set null;
+create index listings_brand_id_idx on public.listings (brand_id);

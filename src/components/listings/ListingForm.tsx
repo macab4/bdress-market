@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Cropper, { type Area } from 'react-easy-crop'
@@ -17,6 +17,7 @@ import { PHOTO_ENHANCE_ACTIONS, PhotoEnhanceAction } from '@/lib/nanoBanana'
 import { Listing } from '@/types'
 import CategoryPicker, { type CategoryPickerValue } from '@/components/listings/CategoryPicker'
 import { compressImage, getCroppedImageBlob } from '@/lib/imageUpload'
+import { useBrandField } from '@/components/listings/useBrandField'
 
 const ROPA_CATEGORIES = ['ropa', 'nina_ropa', 'nino_ropa']
 
@@ -58,7 +59,6 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     productCategory: listing?.product_category ?? prefill?.product_category ?? '',
     productType: listing?.product_type ?? prefill?.product_type ?? '',
     size: listing?.size ?? prefill?.size ?? '',
-    brand: listing?.brand ?? prefill?.brand ?? '',
     condition: listing?.condition ?? 'muy_bueno',
     colors: (listing?.colors ?? prefill?.colors ?? []) as string[],
     shipping_size: listing?.shipping_size ?? prefill?.shipping_size ?? 'mediano',
@@ -69,7 +69,7 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     style: listing?.style ?? prefill?.style ?? '',
     material: listing?.material ?? prefill?.material ?? '',
   })
-  const [brandSuggestions, setBrandSuggestions] = useState<string[]>([])
+  const { brandInput, setBrandInput, resolveBrand, brandOptions } = useBrandField(listing?.brand ?? prefill?.brand ?? '')
   const [photos, setPhotos] = useState<PhotoItem[]>(
     (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
   )
@@ -115,24 +115,6 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     }))
   }
 
-  // Sugerencias de marca a partir de lo que ya escribieron otras vendedoras —
-  // sin tabla de marcas nueva, solo valores distintos ya existentes.
-  useEffect(() => {
-    let cancelled = false
-    async function loadBrands() {
-      const supabase = createClient()
-      const { data } = await supabase
-        .from('listings')
-        .select('brand')
-        .not('brand', 'eq', '')
-        .limit(500)
-      if (cancelled || !data) return
-      const unique = Array.from(new Set(data.map(r => r.brand).filter(Boolean))).sort()
-      setBrandSuggestions(unique)
-    }
-    loadBrands()
-    return () => { cancelled = true }
-  }, [])
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const availableSlots = 5 - photos.length
@@ -295,6 +277,18 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
     const isRopa = ROPA_CATEGORIES.includes(form.productCategory)
     const isLengthApplicable = LENGTH_APPLICABLE_TYPES.includes(form.productType)
 
+    // Resuelve la marca a brand_id (reutilizando una existente si el texto
+    // ya calza tras normalizar formato, o creándola si de verdad es nueva)
+    // — ver src/components/listings/useBrandField.ts.
+    let resolvedBrand: { id: string; display_name: string } | null
+    try {
+      resolvedBrand = await resolveBrand()
+    } catch {
+      setError('No se pudo verificar la marca — intenta de nuevo')
+      setLoading(false)
+      return
+    }
+
     const payload = {
       title: form.title,
       description: form.description,
@@ -302,7 +296,8 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
       product_category: form.productCategory,
       product_type: form.productType,
       size: form.size,
-      brand: form.brand,
+      brand: resolvedBrand?.display_name ?? '',
+      brand_id: resolvedBrand?.id ?? null,
       condition: form.condition,
       colors: form.colors,
       shipping_size: form.shipping_size,
@@ -433,12 +428,12 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
           {/* Marca */}
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Marca</label>
-            <input value={form.brand} onChange={e => set('brand', e.target.value)}
+            <input value={brandInput} onChange={e => setBrandInput(e.target.value)}
               list="brand-suggestions"
               placeholder="Ej: Zara, H&M, Mango... o Sin marca"
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
             <datalist id="brand-suggestions">
-              {brandSuggestions.map(b => <option key={b} value={b} />)}
+              {brandOptions.map(b => <option key={b.id} value={b.display_name} />)}
             </datalist>
           </div>
 

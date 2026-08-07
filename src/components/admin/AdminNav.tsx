@@ -4,6 +4,7 @@ const TABS = [
   { href: '/admin', label: 'Resumen' },
   { href: '/admin/listings', label: 'Prendas' },
   { href: '/admin/international', label: 'Internacional' },
+  { href: '/admin/marcas', label: 'Marcas' },
   { href: '/admin/users', label: 'Usuarias' },
   { href: '/admin/disputes', label: 'Disputas' },
   { href: '/admin/messages', label: 'Mensajes' },

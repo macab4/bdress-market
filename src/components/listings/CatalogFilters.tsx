@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   CONDITION_GROUPS, CategoryValue, ALL_SIZES, sizeOptionsFor,
   LENGTHS, LENGTH_APPLICABLE_TYPES, OCCASIONS, MATERIALS,
-  departmentEntry, productCategoryLabel, groupBrands,
+  departmentEntry, productCategoryLabel,
 } from '@/lib/catalog'
 import CategoryPicker, { type CategoryPickerValue } from '@/components/listings/CategoryPicker'
 import ColorFilterPopover from '@/components/listings/ColorFilterPopover'
@@ -43,10 +43,11 @@ export default function CatalogFilters() {
     let cancelled = false
     async function loadBrands() {
       const supabase = createClient()
-      const { data } = await supabase.from('listings').select('brand').not('brand', 'eq', '').limit(1000)
+      // Directo desde la tabla de marcas canónicas — ya viene deduplicada,
+      // sin tener que agrupar texto libre en el cliente (ver src/lib/brands.ts).
+      const { data } = await supabase.from('brands').select('slug, display_name').order('display_name')
       if (cancelled || !data) return
-      const grouped = groupBrands(data.map(r => r.brand)).sort((a, b) => a.label.localeCompare(b.label, 'es'))
-      setBrands(grouped.map(g => ({ slug: g.slug, label: g.label })))
+      setBrands(data.map(b => ({ slug: b.slug, label: b.display_name })))
     }
     loadBrands()
     return () => { cancelled = true }

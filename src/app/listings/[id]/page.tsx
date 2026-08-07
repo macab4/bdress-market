@@ -79,7 +79,7 @@ export default async function ListingPage({
   const [{ data: listing }, { data: { user } }, { count: favoriteCount }] = await Promise.all([
     supabase
       .from('listings')
-      .select('*, seller:profiles(id, name, city, avatar_url, bio, comuna)')
+      .select('*, seller:profiles(id, name, city, avatar_url, bio, comuna), brand_ref:brands(id, display_name, slug)')
       .eq('id', id)
       .single() as unknown as Promise<{ data: ListingWithSeller | null }>,
     supabase.auth.getUser(),
@@ -87,6 +87,13 @@ export default async function ListingPage({
   ])
 
   if (!listing) notFound()
+
+  // Gradual: si el listing ya tiene brand_id, usa la marca canónica
+  // (brands.slug/display_name). Si todavía no fue migrado, cae al viejo
+  // agrupamiento por texto (brandSlug) — ver src/lib/brands.ts.
+  const brandRef = listing.brand_ref
+  const brandLabel = brandRef?.display_name ?? listing.brand
+  const brandHref = brandRef ? `/?brand=${brandRef.slug}` : `/?brand=${brandSlug(listing.brand)}`
 
   const sellerRatings = await getSellerRatings(supabase, [listing.seller_id])
   const sellerRating = sellerRatings[listing.seller_id]
@@ -195,12 +202,12 @@ export default async function ListingPage({
             <div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  {listing.brand ? (
+                  {brandLabel ? (
                     <Link
-                      href={`/?brand=${brandSlug(listing.brand)}`}
+                      href={brandHref}
                       className="text-[10px] tracking-widest uppercase text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
                     >
-                      {listing.brand}
+                      {brandLabel}
                     </Link>
                   ) : (
                     <p className="text-[10px] tracking-widest uppercase text-gray-400">Sin marca</p>
@@ -236,12 +243,12 @@ export default async function ListingPage({
               <div className="bg-white divide-y divide-gray-100 text-sm">
                 <div className="flex justify-between px-4 py-2.5">
                   <span className="text-gray-400">Marca</span>
-                  {listing.brand ? (
+                  {brandLabel ? (
                     <Link
-                      href={`/?brand=${brandSlug(listing.brand)}`}
+                      href={brandHref}
                       className="text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
                     >
-                      {listing.brand}
+                      {brandLabel}
                     </Link>
                   ) : (
                     <span className="text-gray-700">Sin marca</span>
