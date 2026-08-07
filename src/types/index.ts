@@ -11,6 +11,17 @@ export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' |
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered' | 'expired' | 'cancelled'
 export type OfferProposedBy = 'buyer' | 'seller'
 
+// Selección internacional (prendas por encargo desde Vinted u otra
+// plataforma internacional) — ver src/lib/international/.
+export type SourceType = 'local' | 'international_on_demand'
+export type SourcePlatform = 'vinted' | 'manual' | 'other'
+export type SourceStatus = 'available' | 'pending_verification' | 'purchased' | 'unavailable'
+export type InternationalStatus =
+  | 'awaiting_source_verification' | 'source_confirmed' | 'source_purchase_pending' | 'source_purchased'
+  | 'source_unavailable' | 'received_at_foreign_hub' | 'international_transit' | 'customs_processing'
+  | 'received_in_chile' | 'quality_check' | 'national_shipping_pending' | 'nationally_shipped' | 'delivered'
+  | 'cancellation_pending' | 'refund_pending' | 'refunded'
+
 export interface Profile {
   id: string
   email: string
@@ -50,7 +61,41 @@ export interface Listing {
   style: string | null
   material: string | null
   pending_review: boolean
+  source_type: SourceType
+  international_lead_time_min_days: number | null
+  international_lead_time_max_days: number | null
+  international_shipping_notes: string | null
   seller?: Profile
+}
+
+// Datos administrativos/sensibles de un listing internacional — 1:1 con
+// Listing por listing_id. Nunca se expone en una respuesta pública ni en
+// un componente cliente que no sea del panel admin.
+export interface ListingSourcing {
+  listing_id: string
+  source_platform: SourcePlatform
+  source_url: string | null
+  source_listing_id: string | null
+  source_original_price: number | null
+  source_original_currency: string | null
+  source_last_verified_at: string | null
+  source_status: SourceStatus
+  international_product_status: InternationalStatus | null
+  international_cost_estimate: number | null
+  international_customs_estimate: number | null
+  international_internal_notes: string | null
+  external_seller_name: string | null
+  external_location: string | null
+  external_purchase_price: number | null
+  external_purchase_currency: string | null
+  external_purchase_date: string | null
+  external_order_reference: string | null
+  external_tracking_number: string | null
+  external_tracking_url: string | null
+  content_authorization_confirmed_by: string | null
+  content_authorization_confirmed_at: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Order {
@@ -82,10 +127,32 @@ export interface Order {
   completed_at: string | null
   buyer_review_reminded_at: string | null
   seller_review_reminded_at: string | null
+  international_status: InternationalStatus | null
+  international_terms_accepted_at: string | null
+  international_terms_version: string | null
+  international_user_agent: string | null
+  delay_notice_sent_at: string | null
   created_at: string
   listing?: Listing
   buyer?: Profile
   seller?: Profile
+}
+
+// Fila del historial de estados internacionales tal como la ve la clienta
+// (sin internal_note ni changed_by) — ver /api/orders/[id]/status-history.
+export interface OrderStatusHistoryEntry {
+  new_status: InternationalStatus
+  public_note: string | null
+  created_at: string
+}
+
+// Fila completa del historial, solo para el panel admin (createAdminClient).
+export interface OrderStatusHistoryRecord extends OrderStatusHistoryEntry {
+  id: string
+  order_id: string
+  previous_status: InternationalStatus | null
+  changed_by: string | null
+  internal_note: string | null
 }
 
 export interface Offer {

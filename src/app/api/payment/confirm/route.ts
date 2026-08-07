@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendEmail, emailLayout } from '@/lib/email'
+import { sendEmail, emailLayout, sendInternationalOrderReceivedEmail, sendInternationalAdminActionNeededEmail } from '@/lib/email'
 import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, BOOST_DURATION_DAYS } from '@/lib/catalog'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
@@ -78,7 +78,8 @@ async function handleNotification(request: Request) {
     // (evita reprocesar si Mercado Pago reenvía el mismo webhook).
     if (updatedOrder) {
       const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
-        supabase.from('listings').update({ status: 'sold' }).eq('id', updatedOrder.listing_id).select('title').single(),
+        supabase.from('listings').update({ status: 'sold' }).eq('id', updatedOrder.listing_id)
+          .select('title, source_type, international_lead_time_min_days, international_lead_time_max_days').single(),
         supabase.from('profiles').select('email, name').eq('id', updatedOrder.buyer_id).single(),
         supabase.from('profiles').select('email, name').eq('id', updatedOrder.seller_id).single(),
       ])
@@ -86,65 +87,106 @@ async function handleNotification(request: Request) {
       const listingTitle = listing?.title ?? 'tu prenda'
       const amountFmt = `$${updatedOrder.amount.toLocaleString('es-CL')}`
       const sellerNetFmt = `$${(updatedOrder.amount - updatedOrder.commission - updatedOrder.processing_fee).toLocaleString('es-CL')}`
+      const isInternational = listing?.source_type === 'international_on_demand'
 
-      if (buyer?.email) {
-        await sendEmail({
-          to: buyer.email,
-          subject: `Confirmamos tu compra — ${listingTitle}`,
-          html: emailLayout('Compra confirmada', `
-            <p style="font-size: 14px; color: #444; line-height: 1.6;">
-              Hola ${buyer.name ?? ''}, confirmamos tu pago de <strong>${amountFmt}</strong> por <strong>${listingTitle}</strong>.
-              La vendedora tiene 5 días hábiles para despacharla — te avisamos apenas la envíe.
-            </p>
-            <p style="font-size: 13px; color: #888; line-height: 1.6;">
-              Si no la despacha a tiempo, cancelamos la compra y te reembolsamos el pago completo.
-              Bdress retiene el dinero hasta que confirmes que la recibiste — tu compra está protegida.
-            </p>
-            <p style="text-align: center; margin-top: 24px;">
-              <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-                Ver mi compra
-              </a>
-            </p>
-          `),
+      if (isInternational) {
+        // Carril de estado internacional, separado de orders.status — arranca
+        // en validación manual (ver sección 9 del encargo: "generar una tarea
+        // administrativa urgente" en vez de despachar directo).
+        await supabase.from('orders').update({ international_status: 'awaiting_source_verification' }).eq('id', orderId)
+        await supabase.from('order_status_history').insert({
+          order_id: orderId,
+          previous_status: null,
+          new_status: 'awaiting_source_verification',
+          changed_by: null,
+          public_note: 'Recibimos tu compra. Estamos confirmando que la prenda siga disponible en la plataforma de origen.',
         })
-      }
+        await supabase.from('international_events').insert({
+          event_type: 'international_order_paid',
+          listing_id: updatedOrder.listing_id,
+          order_id: orderId,
+          user_id: updatedOrder.buyer_id,
+        })
 
-      if (seller?.email) {
-        await sendEmail({
-          to: seller.email,
-          subject: `¡Vendiste! — ${listingTitle}`,
-          html: emailLayout('Nueva venta', `
-            <p style="font-size: 14px; color: #444; line-height: 1.6;">
-              Hola ${seller.name ?? ''}, ¡vendiste <strong>${listingTitle}</strong>! Vas a recibir <strong>${sellerNetFmt}</strong>.
-              Tienes 5 días hábiles para despacharla.
-            </p>
-            <p style="font-size: 13px; color: #888; line-height: 1.6;">
-              Publicar y vender en Bdress Market es gratis — no te cobramos comisión. Al monto de tu prenda solo se
-              le descuenta el costo de procesamiento del pago (${Math.round(PROCESSING_FEE_PCT * 100)}% + $${PROCESSING_FEE_FIXED}).
-            </p>
-            <p style="font-size: 13px; color: #888; line-height: 1.6;">
-              Ve a <strong>Mis ventas</strong> y genera la etiqueta de envío — te la mandamos por correo lista para imprimir.
-            </p>
-            <p style="text-align: center; margin-top: 24px;">
-              <a href="${SITE_URL}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-                Ir a Mis ventas
-              </a>
-            </p>
-          `),
-        })
-      }
+        if (buyer?.email) {
+          await sendInternationalOrderReceivedEmail({
+            to: buyer.email,
+            name: buyer.name,
+            listingTitle,
+            minDays: listing?.international_lead_time_min_days,
+            maxDays: listing?.international_lead_time_max_days,
+          })
+        }
 
-      if (process.env.ADMIN_EMAIL) {
-        await sendEmail({
-          to: process.env.ADMIN_EMAIL,
-          subject: `Nueva compra pagada — ${listingTitle}`,
-          html: emailLayout('Nueva compra pagada', `
-            <p style="font-size: 14px; color: #444; line-height: 1.6;">
-              Se pagó la orden <strong>${orderId}</strong> por <strong>${listingTitle}</strong> (${amountFmt}).
-              Compradora: ${buyer?.name ?? buyer?.email ?? 'sin datos'}. Vendedora: ${seller?.name ?? seller?.email ?? 'sin datos'}.
-            </p>
-          `),
-        })
+        if (process.env.ADMIN_EMAIL) {
+          await sendInternationalAdminActionNeededEmail({
+            to: process.env.ADMIN_EMAIL,
+            orderId,
+            listingTitle,
+            amountFmt,
+            buyerName: buyer?.name ?? buyer?.email ?? 'sin datos',
+          })
+        }
+      } else {
+        if (buyer?.email) {
+          await sendEmail({
+            to: buyer.email,
+            subject: `Confirmamos tu compra — ${listingTitle}`,
+            html: emailLayout('Compra confirmada', `
+              <p style="font-size: 14px; color: #444; line-height: 1.6;">
+                Hola ${buyer.name ?? ''}, confirmamos tu pago de <strong>${amountFmt}</strong> por <strong>${listingTitle}</strong>.
+                La vendedora tiene 5 días hábiles para despacharla — te avisamos apenas la envíe.
+              </p>
+              <p style="font-size: 13px; color: #888; line-height: 1.6;">
+                Si no la despacha a tiempo, cancelamos la compra y te reembolsamos el pago completo.
+                Bdress retiene el dinero hasta que confirmes que la recibiste — tu compra está protegida.
+              </p>
+              <p style="text-align: center; margin-top: 24px;">
+                <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+                  Ver mi compra
+                </a>
+              </p>
+            `),
+          })
+        }
+
+        if (seller?.email) {
+          await sendEmail({
+            to: seller.email,
+            subject: `¡Vendiste! — ${listingTitle}`,
+            html: emailLayout('Nueva venta', `
+              <p style="font-size: 14px; color: #444; line-height: 1.6;">
+                Hola ${seller.name ?? ''}, ¡vendiste <strong>${listingTitle}</strong>! Vas a recibir <strong>${sellerNetFmt}</strong>.
+                Tienes 5 días hábiles para despacharla.
+              </p>
+              <p style="font-size: 13px; color: #888; line-height: 1.6;">
+                Publicar y vender en Bdress Market es gratis — no te cobramos comisión. Al monto de tu prenda solo se
+                le descuenta el costo de procesamiento del pago (${Math.round(PROCESSING_FEE_PCT * 100)}% + $${PROCESSING_FEE_FIXED}).
+              </p>
+              <p style="font-size: 13px; color: #888; line-height: 1.6;">
+                Ve a <strong>Mis ventas</strong> y genera la etiqueta de envío — te la mandamos por correo lista para imprimir.
+              </p>
+              <p style="text-align: center; margin-top: 24px;">
+                <a href="${SITE_URL}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+                  Ir a Mis ventas
+                </a>
+              </p>
+            `),
+          })
+        }
+
+        if (process.env.ADMIN_EMAIL) {
+          await sendEmail({
+            to: process.env.ADMIN_EMAIL,
+            subject: `Nueva compra pagada — ${listingTitle}`,
+            html: emailLayout('Nueva compra pagada', `
+              <p style="font-size: 14px; color: #444; line-height: 1.6;">
+                Se pagó la orden <strong>${orderId}</strong> por <strong>${listingTitle}</strong> (${amountFmt}).
+                Compradora: ${buyer?.name ?? buyer?.email ?? 'sin datos'}. Vendedora: ${seller?.name ?? seller?.email ?? 'sin datos'}.
+              </p>
+            `),
+          })
+        }
       }
     }
   } else if ((payment.status === 'rejected' || payment.status === 'cancelled') && orderId) {

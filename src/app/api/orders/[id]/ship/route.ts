@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { sendEmail, emailLayout } from '@/lib/email'
+import { sendEmail, emailLayout, sendInternationalNationallyShippedEmail } from '@/lib/email'
+import { isAdminEmail } from '@/lib/admin-auth'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -24,20 +25,46 @@ export async function PATCH(
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, seller_id, buyer_id, listing_id, status')
+    .select('id, seller_id, buyer_id, listing_id, status, international_status')
     .eq('id', id)
     .single()
 
   if (!order) return Response.json({ error: 'Orden no encontrada' }, { status: 404 })
-  if (order.seller_id !== user.id) return Response.json({ error: 'Sin permiso' }, { status: 403 })
+
+  // Productos internacionales: la "vendedora" es el perfil de sistema
+  // Bdress Internacional, sin login propio — quien despacha es la admin.
+  const isInternational = order.international_status !== null
+  const canManage = order.seller_id === user.id || (isInternational && isAdminEmail(user.email))
+  if (!canManage) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   if (order.status !== 'paid') return Response.json({ error: 'La orden no está pagada' }, { status: 409 })
+
+  // No se puede registrar el despacho nacional hasta que la prenda esté
+  // físicamente en Chile (ver sección 13 del encargo).
+  if (isInternational && order.international_status !== 'received_in_chile' && order.international_status !== 'national_shipping_pending') {
+    return Response.json({ error: 'La prenda todavía no llega a Chile — no se puede registrar el despacho nacional todavía' }, { status: 409 })
+  }
 
   const { error } = await supabase
     .from('orders')
-    .update({ tracking_number, status: 'shipped', shipped_at: new Date().toISOString() })
+    .update({
+      tracking_number,
+      status: 'shipped',
+      shipped_at: new Date().toISOString(),
+      ...(isInternational ? { international_status: 'nationally_shipped' } : {}),
+    })
     .eq('id', id)
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
+
+  if (isInternational) {
+    await supabase.from('order_status_history').insert({
+      order_id: id,
+      previous_status: order.international_status,
+      new_status: 'nationally_shipped',
+      changed_by: user.id,
+      public_note: 'Tu prenda ya fue despachada dentro de Chile.',
+    })
+  }
 
   const [{ data: buyer }, { data: listing }] = await Promise.all([
     supabase.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
@@ -45,23 +72,27 @@ export async function PATCH(
   ])
 
   if (buyer?.email) {
-    await sendEmail({
-      to: buyer.email,
-      subject: `Tu prenda va en camino — ${listing?.title ?? ''}`,
-      html: emailLayout('Prenda despachada', `
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Hola ${buyer.name ?? ''}, tu compra <strong>${listing?.title ?? ''}</strong> ya fue despachada.
-        </p>
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Número de seguimiento: <strong style="font-family: monospace;">${tracking_number}</strong>
-        </p>
-        <p style="text-align: center; margin-top: 24px;">
-          <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-            Ver mi compra
-          </a>
-        </p>
-      `),
-    })
+    if (isInternational) {
+      await sendInternationalNationallyShippedEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? '', trackingNumber: tracking_number })
+    } else {
+      await sendEmail({
+        to: buyer.email,
+        subject: `Tu prenda va en camino — ${listing?.title ?? ''}`,
+        html: emailLayout('Prenda despachada', `
+          <p style="font-size: 14px; color: #444; line-height: 1.6;">
+            Hola ${buyer.name ?? ''}, tu compra <strong>${listing?.title ?? ''}</strong> ya fue despachada.
+          </p>
+          <p style="font-size: 14px; color: #444; line-height: 1.6;">
+            Número de seguimiento: <strong style="font-family: monospace;">${tracking_number}</strong>
+          </p>
+          <p style="text-align: center; margin-top: 24px;">
+            <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+              Ver mi compra
+            </a>
+          </p>
+        `),
+      })
+    }
   }
 
   return Response.json({ ok: true })

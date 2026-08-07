@@ -489,6 +489,12 @@ export function paymentProcessingFee(price: number): number {
   return Math.round(price * PROCESSING_FEE_PCT) + PROCESSING_FEE_FIXED
 }
 
+// Reserva de pago: si una orden queda pending_payment más de este tiempo sin
+// completarse, el cron expire-pending-orders la cancela y libera el listing
+// para que otra compradora pueda intentarlo (ver create_or_reuse_pending_order
+// en supabase-schema.sql y src/app/api/cron/expire-pending-orders/route.ts).
+export const PENDING_ORDER_EXPIRY_MINUTES = 30
+
 // MVP mientras Chilexpress/Starken no entregan credenciales de producción:
 // en vez de generar la etiqueta automáticamente, avisamos a ADMIN_EMAIL para
 // que la genere a mano en el Portal Empresas y se la envíe a la vendedora.

@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { leadTimeRange, internationalDelayMessage } from '@/lib/international/content'
 
 let client: Resend | null = null
 
@@ -30,18 +31,77 @@ export function emailLayout(title: string, bodyHtml: string): string {
   `
 }
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export async function sendEmail({
+  to, subject, html, attachments,
+}: {
+  to: string
+  subject: string
+  html: string
+  attachments?: { filename: string; content: Buffer; contentType?: string }[]
+}) {
   try {
     await getClient().emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
       to,
       subject,
       html,
+      attachments,
     })
   } catch (error) {
     // Nunca dejamos que un email fallido rompa el flujo de compra/despacho
     console.error('Error enviando email:', error)
   }
+}
+
+// Correo de reactivación para vendedoras del marketplace antiguo (Shopify),
+// donde se cobraba 5-15% + IVA de comisión. Sus prendas ya están cargadas en
+// la nueva plataforma pero en estado "paused" desde la migración — nunca las
+// activaron. En la nueva plataforma vender es 100% gratis — ver
+// src/app/terminos/page.tsx. Se dispara manualmente desde
+// /api/admin/campaign/commission-free, no por un cron.
+export async function sendCommissionFreeCampaignEmail({
+  to,
+  name,
+}: {
+  to: string
+  name: string | null
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  await sendEmail({
+    to,
+    subject: 'Antes perdías hasta 15% de comisión. Ahora es 100% tuyo.',
+    html: emailLayout('0% comisión para vendedoras', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, en el Bdress Market de antes, cada venta te descontaba
+        entre 5% y 15% + IVA en comisión. Ese modelo ya no existe.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hoy vender en Bdress Market es <strong>100% gratis</strong>: fijas tu precio
+        y te lo llevas completo. El único cargo (Protección BDress) lo paga la
+        compradora, nunca tú.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Tus prendas ya están cargadas en tu cuenta, solo están pausadas desde que
+        migramos la plataforma. Actívalas para que vuelvan a verse en el marketplace.
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 13px;">
+        <tr>
+          <td style="padding: 12px; border: 1px solid #eee; color: #999; text-align: center;">
+            Antes<br /><strong style="color: #444; font-size: 16px;">85-95%</strong><br />de tu venta
+          </td>
+          <td style="padding: 12px; border: 1px solid #eee; text-align: center; background: #f8f8f8;">
+            Ahora<br /><strong style="font-size: 16px;">100%</strong><br />de tu venta
+          </td>
+        </tr>
+      </table>
+      <p style="text-align: center; margin-top: 8px;">
+        <a href="${siteUrl}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Activar mis prendas
+        </a>
+      </p>
+    `),
+  })
 }
 
 // Correo de lanzamiento para vendedoras del marketplace antiguo (Shopify) que
@@ -169,6 +229,247 @@ export async function sendReviewReminderEmail({
       <p style="text-align: center; margin-top: 24px;">
         <a href="${siteUrl}${dashboardPath}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
           Dejar mi reseña
+        </a>
+      </p>
+    `),
+  })
+}
+
+// ============================================================
+// Correos de la modalidad "Selección internacional" (Vinted España u otra
+// plataforma internacional). Mismo proveedor (Resend) y mismo patrón
+// sendEmail()+emailLayout() que el resto de este archivo — ver
+// src/lib/international/ para el estado que dispara cada uno.
+// ============================================================
+
+function purchasesLink(): string {
+  return `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/purchases`
+}
+
+export async function sendInternationalOrderReceivedEmail({
+  to, name, listingTitle, minDays, maxDays,
+}: { to: string; name: string | null; listingTitle: string; minDays?: number | null; maxDays?: number | null }) {
+  const { min, max } = leadTimeRange(minDays, maxDays)
+  await sendEmail({
+    to,
+    subject: `Recibimos tu compra internacional — ${listingTitle}`,
+    html: emailLayout('Compra internacional recibida', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, recibimos tu pago por <strong>${listingTitle}</strong>. Antes de comprarla en la
+        plataforma de origen, vamos a confirmar que siga disponible — te avisamos apenas lo confirmemos.
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Al tratarse de una pieza única de una plataforma externa, en casos poco frecuentes puede venderse antes de
+        que logremos comprarla. Si eso pasa, anulamos tu orden y te devolvemos el pago completo, sin ningún costo
+        para ti.
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Entrega estimada: entre ${min} y ${max} días corridos desde que confirmemos la disponibilidad.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Seguir mi pedido
+        </a>
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalAvailabilityConfirmedEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  await sendEmail({
+    to,
+    subject: `Confirmamos disponibilidad — ${listingTitle}`,
+    html: emailLayout('Disponibilidad confirmada', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, buenas noticias: <strong>${listingTitle}</strong> sigue disponible. Ahora la compramos
+        en la plataforma de origen y coordinamos su traslado a Chile.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Seguir mi pedido
+        </a>
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalUnavailableCancelledEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  await sendEmail({
+    to,
+    subject: `Ya no estaba disponible — anulamos tu compra de ${listingTitle}`,
+    html: emailLayout('Compra anulada', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, lamentablemente <strong>${listingTitle}</strong> se vendió en la plataforma de origen
+        antes de que pudiéramos comprarla. Anulamos tu orden — no te cobramos nada y ya iniciamos la devolución
+        completa de tu pago.
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Te avisamos apenas el reembolso esté confirmado por el medio de pago.
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalPurchasedEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  await sendEmail({
+    to,
+    subject: `Ya compramos tu prenda — ${listingTitle}`,
+    html: emailLayout('Compra internacional realizada', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, ya compramos <strong>${listingTitle}</strong> en la plataforma de origen. Ahora la
+        recibimos y la trasladamos a Chile.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Seguir mi pedido
+        </a>
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalTransitUpdateEmail({
+  to, name, listingTitle, stage,
+}: { to: string; name: string | null; listingTitle: string; stage: 'received_at_foreign_hub' | 'international_transit' }) {
+  const copy = stage === 'received_at_foreign_hub'
+    ? 'ya llegó a nuestro centro logístico en Europa'
+    : 'ya va en tránsito hacia Chile'
+  await sendEmail({
+    to,
+    subject: `Actualización de tu pedido — ${listingTitle}`,
+    html: emailLayout('Actualización de traslado', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu prenda <strong>${listingTitle}</strong> ${copy}.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Seguir mi pedido
+        </a>
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalReceivedInChileEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  await sendEmail({
+    to,
+    subject: `Tu prenda ya llegó a Chile — ${listingTitle}`,
+    html: emailLayout('Recibida en Chile', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, <strong>${listingTitle}</strong> ya llegó a Chile. La estamos revisando antes de
+        despacharla a tu dirección.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Seguir mi pedido
+        </a>
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalNationallyShippedEmail({
+  to, name, listingTitle, trackingNumber,
+}: { to: string; name: string | null; listingTitle: string; trackingNumber: string | null }) {
+  await sendEmail({
+    to,
+    subject: `Tu prenda va en camino — ${listingTitle}`,
+    html: emailLayout('Despachada dentro de Chile', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, después de su viaje desde el extranjero, <strong>${listingTitle}</strong> ya fue
+        despachada dentro de Chile.
+      </p>
+      ${trackingNumber ? `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Número de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
+      </p>` : ''}
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi compra
+        </a>
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalRefundInitiatedEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  await sendEmail({
+    to,
+    subject: `Iniciamos tu reembolso — ${listingTitle}`,
+    html: emailLayout('Reembolso en proceso', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, iniciamos el reembolso completo de tu compra de <strong>${listingTitle}</strong>. Te
+        avisamos apenas el medio de pago confirme que el dinero ya está de vuelta en tu cuenta.
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalRefundCompletedEmail({
+  to, name, listingTitle, amount,
+}: { to: string; name: string | null; listingTitle: string; amount: number }) {
+  await sendEmail({
+    to,
+    subject: `Reembolso completado — ${listingTitle}`,
+    html: emailLayout('Reembolso completado', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, confirmamos que te devolvimos <strong>$${amount.toLocaleString('es-CL')}</strong> por
+        <strong>${listingTitle}</strong>. Dependiendo de tu banco, puede tardar unos días en reflejarse.
+      </p>
+    `),
+  })
+}
+
+export async function sendInternationalDelayNoticeEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  await sendEmail({
+    to,
+    subject: `Tu pedido está tardando más de lo esperado — ${listingTitle}`,
+    html: emailLayout('Seguimos tu pedido de cerca', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, ${internationalDelayMessage().toLowerCase()}
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Esto puede pasar por tiempos de aduana o de traslado internacional — no significa que algo salió mal con
+        tu compra de <strong>${listingTitle}</strong>.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Seguir mi pedido
+        </a>
+      </p>
+    `),
+  })
+}
+
+// A ADMIN_EMAIL, cuando una orden internacional recién pagada necesita
+// validación manual urgente — dispara desde payment/confirm/route.ts.
+export async function sendInternationalAdminActionNeededEmail({
+  to, orderId, listingTitle, amountFmt, buyerName,
+}: { to: string; orderId: string; listingTitle: string; amountFmt: string; buyerName: string }) {
+  const adminLink = `${process.env.NEXT_PUBLIC_SITE_URL}/admin/international/orders`
+  await sendEmail({
+    to,
+    subject: `Acción urgente — comprobar disponibilidad de ${listingTitle}`,
+    html: emailLayout('Validar disponibilidad internacional', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Se pagó la orden internacional <strong>${orderId}</strong> por <strong>${listingTitle}</strong> (${amountFmt}).
+        Compradora: ${buyerName}. Confirma cuanto antes si la prenda sigue disponible en la plataforma de origen.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${adminLink}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ir a órdenes internacionales
         </a>
       </p>
     `),

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Listing } from '@/types'
 import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategoryLabel, groupBrands } from '@/lib/catalog'
+import { INTERNATIONAL_BADGE_LABEL } from '@/lib/international/content'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import CatalogFilters from '@/components/listings/CatalogFilters'
@@ -223,6 +224,11 @@ export default async function HomePage({
                   <span className="absolute top-2 left-2 bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
                     Destacada
                   </span>
+                  {listing.source_type === 'international_on_demand' && (
+                    <span className="absolute top-2 right-2 bg-black/80 text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                      {INTERNATIONAL_BADGE_LABEL}
+                    </span>
+                  )}
                 </div>
                 <div className="p-2">
                   <p className="text-[10px] tracking-widest text-gray-400 uppercase truncate">{listing.brand || 'Sin marca'}</p>
@@ -291,6 +297,11 @@ export default async function HomePage({
                       {listing.featured_until && new Date(listing.featured_until) > new Date() && (
                         <span className="bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
                           Destacada
+                        </span>
+                      )}
+                      {listing.source_type === 'international_on_demand' && (
+                        <span className="bg-black/80 text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                          {INTERNATIONAL_BADGE_LABEL}
                         </span>
                       )}
                     </div>

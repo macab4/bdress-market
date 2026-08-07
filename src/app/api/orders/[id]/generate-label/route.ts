@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createShipment, getShipmentLabel } from '@/lib/starken'
-import { sendEmail, emailLayout } from '@/lib/email'
+import { sendEmail, emailLayout, sendInternationalNationallyShippedEmail } from '@/lib/email'
 import { MANUAL_LABEL_MODE } from '@/lib/catalog'
+import { isAdminEmail } from '@/lib/admin-auth'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -17,14 +18,26 @@ export async function POST(
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, seller_id, buyer_id, listing_id, status, amount, shipping_name, shipping_phone, shipping_address, shipping_address_extra, shipping_comuna, courier_service_code')
+    .select('id, seller_id, buyer_id, listing_id, status, amount, shipping_name, shipping_phone, shipping_address, shipping_address_extra, shipping_comuna, courier_service_code, international_status')
     .eq('id', id)
     .single()
 
   if (!order) return Response.json({ error: 'Orden no encontrada' }, { status: 404 })
-  if (order.seller_id !== user.id) return Response.json({ error: 'Sin permiso' }, { status: 403 })
+
+  // Productos internacionales: la "vendedora" es el perfil de sistema
+  // Bdress Internacional, sin login propio — quien despacha es la admin.
+  const isInternational = order.international_status !== null
+  const canManage = order.seller_id === user.id || (isInternational && isAdminEmail(user.email))
+  if (!canManage) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   if (order.status !== 'paid') return Response.json({ error: 'La orden no está pagada' }, { status: 409 })
   if (!order.courier_service_code) return Response.json({ error: 'Esta orden no tiene un servicio de envío cotizado' }, { status: 409 })
+
+  // No se puede generar la etiqueta nacional hasta que la prenda esté
+  // físicamente en Chile — antes de eso no hay nada que despachar todavía
+  // (ver sección 13 del encargo).
+  if (isInternational && order.international_status !== 'received_in_chile' && order.international_status !== 'national_shipping_pending') {
+    return Response.json({ error: 'La prenda todavía no llega a Chile — no se puede generar el despacho nacional todavía' }, { status: 409 })
+  }
 
   const [{ data: seller }, { data: buyer }, { data: listing }] = await Promise.all([
     supabase.from('profiles').select('name, email, phone, address, comuna').eq('id', order.seller_id).single(),
@@ -115,10 +128,21 @@ export async function POST(
       courier_tracking_number: shipment.trackingNumber,
       courier_barcode: shipment.barcode,
       label_url,
+      ...(isInternational ? { international_status: 'nationally_shipped' } : {}),
     })
     .eq('id', id)
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
+
+  if (isInternational) {
+    await supabase.from('order_status_history').insert({
+      order_id: id,
+      previous_status: order.international_status,
+      new_status: 'nationally_shipped',
+      changed_by: user.id,
+      public_note: 'Tu prenda ya fue despachada dentro de Chile.',
+    })
+  }
 
   // Email a la vendedora con la etiqueta para imprimir
   if (seller.email && label_url) {
@@ -146,23 +170,27 @@ export async function POST(
 
   // Email a la compradora avisando que se generó la etiqueta (todavía no significa que Starken ya la retiró)
   if (buyer?.email) {
-    await sendEmail({
-      to: buyer.email,
-      subject: `Tu compra está por ser despachada — ${listing.title}`,
-      html: emailLayout('Etiqueta de envío generada', `
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Hola ${buyer.name ?? ''}, la vendedora generó la etiqueta de envío de <strong>${listing.title}</strong> y la va a despachar en los próximos días.
-        </p>
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Número de seguimiento: <strong style="font-family: monospace;">${shipment.trackingNumber}</strong>
-        </p>
-        <p style="text-align: center; margin-top: 24px;">
-          <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-            Ver mi compra
-          </a>
-        </p>
-      `),
-    })
+    if (isInternational) {
+      await sendInternationalNationallyShippedEmail({ to: buyer.email, name: buyer.name, listingTitle: listing.title, trackingNumber: shipment.trackingNumber })
+    } else {
+      await sendEmail({
+        to: buyer.email,
+        subject: `Tu compra está por ser despachada — ${listing.title}`,
+        html: emailLayout('Etiqueta de envío generada', `
+          <p style="font-size: 14px; color: #444; line-height: 1.6;">
+            Hola ${buyer.name ?? ''}, la vendedora generó la etiqueta de envío de <strong>${listing.title}</strong> y la va a despachar en los próximos días.
+          </p>
+          <p style="font-size: 14px; color: #444; line-height: 1.6;">
+            Número de seguimiento: <strong style="font-family: monospace;">${shipment.trackingNumber}</strong>
+          </p>
+          <p style="text-align: center; margin-top: 24px;">
+            <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+              Ver mi compra
+            </a>
+          </p>
+        `),
+      })
+    }
   }
 
   return Response.json({ ok: true, trackingNumber: shipment.trackingNumber, labelUrl: label_url })

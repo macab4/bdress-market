@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getShippingQuote } from '@/lib/starken'
 import { buyerProtectionFee, paymentProcessingFee } from '@/lib/catalog'
+import { INTERNATIONAL_TERMS_VERSION } from '@/lib/international/content'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
   }
 
   let listing_id: string
+  let internationalConsent = false
   let shipping: {
     shipping_name: string
     shipping_phone: string
@@ -25,6 +27,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     listing_id = body.listing_id
     if (!listing_id) throw new Error()
+    internationalConsent = body.international_consent === true
 
     const required = ['shipping_name', 'shipping_phone', 'shipping_address', 'shipping_comuna', 'shipping_city']
     for (const field of required) {
@@ -46,13 +49,19 @@ export async function POST(request: Request) {
 
   const { data: listing } = await supabase
     .from('listings')
-    .select('id, title, price, status, seller_id, shipping_size')
+    .select('id, title, price, status, seller_id, shipping_size, source_type')
     .eq('id', listing_id)
     .single()
 
   if (!listing) return Response.json({ error: 'Prenda no encontrada' }, { status: 404 })
   if (listing.status !== 'active') return Response.json({ error: 'Esta prenda ya no está disponible' }, { status: 409 })
   if (listing.seller_id === user.id) return Response.json({ error: 'No puedes comprar tu propia prenda' }, { status: 403 })
+
+  // Los productos internacionales por encargo exigen que la compradora haya
+  // aceptado explícitamente el plazo y la validación posterior antes de pagar.
+  if (listing.source_type === 'international_on_demand' && !internationalConsent) {
+    return Response.json({ error: 'Debes aceptar las condiciones del encargo internacional antes de pagar' }, { status: 400 })
+  }
 
   // Si esta compradora tiene una oferta aceptada vigente para esta prenda, paga
   // el precio pactado en vez del precio público — no afecta a otras compradoras.
@@ -89,52 +98,49 @@ export async function POST(request: Request) {
     return Response.json({ error: 'No pudimos cotizar el envío a esa comuna' }, { status: 502 })
   }
 
-  // Evitar órdenes duplicadas activas
-  const { data: existing } = await supabase
-    .from('orders')
-    .select('id')
-    .eq('listing_id', listing_id)
-    .eq('buyer_id', user.id)
-    .eq('status', 'pending_payment')
-    .maybeSingle()
-
   const commission = buyerProtectionFee(price)
   const processingFee = paymentProcessingFee(price)
 
-  let orderId: string
+  // Reserva atómica: bloquea el listing, valida su estado y crea (o
+  // reutiliza) la única orden pending_payment permitida para esa prenda —
+  // evita que dos compradoras terminen pagando la misma prenda (ver
+  // create_or_reuse_pending_order en supabase-schema.sql). Esto reemplaza el
+  // viejo patrón select-luego-insert, que no era atómico.
+  const { data: reservation, error: reservationErr } = await supabase.rpc('create_or_reuse_pending_order', {
+    p_listing_id: listing_id,
+    p_buyer_id: user.id,
+    p_amount: price + commission,
+    p_commission: commission,
+    p_processing_fee: processingFee,
+    p_shipping_cost: quote.price,
+    p_courier_service_code: quote.serviceCode,
+    p_shipping_name: shipping.shipping_name,
+    p_shipping_phone: shipping.shipping_phone,
+    p_shipping_address: shipping.shipping_address,
+    p_shipping_address_extra: shipping.shipping_address_extra,
+    p_shipping_comuna: shipping.shipping_comuna,
+    p_shipping_city: shipping.shipping_city,
+    p_international_consent: internationalConsent,
+    p_international_terms_version: internationalConsent ? INTERNATIONAL_TERMS_VERSION : null,
+    p_international_user_agent: internationalConsent ? request.headers.get('user-agent') : null,
+  })
 
-  if (existing) {
-    orderId = existing.id
-    await supabase.from('orders').update({
-      ...shipping,
-      amount: price + commission,
-      commission,
-      processing_fee: processingFee,
-      shipping_cost: quote.price,
-      courier_service_code: quote.serviceCode,
-    }).eq('id', orderId)
-  } else {
-    const { data: order, error: orderErr } = await supabase
-      .from('orders')
-      .insert({
-        listing_id,
-        buyer_id: user.id,
-        seller_id: listing.seller_id,
-        amount: price + commission,
-        commission,
-        processing_fee: processingFee,
-        shipping_cost: quote.price,
-        courier_service_code: quote.serviceCode,
-        status: 'pending_payment',
-        ...shipping,
-      })
-      .select('id')
-      .single()
-
-    if (orderErr || !order) {
-      return Response.json({ error: 'Error creando la orden' }, { status: 500 })
+  if (reservationErr) {
+    if (reservationErr.message.includes('listing_reserved_by_other_buyer')) {
+      return Response.json({ error: 'Otra compradora está completando el pago de esta prenda ahora mismo. Intenta en unos minutos.' }, { status: 409 })
     }
-    orderId = order.id
+    if (reservationErr.message.includes('listing_not_active')) {
+      return Response.json({ error: 'Esta prenda ya no está disponible' }, { status: 409 })
+    }
+    if (reservationErr.message.includes('cannot_buy_own_listing')) {
+      return Response.json({ error: 'No puedes comprar tu propia prenda' }, { status: 403 })
+    }
+    return Response.json({ error: 'Error creando la orden' }, { status: 500 })
+  }
+
+  const orderId = reservation?.[0]?.order_id
+  if (!orderId) {
+    return Response.json({ error: 'Error creando la orden' }, { status: 500 })
   }
 
   // Crear preferencia de pago en Mercado Pago (Checkout Pro)

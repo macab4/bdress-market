@@ -4,10 +4,16 @@ import { useState, useEffect } from 'react'
 import ComunaSelect from '@/components/ComunaSelect'
 import { buyerProtectionFee } from '@/lib/catalog'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
+import {
+  INTERNATIONAL_CHECKOUT_NOTICE_TITLE, internationalCheckoutExplanation, internationalConsentText,
+} from '@/lib/international/content'
 
 interface CheckoutFormProps {
   listingId: string
   price: number
+  isInternational?: boolean
+  internationalLeadTimeMinDays?: number | null
+  internationalLeadTimeMaxDays?: number | null
   initialValues?: {
     shipping_name?: string
     shipping_phone?: string
@@ -17,7 +23,9 @@ interface CheckoutFormProps {
   }
 }
 
-export default function CheckoutForm({ listingId, price, initialValues }: CheckoutFormProps) {
+export default function CheckoutForm({
+  listingId, price, isInternational, internationalLeadTimeMinDays, internationalLeadTimeMaxDays, initialValues,
+}: CheckoutFormProps) {
   const [form, setForm] = useState({
     shipping_name: initialValues?.shipping_name ?? '',
     shipping_phone: initialValues?.shipping_phone ?? '',
@@ -28,6 +36,7 @@ export default function CheckoutForm({ listingId, price, initialValues }: Checko
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [internationalConsent, setInternationalConsent] = useState(false)
 
   const [quote, setQuote] = useState<{ cost: number; serviceCode: string } | null>(null)
   const [quoteError, setQuoteError] = useState('')
@@ -68,6 +77,10 @@ export default function CheckoutForm({ listingId, price, initialValues }: Checko
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!quote) { setError('Esperá a que se cotice el envío antes de continuar'); return }
+    if (isInternational && !internationalConsent) {
+      setError('Debes aceptar las condiciones del encargo internacional antes de pagar')
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -79,6 +92,7 @@ export default function CheckoutForm({ listingId, price, initialValues }: Checko
           ...form,
           shipping_cost: quote.cost,
           courier_service_code: quote.serviceCode,
+          international_consent: isInternational ? internationalConsent : undefined,
         }),
       })
       const data = await res.json()
@@ -168,9 +182,28 @@ export default function CheckoutForm({ listingId, price, initialValues }: Checko
         </div>
       </div>
 
+      {isInternational && (
+        <div className="bg-[#7fab87]/10 p-4 space-y-2">
+          <p className="text-xs font-medium tracking-widest uppercase text-[#5a7a55]">{INTERNATIONAL_CHECKOUT_NOTICE_TITLE}</p>
+          <p className="text-xs text-gray-600 leading-relaxed">
+            {internationalCheckoutExplanation(internationalLeadTimeMinDays, internationalLeadTimeMaxDays)}
+          </p>
+          <label className="flex items-start gap-2 text-xs text-gray-600 pt-1">
+            <input
+              type="checkbox"
+              checked={internationalConsent}
+              onChange={e => setInternationalConsent(e.target.checked)}
+              required
+              className="mt-0.5"
+            />
+            {internationalConsentText(internationalLeadTimeMinDays, internationalLeadTimeMaxDays)}
+          </label>
+        </div>
+      )}
+
       {error && <p className="text-red-500 text-xs">{error}</p>}
 
-      <button type="submit" disabled={loading || !quote}
+      <button type="submit" disabled={loading || !quote || (isInternational && !internationalConsent)}
         className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 hover:bg-[#6f9678] transition disabled:opacity-50">
         {loading ? 'Redirigiendo a pago...' : 'Continuar al pago'}
       </button>

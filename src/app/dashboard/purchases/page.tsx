@@ -2,14 +2,16 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
-import { Order } from '@/types'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { Order, OrderStatusHistoryEntry } from '@/types'
 import ConfirmDeliveryButton from '@/components/dashboard/ConfirmDeliveryButton'
 import DisputeButton from '@/components/dashboard/DisputeButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
+import InternationalOrderTimeline from '@/components/dashboard/InternationalOrderTimeline'
 import { ORDER_STATUS_CONFIG, daysUntilRelease } from '@/lib/catalog'
 
 type OrderWithRelations = Order & {
-  listing: { title: string; photos: string[]; price: number } | null
+  listing: { title: string; photos: string[]; price: number; international_lead_time_min_days: number | null; international_lead_time_max_days: number | null } | null
   seller: { name: string; city: string | null } | null
 }
 
@@ -20,11 +22,30 @@ export default async function PurchasesPage() {
 
   const { data: orders } = await supabase
     .from('orders')
-    .select('*, listing:listings(title, photos, price), seller:profiles!orders_seller_id_fkey(name, city)')
+    .select('*, listing:listings(title, photos, price, international_lead_time_min_days, international_lead_time_max_days), seller:profiles!orders_seller_id_fkey(name, city)')
     .eq('buyer_id', user.id)
     .order('created_at', { ascending: false }) as { data: OrderWithRelations[] | null }
 
   const list = orders ?? []
+
+  // Historial público del carril internacional — se trae en batch para no
+  // hacer una consulta por orden. Nunca se seleccionan internal_note ni
+  // changed_by (mismo filtro que /api/orders/[id]/status-history).
+  const internationalOrderIds = list.filter(o => o.international_status !== null).map(o => o.id)
+  const historyByOrder = new Map<string, OrderStatusHistoryEntry[]>()
+  if (internationalOrderIds.length > 0) {
+    const admin = createAdminClient()
+    const { data: history } = await admin
+      .from('order_status_history')
+      .select('order_id, new_status, public_note, created_at')
+      .in('order_id', internationalOrderIds)
+      .order('created_at', { ascending: true })
+    for (const row of history ?? []) {
+      const entries = historyByOrder.get(row.order_id) ?? []
+      entries.push({ new_status: row.new_status, public_note: row.public_note, created_at: row.created_at })
+      historyByOrder.set(row.order_id, entries)
+    }
+  }
 
   const { data: myReviews } = await supabase
     .from('reviews')
@@ -78,7 +99,15 @@ export default async function PurchasesPage() {
 
                       <p className="text-sm font-semibold">${order.amount.toLocaleString('es-CL')}</p>
 
-                      {order.tracking_number && (
+                      {order.international_status ? (
+                        <InternationalOrderTimeline
+                          currentStatus={order.international_status}
+                          history={historyByOrder.get(order.id) ?? []}
+                          paidAt={order.paid_at}
+                          leadTimeMinDays={order.listing?.international_lead_time_min_days ?? null}
+                          leadTimeMaxDays={order.listing?.international_lead_time_max_days ?? null}
+                        />
+                      ) : order.tracking_number && (
                         <p className="text-xs text-gray-400 mt-1">
                           Seguimiento:{' '}
                           <a

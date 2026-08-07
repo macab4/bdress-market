@@ -13,6 +13,7 @@ import { getShippingQuote } from '@/lib/starken'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 import MakeOfferModal from '@/components/listings/MakeOfferModal'
+import InternationalInfoBlock from '@/components/listings/InternationalInfoBlock'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
 
@@ -378,6 +379,14 @@ export default async function ListingPage({
               </p>
             </div>
 
+            {/* Selección internacional */}
+            {listing.source_type === 'international_on_demand' && (
+              <InternationalInfoBlock
+                leadTimeMinDays={listing.international_lead_time_min_days}
+                leadTimeMaxDays={listing.international_lead_time_max_days}
+              />
+            )}
+
             {/* Botón comprar */}
             {listing.status === 'active' && (
               canBuy ? (
@@ -389,7 +398,11 @@ export default async function ListingPage({
                   )}
                   <BuyButton listingId={listing.id} total={buyPrice + buyerProtectionFee(buyPrice)} />
 
-                  {!myOffer && (
+                  {/* Sin negociación de precio en productos internacionales — el
+                      precio ya refleja un margen ajustado a un costo de compra que
+                      todavía no se confirma, y no se puede prometer una rebaja
+                      antes de comprar la prenda en origen. */}
+                  {!myOffer && listing.source_type !== 'international_on_demand' && (
                     <MakeOfferModal listingId={listing.id} sellerId={listing.seller_id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
                   )}
                   <Link

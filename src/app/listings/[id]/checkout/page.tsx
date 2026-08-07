@@ -75,6 +75,9 @@ export default async function CheckoutPage({
         <CheckoutForm
           listingId={listing.id}
           price={price}
+          isInternational={listing.source_type === 'international_on_demand'}
+          internationalLeadTimeMinDays={listing.international_lead_time_min_days}
+          internationalLeadTimeMaxDays={listing.international_lead_time_max_days}
           initialValues={{
             shipping_name: profile?.name ?? '',
             shipping_phone: profile?.phone ?? '',
