@@ -40,6 +40,12 @@ export const INTERNATIONAL_HOW_IT_WORKS_STEPS = [
   'Revisamos la prenda y coordinamos el despacho a tu dirección.',
 ]
 
+// El precio publicado por la admin ya contempla el costo aduanero estimado
+// (international_customs_estimate) al fijar el precio final — por eso a la
+// clienta nunca se le cobra nada aparte al recibir la prenda.
+export const INTERNATIONAL_TAXES_INCLUDED_MESSAGE =
+  'El precio incluye impuestos y costos de aduana — no vas a pagar nada adicional al recibir tu prenda.'
+
 export const INTERNATIONAL_AVAILABILITY_WARNING =
   'Como se trata de una publicación externa y de una pieza generalmente única, existe la posibilidad de que se venda antes de que podamos confirmar la compra. En ese caso anularemos la orden y gestionaremos la devolución completa del pago.'
 

@@ -6,6 +6,7 @@ import { X, Globe2 } from 'lucide-react'
 import {
   INTERNATIONAL_BADGE_LABEL, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
   INTERNATIONAL_HOW_IT_WORKS_TITLE, INTERNATIONAL_HOW_IT_WORKS_STEPS, INTERNATIONAL_AVAILABILITY_WARNING,
+  INTERNATIONAL_TAXES_INCLUDED_MESSAGE,
 } from '@/lib/international/content'
 
 // Reemplaza el bloque siempre-visible que explicaba la mecánica interna
@@ -73,9 +74,10 @@ export default function InternationalInfoModal({
             </div>
 
             <p className="text-sm text-gray-600 mb-1">{INTERNATIONAL_AVAILABILITY_MESSAGE}</p>
-            <p className="text-sm font-medium text-[#5a7a55] mb-6">
+            <p className="text-sm font-medium text-[#5a7a55] mb-1">
               {internationalDeliveryEstimateMessage(leadTimeMinDays, leadTimeMaxDays)}
             </p>
+            <p className="text-sm font-medium text-[#5a7a55] mb-6">{INTERNATIONAL_TAXES_INCLUDED_MESSAGE}</p>
 
             <div>
               <h3 className="text-xs tracking-widest uppercase text-gray-400 mb-2">{INTERNATIONAL_HOW_IT_WORKS_TITLE}</h3>

@@ -5,6 +5,11 @@ import {
   PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT,
   OFFER_MIN_PCT, OFFER_MAX_ROUNDS, OFFER_EXPIRY_HOURS, OFFER_ACCEPTED_HOLD_HOURS,
 } from '@/lib/catalog'
+import {
+  INTERNATIONAL_MODE_NAME, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
+  INTERNATIONAL_HOW_IT_WORKS_STEPS, INTERNATIONAL_AVAILABILITY_WARNING, INTERNATIONAL_UNAVAILABLE_POLICY,
+  INTERNATIONAL_TAXES_INCLUDED_MESSAGE, internationalDelayMessage,
+} from '@/lib/international/content'
 
 const EXAMPLE_PRICE = 100000
 
@@ -14,6 +19,7 @@ const SECTIONS = [
   { id: 'ofertas', label: 'Ofertas y negociación' },
   { id: 'vender', label: 'Cómo vender' },
   { id: 'envios', label: 'Envíos' },
+  { id: 'internacional', label: 'Selección internacional' },
   { id: 'pagos', label: 'Pagos y comisión' },
   { id: 'mensajes', label: 'Mensajería' },
   { id: 'seguridad', label: 'Seguridad y estafas' },
@@ -125,6 +131,28 @@ export default function TerminosPage() {
               indicados luego de recibir el pago. Si no lo hace a tiempo, la compradora puede solicitar el
               reembolso completo.
             </p>
+          </section>
+
+          <section id="internacional" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">{INTERNATIONAL_MODE_NAME}</h2>
+            <p className="mb-2">
+              Además de las prendas publicadas por vendedoras chilenas, Bdress selecciona piezas disponibles en
+              plataformas internacionales de moda de segunda mano (como Vinted o Depop) y las publica en el
+              catálogo como <strong>{INTERNATIONAL_MODE_NAME.toLowerCase()}</strong>. {INTERNATIONAL_AVAILABILITY_MESSAGE}
+            </p>
+            <p className="mb-2">{internationalDeliveryEstimateMessage()}</p>
+            <p className="mb-2 font-medium text-[#5a7a55]">{INTERNATIONAL_TAXES_INCLUDED_MESSAGE}</p>
+
+            <p className="font-medium text-gray-800 mb-1 mt-4">Cómo funciona</p>
+            <ol className="list-decimal list-inside space-y-1 mb-3">
+              {INTERNATIONAL_HOW_IT_WORKS_STEPS.map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+
+            <p className="font-medium text-gray-800 mb-1">Si la prenda ya no está disponible</p>
+            <p className="mb-2">{INTERNATIONAL_AVAILABILITY_WARNING} {INTERNATIONAL_UNAVAILABLE_POLICY}</p>
+
+            <p className="font-medium text-gray-800 mb-1">Si el traslado se demora</p>
+            <p>{internationalDelayMessage()}</p>
           </section>
 
           <section id="pagos" className="bg-white p-6 scroll-mt-4">
