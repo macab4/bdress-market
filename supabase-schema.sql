@@ -706,3 +706,13 @@ $$;
 grant execute on function public.create_or_reuse_pending_order(
   uuid, uuid, integer, integer, integer, integer, text, text, text, text, text, text, text, boolean, text, text
 ) to authenticated;
+
+-- ============================================================
+-- Migración: agrega "Depop" como plataforma de origen válida para
+-- productos internacionales (además de Vinted/Manual/Otra).
+-- Mismo contenido que supabase/migrations/20260806010000_add_depop_source_platform.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.listing_sourcing drop constraint if exists listing_sourcing_source_platform_check;
+alter table public.listing_sourcing add constraint listing_sourcing_source_platform_check
+  check (source_platform in ('vinted', 'depop', 'manual', 'other'));

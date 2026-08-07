@@ -11,7 +11,7 @@
 export const INTERNATIONAL_TERMS_VERSION = 'v1'
 
 export const INTERNATIONAL_MODE_NAME = 'Selección internacional'
-export const INTERNATIONAL_BADGE_LABEL = 'Internacional por encargo'
+export const INTERNATIONAL_BADGE_LABEL = 'Selección internacional'
 
 export const INTERNATIONAL_DEFAULT_LEAD_TIME_MIN_DAYS = 20
 export const INTERNATIONAL_DEFAULT_LEAD_TIME_MAX_DAYS = 30
@@ -31,7 +31,7 @@ export function internationalDeliveryEstimateMessage(minDays?: number | null, ma
   return `Entrega estimada: entre ${min} y ${max} días corridos desde la confirmación de disponibilidad.`
 }
 
-export const INTERNATIONAL_HOW_IT_WORKS_TITLE = '¿Cómo funciona el encargo internacional?'
+export const INTERNATIONAL_HOW_IT_WORKS_TITLE = '¿Cómo funciona la Selección internacional?'
 export const INTERNATIONAL_HOW_IT_WORKS_STEPS = [
   'Realizas la compra en Bdress Market.',
   'Confirmamos que la prenda continúe disponible.',

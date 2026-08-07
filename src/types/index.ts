@@ -14,7 +14,7 @@ export type OfferProposedBy = 'buyer' | 'seller'
 // Selección internacional (prendas por encargo desde Vinted u otra
 // plataforma internacional) — ver src/lib/international/.
 export type SourceType = 'local' | 'international_on_demand'
-export type SourcePlatform = 'vinted' | 'manual' | 'other'
+export type SourcePlatform = 'vinted' | 'depop' | 'manual' | 'other'
 export type SourceStatus = 'available' | 'pending_verification' | 'purchased' | 'unavailable'
 export type InternationalStatus =
   | 'awaiting_source_verification' | 'source_confirmed' | 'source_purchase_pending' | 'source_purchased'

@@ -467,6 +467,7 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Plataforma de origen</label>
             <select value={form.source_platform} onChange={e => set('source_platform', e.target.value as typeof form.source_platform)} className="w-full border border-gray-200 px-3 py-2 text-sm bg-white">
               <option value="vinted">Vinted</option>
+              <option value="depop">Depop</option>
               <option value="manual">Manual</option>
               <option value="other">Otra</option>
             </select>
@@ -501,8 +502,11 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
           </div>
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Moneda original</label>
-            <input value={form.source_original_currency} onChange={e => set('source_original_currency', e.target.value)} placeholder="EUR"
-              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+            <select value={form.source_original_currency} onChange={e => set('source_original_currency', e.target.value)}
+              className="w-full border border-gray-200 px-3 py-2 text-sm bg-white">
+              <option value="EUR">Euro (EUR)</option>
+              <option value="USD">Dólar (USD)</option>
+            </select>
           </div>
         </div>
 

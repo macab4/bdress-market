@@ -13,7 +13,7 @@ import { getShippingQuote } from '@/lib/starken'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 import MakeOfferModal from '@/components/listings/MakeOfferModal'
-import InternationalInfoBlock from '@/components/listings/InternationalInfoBlock'
+import InternationalInfoModal from '@/components/listings/InternationalInfoModal'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
 
@@ -381,7 +381,7 @@ export default async function ListingPage({
 
             {/* Selección internacional */}
             {listing.source_type === 'international_on_demand' && (
-              <InternationalInfoBlock
+              <InternationalInfoModal
                 leadTimeMinDays={listing.international_lead_time_min_days}
                 leadTimeMaxDays={listing.international_lead_time_max_days}
               />
