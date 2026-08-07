@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition, useRef } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { SlidersHorizontal, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
   CONDITION_GROUPS, CategoryValue, ALL_SIZES, sizeOptionsFor,
@@ -18,7 +19,15 @@ const SORT_OPTIONS = [
   { value: 'precio_desc', label: 'Precio: mayor a menor' },
 ] as const
 
-const capsuleClass = 'border border-gray-200 px-3 py-2 text-xs bg-white text-left hover:border-gray-400 whitespace-nowrap'
+// max-w acá no es solo estético: sin tope, un <select> nativo con muchas
+// <option> (ej. las ~230 marcas) se dimensiona según la opción MÁS ANCHA de
+// la lista, no según el texto visible ("Marca") — es un comportamiento real
+// de Chrome/WebKit. Sin este límite, esa caja invisible de ~600px+ obliga a
+// toda la página a necesitar ese ancho mínimo, y en mobile el navegador la
+// muestra "alejada" para que todo entre. min-w-0 la deja participar del
+// flex-wrap en vez de imponer su propio mínimo.
+const capsuleClass = 'border border-gray-200 px-3 py-2 text-xs bg-white text-left hover:border-gray-400 whitespace-nowrap min-w-0 max-w-[150px]'
+const mobileRowClass = 'w-full border border-gray-200 px-3 py-2.5 text-sm bg-white text-left'
 
 export default function CatalogFilters() {
   const router = useRouter()
@@ -30,6 +39,7 @@ export default function CatalogFilters() {
   const [qInput, setQInput] = useState(urlQ)
   const [syncedQ, setSyncedQ] = useState(urlQ)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
   // Si la URL cambia por fuera (atrás/adelante del navegador, o se limpiaron
   // los filtros), refleja el nuevo valor en el input — sin useEffect, para no
@@ -52,6 +62,12 @@ export default function CatalogFilters() {
     loadBrands()
     return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    if (!mobileFiltersOpen) return
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [mobileFiltersOpen])
 
   function pushParams(mutate: (usp: URLSearchParams) => void, opts?: { resetPage?: boolean }) {
     const usp = new URLSearchParams(searchParams.toString())
@@ -123,6 +139,8 @@ export default function CatalogFilters() {
   if (min) chips.push({ key: 'min', label: `Desde $${parseInt(min).toLocaleString('es-CL')}`, onRemove: () => removeParam('min') })
   if (max) chips.push({ key: 'max', label: `Hasta $${parseInt(max).toLocaleString('es-CL')}`, onRemove: () => removeParam('max') })
 
+  const activeFilterCount = chips.filter(c => c.key !== 'q').length
+
   return (
     <div className="bg-white border-b border-gray-100">
       <div className="max-w-5xl mx-auto px-4 py-4">
@@ -135,7 +153,8 @@ export default function CatalogFilters() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        {/* Desktop: todos los filtros en línea */}
+        <div className="hidden md:flex flex-wrap gap-2">
           <CategoryPicker mode="filter" value={categoryPickerValue}
             onChange={(v: CategoryPickerValue) => pushParams(usp => {
               if (v.department) usp.set('category', v.department); else usp.delete('category')
@@ -209,6 +228,26 @@ export default function CatalogFilters() {
           </select>
         </div>
 
+        {/* Mobile: buscador (arriba) + Filtros + Ordenar */}
+        <div className="flex md:hidden gap-2">
+          <button
+            type="button"
+            onClick={() => setMobileFiltersOpen(true)}
+            className="flex-1 min-w-0 border border-gray-200 px-3 py-2.5 text-xs tracking-widest uppercase bg-white flex items-center justify-center gap-2"
+          >
+            <SlidersHorizontal size={14} />
+            Filtros{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
+          </button>
+          <select
+            value={sort}
+            onChange={e => setParam('sort', e.target.value)}
+            aria-label="Ordenar"
+            className="flex-1 min-w-0 border border-gray-200 px-3 py-2.5 text-xs bg-white"
+          >
+            {SORT_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+          </select>
+        </div>
+
         {chips.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mt-3 overflow-x-auto">
             {chips.map(chip => (
@@ -225,6 +264,95 @@ export default function CatalogFilters() {
           </div>
         )}
       </div>
+
+      {/* Mobile: drawer de pantalla completa con el resto de los filtros */}
+      {mobileFiltersOpen && (
+        <div role="dialog" aria-modal="true" aria-label="Filtros" className="md:hidden fixed inset-0 z-50 bg-white flex flex-col">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 flex-shrink-0">
+            <p className="text-sm tracking-widest uppercase text-gray-500">Filtros</p>
+            <button type="button" aria-label="Cerrar" onClick={() => setMobileFiltersOpen(false)} className="p-2 -mr-2">
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <CategoryPicker mode="filter" value={categoryPickerValue}
+              onChange={(v: CategoryPickerValue) => pushParams(usp => {
+                if (v.department) usp.set('category', v.department); else usp.delete('category')
+                if (v.productCategory) usp.set('productCategory', v.productCategory); else usp.delete('productCategory')
+                if (v.productType) usp.set('productType', v.productType); else usp.delete('productType')
+              })}
+              triggerClassName={mobileRowClass}
+              triggerLabel="Categoría"
+            />
+
+            {showSize && (
+              <select value={size} onChange={e => setParam('size', e.target.value)} className={mobileRowClass}>
+                <option value="">Talla</option>
+                {sizeOptions.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            )}
+
+            <select value={brand} onChange={e => setParam('brand', e.target.value)} className={mobileRowClass}>
+              <option value="">Marca</option>
+              {brands.map(b => <option key={b.slug} value={b.slug}>{b.label}</option>)}
+            </select>
+
+            <select value={condition} onChange={e => setParam('condition', e.target.value)} className={mobileRowClass}>
+              <option value="">Estado</option>
+              {CONDITION_GROUPS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+            </select>
+
+            <ColorFilterPopover
+              defaultValue={color || undefined}
+              onApply={(v: string) => setParam('color', v)}
+              triggerClassName={`${mobileRowClass} flex items-center justify-between`}
+            />
+
+            <select value={material} onChange={e => setParam('material', e.target.value)} className={mobileRowClass}>
+              <option value="">Material</option>
+              {MATERIALS.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+
+            <select value={occasion} onChange={e => setParam('occasion', e.target.value)} className={mobileRowClass}>
+              <option value="">Ocasión</option>
+              {OCCASIONS.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+
+            {showLength && (
+              <select value={length} onChange={e => setParam('length', e.target.value)} className={mobileRowClass}>
+                <option value="">Largo</option>
+                {LENGTHS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            )}
+
+            <div>
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Precio</p>
+              <div className="flex gap-2">
+                <input type="number" placeholder="Mín." defaultValue={min}
+                  onBlur={e => setParam('min', e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none" />
+                <input type="number" placeholder="Máx." defaultValue={max}
+                  onBlur={e => setParam('max', e.target.value)}
+                  className="w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 border-t border-gray-100 p-4 flex-shrink-0" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+            <button type="button" onClick={() => { clearAll(); setMobileFiltersOpen(false) }} className="text-xs text-gray-400 hover:text-black underline">
+              Limpiar todo
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(false)}
+              className="flex-1 bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition"
+            >
+              Ver resultados
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
