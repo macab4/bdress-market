@@ -3,8 +3,11 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { type Area } from 'react-easy-crop'
 import { createClient } from '@/lib/supabase/client'
-import { compressImage } from '@/lib/imageUpload'
+import { compressImage, getCroppedImageBlob } from '@/lib/imageUpload'
+import { PHOTO_ENHANCE_ACTIONS, PhotoEnhanceAction } from '@/lib/nanoBanana'
+import { CropModal } from '@/components/listings/ListingForm'
 import {
   CONDITIONS, COLORS, SHIPPING_SIZES, MAX_LISTING_COLORS, CategoryValue,
   sizeOptionsFor, TAXONOMY,
@@ -17,10 +20,18 @@ interface InternationalListingFormProps {
   sourcing?: ListingSourcing
 }
 
-// Herramienta interna para la admin — a diferencia de ListingForm.tsx
-// (usado por vendedoras), acá se prioriza velocidad de carga sobre un
-// editor de fotos con recorte/drag-and-drop completo: solo subir, previsualizar
-// y reordenar con flechas.
+const MAX_PHOTOS = 5
+
+// Mismo par recorte + mejora con IA ("Nano Banana") que usan las vendedoras
+// en ListingForm.tsx — reutiliza CropModal de ahí (exportado para esto) y
+// PHOTO_ENHANCE_ACTIONS/el endpoint /api/listings/enhance-photo tal cual.
+// El reordenamiento va con flechas en vez de drag-and-drop (herramienta
+// interna, no necesita dnd-kit acá) — esa es la única diferencia real con
+// el editor de fotos de las vendedoras.
+type PhotoItem =
+  | { id: string; kind: 'existing'; url: string }
+  | { id: string; kind: 'new'; file: File; preview: string; original?: { file: File; preview: string } }
+
 export default function InternationalListingForm({ listing, sourcing }: InternationalListingFormProps) {
   const router = useRouter()
   const isEdit = !!listing
@@ -52,8 +63,14 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
     external_seller_name: sourcing?.external_seller_name ?? '',
     external_location: sourcing?.external_location ?? '',
   })
-  const [photos, setPhotos] = useState<string[]>(listing?.photos ?? [])
+  const [photos, setPhotos] = useState<PhotoItem[]>(
+    (listing?.photos ?? []).map(url => ({ id: url, kind: 'existing', url }))
+  )
   const [uploading, setUploading] = useState(false)
+  const [enhancingId, setEnhancingId] = useState<string | null>(null)
+  const [enhanceErrors, setEnhanceErrors] = useState<Record<string, string>>({})
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [cropTargetId, setCropTargetId] = useState<string | null>(null)
   const [authorizationConfirmed, setAuthorizationConfirmed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -72,43 +89,123 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
-    setUploading(true)
-    setError('')
-    try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Sesión expirada')
-
-      const uploaded: string[] = []
-      for (const file of Array.from(files)) {
-        const compressed = await compressImage(file)
-        const ext = compressed.name.split('.').pop() || 'jpg'
-        const path = `${user.id}/international-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-        const { error: uploadErr } = await supabase.storage.from('listings').upload(path, compressed, { contentType: compressed.type })
-        if (uploadErr) throw uploadErr
-        const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(path)
-        uploaded.push(publicUrl)
-      }
-      setPhotos(prev => [...prev, ...uploaded])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error subiendo fotos')
-    } finally {
-      setUploading(false)
-    }
+    const availableSlots = MAX_PHOTOS - photos.length
+    const list = Array.from(files).slice(0, availableSlots)
+    const compressedFiles = await Promise.all(list.map(file => compressImage(file)))
+    const newItems: PhotoItem[] = compressedFiles.map(file => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      kind: 'new',
+      file,
+      preview: URL.createObjectURL(file),
+    }))
+    setPhotos(prev => [...prev, ...newItems])
   }
 
   function movePhoto(index: number, direction: -1 | 1) {
     setPhotos(prev => {
-      const next = [...prev]
       const target = index + direction
-      if (target < 0 || target >= next.length) return prev
+      if (target < 0 || target >= prev.length) return prev
+      const next = [...prev]
       ;[next[index], next[target]] = [next[target], next[index]]
       return next
     })
   }
 
-  function removePhoto(index: number) {
-    setPhotos(prev => prev.filter((_, i) => i !== index))
+  function removePhoto(id: string) {
+    setPhotos(prev => prev.filter(p => p.id !== id))
+  }
+
+  // Las fotos ya guardadas (kind 'existing') no tienen un File local para
+  // editar — se descarga el archivo real la primera vez que se recorta o
+  // mejora, igual que en ListingForm.tsx.
+  async function ensureEditableFile(id: string): Promise<{ file: File; preview: string } | null> {
+    const item = photos.find(p => p.id === id)
+    if (!item) return null
+    if (item.kind === 'new') return { file: item.file, preview: item.preview }
+
+    try {
+      const res = await fetch(item.url)
+      if (!res.ok) throw new Error('No se pudo cargar la foto')
+      const blob = await res.blob()
+      const file = new File([blob], 'foto.jpg', { type: blob.type || 'image/jpeg' })
+      const preview = URL.createObjectURL(file)
+      setPhotos(prev => prev.map(p => (p.id === id ? { id, kind: 'new', file, preview } : p)))
+      return { file, preview }
+    } catch {
+      setEnhanceErrors(prev => ({ ...prev, [id]: 'No se pudo cargar la foto para editarla' }))
+      return null
+    }
+  }
+
+  async function enhancePhoto(id: string, action: PhotoEnhanceAction) {
+    setMenuOpenId(null)
+    setEnhancingId(id)
+    setEnhanceErrors(prev => { const next = { ...prev }; delete next[id]; return next })
+
+    const fileInfo = await ensureEditableFile(id)
+    if (!fileInfo) { setEnhancingId(null); return }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 45_000)
+    try {
+      const body = new FormData()
+      body.append('photo', fileInfo.file)
+      body.append('action', action)
+      const res = await fetch('/api/listings/enhance-photo', { method: 'POST', body, signal: controller.signal })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || `Error al mejorar la foto (${res.status})`)
+      }
+      const blob = await res.blob()
+      const enhancedFile = new File([blob], fileInfo.file.name, { type: 'image/png' })
+      const newPreview = URL.createObjectURL(enhancedFile)
+      setPhotos(prev => prev.map(p =>
+        p.id === id && p.kind === 'new'
+          ? { ...p, file: enhancedFile, preview: newPreview, original: p.original ?? { file: p.file, preview: p.preview } }
+          : p
+      ))
+    } catch (err) {
+      const message = err instanceof Error && err.name === 'AbortError'
+        ? 'Tardó demasiado — intenta con otra foto o de nuevo'
+        : err instanceof Error ? err.message : 'Error al mejorar la foto'
+      setEnhanceErrors(prev => ({ ...prev, [id]: message }))
+    } finally {
+      clearTimeout(timeout)
+      setEnhancingId(null)
+    }
+  }
+
+  function revertPhoto(id: string) {
+    setPhotos(prev => prev.map(p => {
+      if (p.id !== id || p.kind !== 'new' || !p.original) return p
+      URL.revokeObjectURL(p.preview)
+      return { id: p.id, kind: 'new', file: p.original.file, preview: p.original.preview }
+    }))
+  }
+
+  async function openCropModal(id: string) {
+    const fileInfo = await ensureEditableFile(id)
+    if (fileInfo) setCropTargetId(id)
+  }
+
+  async function applyCrop(id: string, area: Area) {
+    const item = photos.find(p => p.id === id)
+    if (!item || item.kind !== 'new') return
+
+    try {
+      const blob = await getCroppedImageBlob(item.preview, area)
+      const croppedFile = new File([blob], item.file.name, { type: 'image/jpeg' })
+      const newPreview = URL.createObjectURL(croppedFile)
+      setPhotos(prev => prev.map(p =>
+        p.id === id && p.kind === 'new'
+          ? { ...p, file: croppedFile, preview: newPreview, original: p.original ?? { file: p.file, preview: p.preview } }
+          : p
+      ))
+    } catch (err) {
+      setEnhanceErrors(prev => ({ ...prev, [id]: err instanceof Error ? err.message : 'Error al recortar la foto' }))
+    } finally {
+      setCropTargetId(null)
+    }
   }
 
   const productCategories = TAXONOMY.find(d => d.value === form.category)?.productCategories ?? []
@@ -138,6 +235,28 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
     }
 
     setLoading(true)
+    setUploading(true)
+
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setError('Sesión expirada'); setLoading(false); setUploading(false); return }
+
+    // Sube solo las fotos nuevas/editadas — las existentes (kind 'existing')
+    // ya están en Storage, se reutiliza su URL tal cual.
+    const orderedUrls: string[] = []
+    for (const item of photos) {
+      if (item.kind === 'existing') { orderedUrls.push(item.url); continue }
+
+      const ext = item.file.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/international-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error: uploadErr } = await supabase.storage.from('listings').upload(path, item.file, { contentType: item.file.type })
+      if (uploadErr) { setError('Error subiendo foto: ' + uploadErr.message); setLoading(false); setUploading(false); return }
+
+      const { data: { publicUrl } } = supabase.storage.from('listings').getPublicUrl(path)
+      orderedUrls.push(publicUrl)
+    }
+    setUploading(false)
+
     const payload = {
       title: form.title,
       description: form.description,
@@ -150,7 +269,7 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
       colors: form.colors,
       shipping_size: form.shipping_size,
       price,
-      photos,
+      photos: orderedUrls,
       international_lead_time_min_days: Number(form.international_lead_time_min_days) || INTERNATIONAL_DEFAULT_LEAD_TIME_MIN_DAYS,
       international_lead_time_max_days: Number(form.international_lead_time_max_days) || INTERNATIONAL_DEFAULT_LEAD_TIME_MAX_DAYS,
       international_shipping_notes: form.international_shipping_notes || null,
@@ -293,21 +412,46 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
         </div>
 
         <div>
-          <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Fotografías</label>
-          <div className="flex flex-wrap gap-3 mb-3">
-            {photos.map((url, i) => (
-              <div key={url} className="relative w-20 h-24 bg-gray-100 overflow-hidden">
-                <Image src={url} alt="" fill className="object-cover" />
-                <div className="absolute bottom-0 left-0 right-0 flex justify-between bg-black/50 text-white text-[10px]">
-                  <button type="button" onClick={() => movePhoto(i, -1)} className="px-1.5 py-0.5">‹</button>
-                  <button type="button" onClick={() => removePhoto(i)} className="px-1.5 py-0.5">✕</button>
-                  <button type="button" onClick={() => movePhoto(i, 1)} className="px-1.5 py-0.5">›</button>
-                </div>
-              </div>
+          <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Fotografías (hasta {MAX_PHOTOS})</label>
+          <div className="grid grid-cols-5 gap-2 mb-3">
+            {photos.map((item, i) => (
+              <PhotoThumb
+                key={item.id}
+                item={item}
+                isCover={i === 0}
+                canMoveLeft={i > 0}
+                canMoveRight={i < photos.length - 1}
+                onMove={dir => movePhoto(i, dir)}
+                onRemove={() => removePhoto(item.id)}
+                onEnhance={action => enhancePhoto(item.id, action)}
+                onRevert={item.kind === 'new' && item.original ? () => revertPhoto(item.id) : undefined}
+                onCrop={() => openCropModal(item.id)}
+                enhancing={enhancingId === item.id}
+                enhanceError={enhanceErrors[item.id]}
+                menuOpen={menuOpenId === item.id}
+                onToggleMenu={() => setMenuOpenId(prev => (prev === item.id ? null : item.id))}
+              />
             ))}
+            {photos.length < MAX_PHOTOS && (
+              <label className="aspect-square bg-gray-100 flex items-center justify-center text-gray-400 text-2xl hover:bg-gray-200 transition cursor-pointer">
+                +
+                <input type="file" accept="image/*" multiple onChange={e => handleFiles(e.target.files)} className="hidden" />
+              </label>
+            )}
           </div>
-          <input type="file" accept="image/*" multiple disabled={uploading} onChange={e => handleFiles(e.target.files)} className="text-xs" />
-          {uploading && <p className="text-[10px] text-gray-400 mt-1">Subiendo…</p>}
+          {uploading && <p className="text-[10px] text-gray-400">Subiendo…</p>}
+
+          {cropTargetId && (() => {
+            const target = photos.find(p => p.id === cropTargetId)
+            if (!target || target.kind !== 'new') return null
+            return (
+              <CropModal
+                src={target.preview}
+                onCancel={() => setCropTargetId(null)}
+                onSave={area => applyCrop(cropTargetId, area)}
+              />
+            )
+          })()}
         </div>
       </section>
 
@@ -427,5 +571,88 @@ export default function InternationalListingForm({ listing, sourcing }: Internat
         {loading ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Publicar producto internacional'}
       </button>
     </form>
+  )
+}
+
+function PhotoThumb({
+  item, isCover, canMoveLeft, canMoveRight, onMove, onRemove, onEnhance, onRevert, onCrop,
+  enhancing, enhanceError, menuOpen, onToggleMenu,
+}: {
+  item: PhotoItem
+  isCover: boolean
+  canMoveLeft: boolean
+  canMoveRight: boolean
+  onMove: (direction: -1 | 1) => void
+  onRemove: () => void
+  onEnhance: (action: PhotoEnhanceAction) => void
+  onRevert?: () => void
+  onCrop: () => void
+  enhancing?: boolean
+  enhanceError?: string
+  menuOpen?: boolean
+  onToggleMenu?: () => void
+}) {
+  const isEnhanced = item.kind === 'new' && !!item.original
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="relative aspect-square bg-gray-100">
+        <Image src={item.kind === 'existing' ? item.url : item.preview} alt="" fill className="object-cover" />
+
+        {isCover && (
+          <span className="absolute top-1 left-1 bg-[#7fab87] text-white text-[8px] tracking-widest uppercase px-1.5 py-0.5">
+            Portada
+          </span>
+        )}
+
+        <button type="button" onClick={onRemove}
+          className="absolute top-0 right-0 bg-black text-white text-xs w-5 h-5 flex items-center justify-center z-10">
+          ×
+        </button>
+
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-20" onClick={onToggleMenu} />
+            <div className="absolute bottom-7 left-0 right-0 bg-white shadow-lg border border-gray-200 z-30 overflow-hidden">
+              {Object.entries(PHOTO_ENHANCE_ACTIONS).map(([key, { label }]) => (
+                <button key={key} type="button"
+                  onClick={() => onEnhance(key as PhotoEnhanceAction)}
+                  className="block w-full text-left px-2 py-1.5 text-[9px] text-gray-700 hover:bg-gray-100 transition">
+                  {label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        <div className="absolute bottom-1 left-1 right-1 flex gap-0.5 z-10">
+          <button type="button" onClick={onCrop}
+            className="flex-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition">
+            Editar
+          </button>
+          <button type="button" onClick={onToggleMenu} disabled={enhancing}
+            className="flex-1 bg-black/70 text-white text-[8px] tracking-widest uppercase py-1 hover:bg-black transition disabled:opacity-60">
+            {enhancing ? '...' : 'Mejorar ▾'}
+          </button>
+        </div>
+
+        <div className="absolute top-0 left-0 right-0 flex justify-between px-0.5 pt-0.5">
+          {canMoveLeft ? (
+            <button type="button" onClick={() => onMove(-1)} className="bg-black/60 text-white text-[10px] w-4 h-4 flex items-center justify-center">‹</button>
+          ) : <span />}
+          {canMoveRight && (
+            <button type="button" onClick={() => onMove(1)} className="bg-black/60 text-white text-[10px] w-4 h-4 flex items-center justify-center">›</button>
+          )}
+        </div>
+      </div>
+
+      {enhancing && <p className="text-[9px] text-gray-400 leading-tight">Puede tardar hasta un minuto…</p>}
+      {isEnhanced && onRevert && (
+        <button type="button" onClick={onRevert} className="text-[9px] text-[#5a7a55] underline underline-offset-2 text-left">
+          ✓ Editada · Deshacer
+        </button>
+      )}
+      {enhanceError && <p className="text-[9px] text-red-500 leading-tight">{enhanceError}</p>}
+    </div>
   )
 }

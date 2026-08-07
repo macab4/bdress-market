@@ -746,7 +746,9 @@ function SortablePhotoThumb({
   )
 }
 
-function CropModal({ src, onCancel, onSave }: {
+// Exportado para reutilizar en InternationalListingForm.tsx (panel admin) —
+// mismo recorte 3/4, sin duplicar la integración de react-easy-crop.
+export function CropModal({ src, onCancel, onSave }: {
   src: string
   onCancel: () => void
   onSave: (area: Area) => void
