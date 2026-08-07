@@ -1,17 +1,25 @@
-// Textos centralizados de la modalidad "Selección internacional" (sección 19
-// del encargo: nombre comercial, plazos, mensajes de disponibilidad/checkout,
-// texto de aceptación, política de no-disponibilidad, aviso de retraso,
-// texto de despacho separado). Alcance v1: constantes en código, igual que el
-// resto de src/lib/catalog.ts — un editor de textos en el panel admin queda
-// como mejora de segunda etapa.
+// Textos centralizados de la modalidad "Envío internacional" (antes
+// "Selección internacional"). Alcance v1: constantes en código, igual que
+// el resto de src/lib/catalog.ts — un editor de textos en el panel admin
+// queda como mejora de segunda etapa.
+//
+// De cara a la clienta, esto se presenta como un producto disponible con
+// envío internacional gestionado por Bdress — sin explicar que la prenda
+// se compra después en otra plataforma (Vinted/Depop) ni que su
+// disponibilidad se confirma manualmente. Esa operación interna sigue
+// existiendo exactamente igual (ver src/lib/international/status.ts y el
+// panel admin, que no cambian) — lo único que cambia acá es qué tanto de
+// eso se le explica a la clienta.
 //
 // INTERNATIONAL_TERMS_VERSION identifica qué versión de este texto aceptó
 // cada compradora (orders.international_terms_version) — subirla cada vez
-// que cambie el contenido del checkbox de aceptación.
-export const INTERNATIONAL_TERMS_VERSION = 'v1'
+// que cambie el contenido del checkbox de aceptación. Subida a v2 porque el
+// texto de aceptación cambió de fondo (ya no menciona "confirmación de
+// disponibilidad").
+export const INTERNATIONAL_TERMS_VERSION = 'v2'
 
-export const INTERNATIONAL_MODE_NAME = 'Selección internacional'
-export const INTERNATIONAL_BADGE_LABEL = 'Selección internacional'
+export const INTERNATIONAL_MODE_NAME = 'Envío internacional'
+export const INTERNATIONAL_BADGE_LABEL = 'Envío internacional'
 
 export const INTERNATIONAL_DEFAULT_LEAD_TIME_MIN_DAYS = 20
 export const INTERNATIONAL_DEFAULT_LEAD_TIME_MAX_DAYS = 30
@@ -24,21 +32,22 @@ export function leadTimeRange(minDays: number | null | undefined, maxDays: numbe
 }
 
 export const INTERNATIONAL_AVAILABILITY_MESSAGE =
-  'Este producto se encuentra disponible por encargo internacional. Después de tu compra confirmaremos su disponibilidad con la plataforma de origen.'
+  'Este producto se encuentra fuera de Chile y cuenta con envío internacional gestionado por Bdress Market.'
 
 export function internationalDeliveryEstimateMessage(minDays?: number | null, maxDays?: number | null): string {
   const { min, max } = leadTimeRange(minDays, maxDays)
-  return `Entrega estimada: entre ${min} y ${max} días corridos desde la confirmación de disponibilidad.`
+  return `Entrega estimada: entre ${min} y ${max} días corridos.`
 }
 
-export const INTERNATIONAL_HOW_IT_WORKS_TITLE = '¿Cómo funciona la Selección internacional?'
+export const INTERNATIONAL_HOW_IT_WORKS_TITLE = '¿Cómo funciona el envío internacional?'
 export const INTERNATIONAL_HOW_IT_WORKS_STEPS = [
-  'Realizas la compra en Bdress Market.',
-  'Confirmamos que la prenda continúe disponible.',
-  'Compramos la prenda en la plataforma internacional.',
-  'La recibimos y trasladamos a Chile.',
-  'Revisamos la prenda y coordinamos el despacho a tu dirección.',
+  'Realizas tu compra normalmente en Bdress Market.',
+  'Gestionamos el envío internacional de tu pedido.',
+  'Una vez que llega a Chile, revisamos la prenda.',
+  'Coordinamos el despacho a tu dirección.',
 ]
+export const INTERNATIONAL_HOW_IT_WORKS_CLOSING =
+  'Nos encargamos de gestionar todo el proceso para que recibas tu compra directamente en la dirección indicada.'
 
 // El precio publicado por la admin ya contempla el costo aduanero estimado
 // (international_customs_estimate) al fijar el precio final — por eso a la
@@ -46,26 +55,29 @@ export const INTERNATIONAL_HOW_IT_WORKS_STEPS = [
 export const INTERNATIONAL_TAXES_INCLUDED_MESSAGE =
   'El precio incluye impuestos y costos de aduana — no vas a pagar nada adicional al recibir tu prenda.'
 
+// Reformulado a propósito sin mencionar por qué podría pasar (Vinted, venta
+// en la plataforma de origen, confirmación de disponibilidad, etc.) — solo
+// deja constancia de que existe la posibilidad y de que el reembolso es
+// completo. Se muestra en el checkout (aceptación) y en los correos
+// relevantes; ya no en el modal informativo de la ficha de producto, para
+// mantener esa vista simple y no generar dudas antes de la compra.
 export const INTERNATIONAL_AVAILABILITY_WARNING =
-  'Como se trata de una publicación externa y de una pieza generalmente única, existe la posibilidad de que se venda antes de que podamos confirmar la compra. En ese caso anularemos la orden y gestionaremos la devolución completa del pago.'
+  'En casos excepcionales podríamos no poder completar tu envío internacional — si eso pasa, anulamos tu compra y te devolvemos el pago completo.'
 
-export const INTERNATIONAL_CHECKOUT_NOTICE_TITLE = 'Tu pedido incluye un producto internacional por encargo'
+export const INTERNATIONAL_CHECKOUT_NOTICE_TITLE = 'Tu pedido incluye un producto con envío internacional'
 
 export function internationalCheckoutExplanation(minDays?: number | null, maxDays?: number | null): string {
   const { min, max } = leadTimeRange(minDays, maxDays)
-  return `Antes de despacharlo, confirmamos manualmente que la prenda siga disponible en la plataforma de origen y la compramos a tu nombre. Ese proceso, sumado al traslado a Chile, toma entre ${min} y ${max} días corridos. Si la prenda ya no está disponible, anulamos tu compra y te devolvemos el pago completo.`
+  return `Este producto tiene envío internacional gestionado por Bdress Market. Ese proceso toma entre ${min} y ${max} días corridos.`
 }
 
 export function internationalConsentText(minDays?: number | null, maxDays?: number | null): string {
   const { min, max } = leadTimeRange(minDays, maxDays)
-  return `He leído y acepto que este producto se compra por encargo internacional, que su disponibilidad debe ser confirmada y que su entrega puede tardar entre ${min} y ${max} días corridos desde la confirmación.`
+  return `He leído y acepto que este producto tiene envío internacional gestionado por Bdress Market y que su entrega puede tardar entre ${min} y ${max} días corridos.`
 }
 
-export const INTERNATIONAL_UNAVAILABLE_POLICY =
-  'Si la prenda ya no está disponible en la plataforma de origen antes de comprarla, anulamos tu orden por completo y te devolvemos el pago íntegro — no se cobra ninguna penalización.'
-
 export function internationalDelayMessage(): string {
-  return 'Tu pedido está tardando más de lo esperado. Nuestro equipo está revisando el traslado y te mantendremos informada.'
+  return 'Tu pedido está tardando más de lo esperado. Nuestro equipo está revisando el envío y te mantendremos informada.'
 }
 
 // No hay carrito multi-ítem en la plataforma (cada orden es un solo listing),

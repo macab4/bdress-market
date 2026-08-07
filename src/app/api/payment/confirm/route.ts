@@ -99,7 +99,7 @@ async function handleNotification(request: Request) {
           previous_status: null,
           new_status: 'awaiting_source_verification',
           changed_by: null,
-          public_note: 'Recibimos tu compra. Estamos confirmando que la prenda siga disponible en la plataforma de origen.',
+          public_note: 'Recibimos tu compra. Estamos procesando tu pedido.',
         })
         await supabase.from('international_events').insert({
           event_type: 'international_order_paid',

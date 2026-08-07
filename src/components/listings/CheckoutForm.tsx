@@ -6,7 +6,7 @@ import { buyerProtectionFee } from '@/lib/catalog'
 import BuyerProtectionModal from '@/components/listings/BuyerProtectionModal'
 import {
   INTERNATIONAL_CHECKOUT_NOTICE_TITLE, internationalCheckoutExplanation, internationalConsentText,
-  INTERNATIONAL_TAXES_INCLUDED_MESSAGE,
+  INTERNATIONAL_TAXES_INCLUDED_MESSAGE, INTERNATIONAL_AVAILABILITY_WARNING,
 } from '@/lib/international/content'
 
 interface CheckoutFormProps {
@@ -190,6 +190,7 @@ export default function CheckoutForm({
             {internationalCheckoutExplanation(internationalLeadTimeMinDays, internationalLeadTimeMaxDays)}
           </p>
           <p className="text-xs font-medium text-[#5a7a55]">{INTERNATIONAL_TAXES_INCLUDED_MESSAGE}</p>
+          <p className="text-xs text-gray-500 leading-relaxed">{INTERNATIONAL_AVAILABILITY_WARNING}</p>
           <label className="flex items-start gap-2 text-xs text-gray-600 pt-1">
             <input
               type="checkbox"

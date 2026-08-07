@@ -379,7 +379,7 @@ export default async function ListingPage({
               </p>
             </div>
 
-            {/* Selección internacional */}
+            {/* Envío internacional */}
             {listing.source_type === 'international_on_demand' && (
               <InternationalInfoModal
                 leadTimeMinDays={listing.international_lead_time_min_days}

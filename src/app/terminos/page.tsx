@@ -7,7 +7,7 @@ import {
 } from '@/lib/catalog'
 import {
   INTERNATIONAL_MODE_NAME, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
-  INTERNATIONAL_HOW_IT_WORKS_STEPS, INTERNATIONAL_AVAILABILITY_WARNING, INTERNATIONAL_UNAVAILABLE_POLICY,
+  INTERNATIONAL_HOW_IT_WORKS_STEPS, INTERNATIONAL_HOW_IT_WORKS_CLOSING, INTERNATIONAL_AVAILABILITY_WARNING,
   INTERNATIONAL_TAXES_INCLUDED_MESSAGE, internationalDelayMessage,
 } from '@/lib/international/content'
 
@@ -19,7 +19,7 @@ const SECTIONS = [
   { id: 'ofertas', label: 'Ofertas y negociación' },
   { id: 'vender', label: 'Cómo vender' },
   { id: 'envios', label: 'Envíos' },
-  { id: 'internacional', label: 'Selección internacional' },
+  { id: 'internacional', label: 'Envío internacional' },
   { id: 'pagos', label: 'Pagos y comisión' },
   { id: 'mensajes', label: 'Mensajería' },
   { id: 'seguridad', label: 'Seguridad y estafas' },
@@ -136,9 +136,9 @@ export default function TerminosPage() {
           <section id="internacional" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">{INTERNATIONAL_MODE_NAME}</h2>
             <p className="mb-2">
-              Además de las prendas publicadas por vendedoras chilenas, Bdress selecciona piezas disponibles en
-              plataformas internacionales de moda de segunda mano (como Vinted o Depop) y las publica en el
-              catálogo como <strong>{INTERNATIONAL_MODE_NAME.toLowerCase()}</strong>. {INTERNATIONAL_AVAILABILITY_MESSAGE}
+              Algunos productos del catálogo cuentan con <strong>{INTERNATIONAL_MODE_NAME.toLowerCase()}</strong> gestionado
+              por Bdress Market — se identifican con esa etiqueta en la tarjeta y la ficha del producto.
+              {' '}{INTERNATIONAL_AVAILABILITY_MESSAGE}
             </p>
             <p className="mb-2">{internationalDeliveryEstimateMessage()}</p>
             <p className="mb-2 font-medium text-[#5a7a55]">{INTERNATIONAL_TAXES_INCLUDED_MESSAGE}</p>
@@ -147,11 +147,12 @@ export default function TerminosPage() {
             <ol className="list-decimal list-inside space-y-1 mb-3">
               {INTERNATIONAL_HOW_IT_WORKS_STEPS.map((step, i) => <li key={i}>{step}</li>)}
             </ol>
+            <p className="mb-3">{INTERNATIONAL_HOW_IT_WORKS_CLOSING}</p>
 
-            <p className="font-medium text-gray-800 mb-1">Si la prenda ya no está disponible</p>
-            <p className="mb-2">{INTERNATIONAL_AVAILABILITY_WARNING} {INTERNATIONAL_UNAVAILABLE_POLICY}</p>
+            <p className="font-medium text-gray-800 mb-1">En casos excepcionales</p>
+            <p className="mb-2">{INTERNATIONAL_AVAILABILITY_WARNING}</p>
 
-            <p className="font-medium text-gray-800 mb-1">Si el traslado se demora</p>
+            <p className="font-medium text-gray-800 mb-1">Si el envío se demora</p>
             <p>{internationalDelayMessage()}</p>
           </section>
 

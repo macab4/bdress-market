@@ -5,23 +5,31 @@ import { InternationalStatus } from '@/types'
 // archivo es la única fuente de verdad de qué estados existen, cómo se ven,
 // y qué transición dispara cada acción administrativa.
 
-export const INTERNATIONAL_STATUS_CONFIG: Record<InternationalStatus, { label: string; color: string }> = {
-  awaiting_source_verification: { label: 'Validando disponibilidad', color: 'bg-gray-100 text-gray-500' },
-  source_confirmed:             { label: 'Disponibilidad confirmada', color: 'bg-blue-50 text-blue-600' },
-  source_purchase_pending:      { label: 'Comprando en origen', color: 'bg-blue-50 text-blue-600' },
-  source_purchased:             { label: 'Compra internacional realizada', color: 'bg-blue-50 text-blue-600' },
-  received_at_foreign_hub:      { label: 'Recibido en centro logístico', color: 'bg-amber-50 text-amber-600' },
-  international_transit:        { label: 'En tránsito internacional', color: 'bg-amber-50 text-amber-600' },
-  customs_processing:           { label: 'En trámite aduanero', color: 'bg-amber-50 text-amber-600' },
-  received_in_chile:            { label: 'Recibido en Chile', color: 'bg-amber-50 text-amber-600' },
-  quality_check:                { label: 'En revisión por Bdress', color: 'bg-amber-50 text-amber-600' },
-  national_shipping_pending:    { label: 'Preparando despacho', color: 'bg-amber-50 text-amber-600' },
-  nationally_shipped:           { label: 'Despachado en Chile', color: 'bg-amber-50 text-amber-600' },
-  delivered:                    { label: 'Entregado', color: 'bg-green-50 text-green-700' },
-  source_unavailable:           { label: 'Cancelado por falta de disponibilidad', color: 'bg-red-50 text-red-600' },
-  cancellation_pending:         { label: 'Cancelado por falta de disponibilidad', color: 'bg-red-50 text-red-600' },
-  refund_pending:               { label: 'Reembolso en proceso', color: 'bg-red-50 text-red-600' },
-  refunded:                     { label: 'Reembolsado', color: 'bg-gray-100 text-gray-400' },
+// `label` es el nombre operacional que ve la admin en el panel (sección 8
+// del encargo — ahí sí necesita saber que se está "validando disponibilidad"
+// o "comprando en origen"). `customerLabel` es lo que ve la clienta en "Mis
+// compras" (InternationalOrderTimeline.tsx) — mismo estado, mismo color,
+// solo un nombre que no revela la operación de abastecimiento. La máquina
+// de estados (InternationalStatus, ALLOWED_TRANSITIONS) es una sola — esto
+// no es una segunda lógica paralela, es un texto de presentación distinto
+// para la misma fuente de verdad.
+export const INTERNATIONAL_STATUS_CONFIG: Record<InternationalStatus, { label: string; customerLabel: string; color: string }> = {
+  awaiting_source_verification: { label: 'Validando disponibilidad', customerLabel: 'Procesando tu pedido', color: 'bg-gray-100 text-gray-500' },
+  source_confirmed:             { label: 'Disponibilidad confirmada', customerLabel: 'Preparando tu compra', color: 'bg-blue-50 text-blue-600' },
+  source_purchase_pending:      { label: 'Comprando en origen', customerLabel: 'Preparando tu compra', color: 'bg-blue-50 text-blue-600' },
+  source_purchased:             { label: 'Compra internacional realizada', customerLabel: 'Compra realizada', color: 'bg-blue-50 text-blue-600' },
+  received_at_foreign_hub:      { label: 'Recibido en centro logístico', customerLabel: 'En tránsito hacia Chile', color: 'bg-amber-50 text-amber-600' },
+  international_transit:        { label: 'En tránsito internacional', customerLabel: 'En tránsito hacia Chile', color: 'bg-amber-50 text-amber-600' },
+  customs_processing:           { label: 'En trámite aduanero', customerLabel: 'En tránsito hacia Chile', color: 'bg-amber-50 text-amber-600' },
+  received_in_chile:            { label: 'Recibido en Chile', customerLabel: 'Recibido en Chile', color: 'bg-amber-50 text-amber-600' },
+  quality_check:                { label: 'En revisión por Bdress', customerLabel: 'Revisando tu producto', color: 'bg-amber-50 text-amber-600' },
+  national_shipping_pending:    { label: 'Preparando despacho', customerLabel: 'Preparando despacho', color: 'bg-amber-50 text-amber-600' },
+  nationally_shipped:           { label: 'Despachado en Chile', customerLabel: 'Despachado en Chile', color: 'bg-amber-50 text-amber-600' },
+  delivered:                    { label: 'Entregado', customerLabel: 'Entregado', color: 'bg-green-50 text-green-700' },
+  source_unavailable:           { label: 'Cancelado por falta de disponibilidad', customerLabel: 'Pedido cancelado', color: 'bg-red-50 text-red-600' },
+  cancellation_pending:         { label: 'Cancelado por falta de disponibilidad', customerLabel: 'Pedido cancelado', color: 'bg-red-50 text-red-600' },
+  refund_pending:               { label: 'Reembolso en proceso', customerLabel: 'Reembolso en proceso', color: 'bg-red-50 text-red-600' },
+  refunded:                     { label: 'Reembolsado', customerLabel: 'Reembolsado', color: 'bg-gray-100 text-gray-400' },
 }
 
 // Camino "feliz" en orden, usado para la línea de tiempo de la clienta

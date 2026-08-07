@@ -26,7 +26,7 @@ export default function InternationalOrderTimeline({ currentStatus, history, pai
   return (
     <div className="mt-3 space-y-2">
       <p className="text-[10px] text-gray-400">
-        Entrega estimada: {min}–{max} días corridos desde la confirmación de disponibilidad
+        Entrega estimada: {min}–{max} días corridos
         {lastUpdate && ` · Última actualización: ${new Date(lastUpdate.created_at).toLocaleDateString('es-CL')}`}
       </p>
 
@@ -39,7 +39,7 @@ export default function InternationalOrderTimeline({ currentStatus, history, pai
             <li key={status} className={`flex items-start gap-2 text-xs ${done ? 'text-gray-700' : 'text-gray-300'}`}>
               <span className={`mt-0.5 w-1.5 h-1.5 rounded-full flex-shrink-0 ${done ? 'bg-[#7fab87]' : 'bg-gray-200'}`} />
               <span>
-                {config.label}
+                {config.customerLabel}
                 {done && note && <span className="block text-[10px] text-gray-400">{note}</span>}
               </span>
             </li>

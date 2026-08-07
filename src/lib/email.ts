@@ -1,5 +1,5 @@
 import { Resend } from 'resend'
-import { leadTimeRange, internationalDelayMessage } from '@/lib/international/content'
+import { leadTimeRange, internationalDelayMessage, INTERNATIONAL_AVAILABILITY_WARNING } from '@/lib/international/content'
 
 let client: Resend | null = null
 
@@ -252,19 +252,17 @@ export async function sendInternationalOrderReceivedEmail({
   const { min, max } = leadTimeRange(minDays, maxDays)
   await sendEmail({
     to,
-    subject: `Recibimos tu compra internacional — ${listingTitle}`,
-    html: emailLayout('Compra internacional recibida', `
+    subject: `Recibimos tu compra — ${listingTitle}`,
+    html: emailLayout('Compra recibida', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, recibimos tu pago por <strong>${listingTitle}</strong>. Antes de comprarla en la
-        plataforma de origen, vamos a confirmar que siga disponible — te avisamos apenas lo confirmemos.
+        Hola ${name ?? ''}, recibimos tu pago por <strong>${listingTitle}</strong>. Este producto tiene envío
+        internacional gestionado por Bdress Market — te avisamos apenas tengamos novedades de tu pedido.
       </p>
       <p style="font-size: 13px; color: #888; line-height: 1.6;">
-        Al tratarse de una pieza única de una plataforma externa, en casos poco frecuentes puede venderse antes de
-        que logremos comprarla. Si eso pasa, anulamos tu orden y te devolvemos el pago completo, sin ningún costo
-        para ti.
+        Entrega estimada: entre ${min} y ${max} días corridos.
       </p>
       <p style="font-size: 13px; color: #888; line-height: 1.6;">
-        Entrega estimada: entre ${min} y ${max} días corridos desde que confirmemos la disponibilidad.
+        ${INTERNATIONAL_AVAILABILITY_WARNING}
       </p>
       <p style="text-align: center; margin-top: 24px;">
         <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
@@ -280,11 +278,11 @@ export async function sendInternationalAvailabilityConfirmedEmail({
 }: { to: string; name: string | null; listingTitle: string }) {
   await sendEmail({
     to,
-    subject: `Confirmamos disponibilidad — ${listingTitle}`,
-    html: emailLayout('Disponibilidad confirmada', `
+    subject: `Tu pedido está en proceso — ${listingTitle}`,
+    html: emailLayout('Pedido en proceso', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, buenas noticias: <strong>${listingTitle}</strong> sigue disponible. Ahora la compramos
-        en la plataforma de origen y coordinamos su traslado a Chile.
+        Hola ${name ?? ''}, tu compra de <strong>${listingTitle}</strong> ya está en proceso — estamos gestionando
+        su envío internacional.
       </p>
       <p style="text-align: center; margin-top: 24px;">
         <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
@@ -300,11 +298,11 @@ export async function sendInternationalUnavailableCancelledEmail({
 }: { to: string; name: string | null; listingTitle: string }) {
   await sendEmail({
     to,
-    subject: `Ya no estaba disponible — anulamos tu compra de ${listingTitle}`,
+    subject: `Anulamos tu compra de ${listingTitle}`,
     html: emailLayout('Compra anulada', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, lamentablemente <strong>${listingTitle}</strong> se vendió en la plataforma de origen
-        antes de que pudiéramos comprarla. Anulamos tu orden — no te cobramos nada y ya iniciamos la devolución
+        Hola ${name ?? ''}, lamentablemente no pudimos completar el envío internacional de tu compra de
+        <strong>${listingTitle}</strong>. Anulamos tu orden — no te cobramos nada y ya iniciamos la devolución
         completa de tu pago.
       </p>
       <p style="font-size: 13px; color: #888; line-height: 1.6;">
@@ -319,11 +317,11 @@ export async function sendInternationalPurchasedEmail({
 }: { to: string; name: string | null; listingTitle: string }) {
   await sendEmail({
     to,
-    subject: `Ya compramos tu prenda — ${listingTitle}`,
-    html: emailLayout('Compra internacional realizada', `
+    subject: `Tu compra avanza — ${listingTitle}`,
+    html: emailLayout('Compra en preparación', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, ya compramos <strong>${listingTitle}</strong> en la plataforma de origen. Ahora la
-        recibimos y la trasladamos a Chile.
+        Hola ${name ?? ''}, tu compra de <strong>${listingTitle}</strong> ya está en preparación. Pronto la
+        trasladamos a Chile.
       </p>
       <p style="text-align: center; margin-top: 24px;">
         <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
@@ -338,14 +336,14 @@ export async function sendInternationalTransitUpdateEmail({
   to, name, listingTitle, stage,
 }: { to: string; name: string | null; listingTitle: string; stage: 'received_at_foreign_hub' | 'international_transit' }) {
   const copy = stage === 'received_at_foreign_hub'
-    ? 'ya llegó a nuestro centro logístico en Europa'
+    ? 'ya inició su envío internacional'
     : 'ya va en tránsito hacia Chile'
   await sendEmail({
     to,
     subject: `Actualización de tu pedido — ${listingTitle}`,
-    html: emailLayout('Actualización de traslado', `
+    html: emailLayout('Actualización de envío', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, tu prenda <strong>${listingTitle}</strong> ${copy}.
+        Hola ${name ?? ''}, tu pedido de <strong>${listingTitle}</strong> ${copy}.
       </p>
       <p style="text-align: center; margin-top: 24px;">
         <a href="${purchasesLink()}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">

@@ -128,7 +128,7 @@ export async function POST(
     case 'confirm_availability':
       sourcingUpdate.source_status = 'available'
       sourcingUpdate.source_last_verified_at = new Date().toISOString()
-      publicNote = 'Confirmamos que la prenda sigue disponible. Ahora la compramos en la plataforma de origen.'
+      publicNote = 'Tu pedido está en preparación.'
       break
     case 'register_external_purchase':
       sourcingUpdate.source_status = 'purchased'
@@ -136,16 +136,16 @@ export async function POST(
       if (typeof payload.external_purchase_price === 'number') sourcingUpdate.external_purchase_price = payload.external_purchase_price
       if (typeof payload.external_purchase_currency === 'string') sourcingUpdate.external_purchase_currency = payload.external_purchase_currency
       if (typeof payload.external_purchase_date === 'string') sourcingUpdate.external_purchase_date = payload.external_purchase_date
-      publicNote = 'Compramos tu prenda en la plataforma de origen.'
+      publicNote = 'Tu compra está en preparación — pronto la trasladamos a Chile.'
       break
     case 'mark_received_spain':
-      publicNote = 'Tu prenda llegó a nuestro centro logístico en Europa.'
+      publicNote = 'Tu pedido ya inició su envío internacional.'
       break
     case 'mark_in_transit':
-      publicNote = 'Tu prenda ya va en tránsito hacia Chile.'
+      publicNote = 'Tu pedido ya va en tránsito hacia Chile.'
       break
     case 'mark_customs':
-      publicNote = 'Tu prenda está en trámite aduanero.'
+      publicNote = 'Tu pedido sigue en camino hacia Chile.'
       break
     case 'mark_received_chile':
       publicNote = 'Tu prenda ya llegó a Chile. La estamos revisando.'
@@ -161,7 +161,7 @@ export async function POST(
       break
     case 'mark_unavailable':
       sourcingUpdate.source_status = 'unavailable'
-      publicNote = 'La prenda ya no estaba disponible en la plataforma de origen — anulamos tu compra.'
+      publicNote = 'No pudimos completar tu envío internacional — anulamos tu compra.'
       break
     case 'start_cancellation':
       publicNote = 'Iniciamos la cancelación de tu compra.'
