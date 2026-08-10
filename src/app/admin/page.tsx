@@ -138,6 +138,7 @@ export default async function AdminPage() {
                     <th className="text-right px-4 py-3">Comisión</th>
                     <th className="text-left px-4 py-3">Estado</th>
                     <th className="text-left px-4 py-3">Fecha</th>
+                    <th className="text-left px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -157,6 +158,11 @@ export default async function AdminPage() {
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                           {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                        </td>
+                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                          <Link href={`/admin/orders/${order.id}`} className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">
+                            Ver detalle
+                          </Link>
                         </td>
                       </tr>
                     )

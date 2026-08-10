@@ -235,6 +235,74 @@ export async function sendReviewReminderEmail({
   })
 }
 
+// Confirmación inmediata a la vendedora cuando pide la etiqueta en modo
+// manual (MANUAL_LABEL_MODE) — sin esto, no recibía ninguna respuesta hasta
+// que la admin le mandaba la etiqueta real más tarde (sendLabelReadyEmail),
+// lo que podía sentirse como "no pasó nada" o generar dudas de si eran dos
+// avisos distintos o uno repetido.
+export async function sendLabelRequestReceivedEmail({
+  to,
+  name,
+  listingTitle,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+}) {
+  await sendEmail({
+    to,
+    subject: `Recibimos tu pedido de etiqueta — ${listingTitle}`,
+    html: emailLayout('Etiqueta en camino', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, recibimos tu pedido de etiqueta de envío para <strong>${listingTitle}</strong>.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        En breve te vamos a enviar la etiqueta lista para imprimir en un correo aparte — todavía no es este.
+      </p>
+    `),
+  })
+}
+
+// Correo a la vendedora con la etiqueta de envío lista para imprimir —
+// mismo contenido tanto si la generó automáticamente el courier (ver
+// api/orders/[id]/generate-label) como si la admin la subió a mano en modo
+// manual (ver api/admin/orders/[id]/label), para no duplicar este HTML.
+export async function sendLabelReadyEmail({
+  to,
+  name,
+  listingTitle,
+  labelUrl,
+  trackingNumber,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  labelUrl: string
+  trackingNumber?: string | null
+}) {
+  await sendEmail({
+    to,
+    subject: `Tu etiqueta de envío está lista — ${listingTitle}`,
+    html: emailLayout('Etiqueta lista', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu etiqueta de envío para <strong>${listingTitle}</strong> ya está lista.
+      </p>
+      ${trackingNumber ? `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Número de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
+      </p>` : ''}
+      <p style="text-align: center; margin: 24px 0;">
+        <a href="${labelUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Descargar etiqueta
+        </a>
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Imprímela, pégala en el paquete, y llévalo a cualquier sucursal de Starken.
+      </p>
+    `),
+  })
+}
+
 // ============================================================
 // Correos de la modalidad "Selección internacional" (Vinted España u otra
 // plataforma internacional). Mismo proveedor (Resend) y mismo patrón

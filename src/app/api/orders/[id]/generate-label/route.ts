@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createShipment, getShipmentLabel } from '@/lib/starken'
-import { sendEmail, emailLayout, sendInternationalNationallyShippedEmail } from '@/lib/email'
+import { sendEmail, emailLayout, sendInternationalNationallyShippedEmail, sendLabelReadyEmail, sendLabelRequestReceivedEmail } from '@/lib/email'
 import { MANUAL_LABEL_MODE } from '@/lib/catalog'
 import { isAdminEmail } from '@/lib/admin-auth'
 
@@ -63,7 +63,7 @@ export async function POST(
           <p style="font-size: 14px; color: #444; line-height: 1.6;">
             La vendedora pidió la etiqueta de envío de la orden <strong>${order.id}</strong> (${listing.title},
             valor declarado $${listing.price.toLocaleString('es-CL')}, tamaño <strong>${listing.shipping_size}</strong>).
-            Genérala en el Portal Empresas Chilexpress y envíasela directo a la vendedora.
+            Genérala en el Portal Empresas Chilexpress y súbela desde el panel de administración para que le llegue a la vendedora.
           </p>
           <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
             <strong>Retiro (origen)</strong><br/>
@@ -75,8 +75,17 @@ export async function POST(
             ${order.shipping_name} · ${order.shipping_phone}<br/>
             ${order.shipping_address}${order.shipping_address_extra ? `, ${order.shipping_address_extra}` : ''}, ${order.shipping_comuna}
           </p>
+          <p style="text-align: center; margin-top: 24px;">
+            <a href="${SITE_URL}/admin/orders/${order.id}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+              Subir etiqueta
+            </a>
+          </p>
         `),
       })
+    }
+
+    if (seller.email) {
+      await sendLabelRequestReceivedEmail({ to: seller.email, name: seller.name, listingTitle: listing.title })
     }
 
     return Response.json({ ok: true, manual: true })
@@ -146,25 +155,12 @@ export async function POST(
 
   // Email a la vendedora con la etiqueta para imprimir
   if (seller.email && label_url) {
-    await sendEmail({
+    await sendLabelReadyEmail({
       to: seller.email,
-      subject: `Tu etiqueta de envío está lista — ${listing.title}`,
-      html: emailLayout('Etiqueta lista', `
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Hola ${seller.name}, generamos la etiqueta de envío para <strong>${listing.title}</strong>.
-        </p>
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Número de seguimiento: <strong style="font-family: monospace;">${shipment.trackingNumber}</strong>
-        </p>
-        <p style="text-align: center; margin: 24px 0;">
-          <a href="${label_url}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-            Descargar etiqueta
-          </a>
-        </p>
-        <p style="font-size: 13px; color: #888; line-height: 1.6;">
-          Imprímela, pégala en el paquete, y llévalo a cualquier sucursal de Starken.
-        </p>
-      `),
+      name: seller.name,
+      listingTitle: listing.title,
+      labelUrl: label_url,
+      trackingNumber: shipment.trackingNumber,
     })
   }
 

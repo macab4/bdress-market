@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', email: '', password: '', city: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', city: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -26,7 +26,7 @@ export default function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { name: form.name, city: form.city } },
+      options: { data: { name: form.name, phone: form.phone, city: form.city } },
     })
 
     if (error) {
@@ -112,6 +112,7 @@ export default function RegisterPage() {
           {[
             { label: 'Email', field: 'email', type: 'email' },
             { label: 'Contraseña', field: 'password', type: 'password' },
+            { label: 'Teléfono', field: 'phone', type: 'tel' },
             { label: 'Ciudad', field: 'city', type: 'text' },
           ].map(({ label, field, type }) => (
             <div key={field}>

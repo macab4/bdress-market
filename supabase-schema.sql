@@ -754,3 +754,23 @@ create policy "Alias de marca visibles para todas" on public.brand_aliases
 
 alter table public.listings add column brand_id uuid references public.brands(id) on delete set null;
 create index listings_brand_id_idx on public.listings (brand_id);
+
+-- ============================================================
+-- Migración: el registro ahora pide teléfono y el trigger de creación de
+-- perfil lo guarda. Mismo contenido que
+-- supabase/migrations/20260809000000_signup_phone.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, name, phone)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    nullif(new.raw_user_meta_data->>'phone', '')
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
