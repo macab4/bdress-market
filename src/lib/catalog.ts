@@ -508,6 +508,13 @@ export const MANUAL_LABEL_MODE = true
 // como días corridos para no tener que calcular feriados.
 export const SHIP_DEADLINE_BUSINESS_DAYS = 5
 
+// Fecha límite de despacho a partir del pago — misma aproximación (días
+// corridos) que usa el cron de recordatorio, para que el admin y los
+// correos siempre muestren el mismo número.
+export function shipDeadline(paidAt: string): Date {
+  return new Date(new Date(paidAt).getTime() + SHIP_DEADLINE_BUSINESS_DAYS * 24 * 60 * 60 * 1000)
+}
+
 // Sistema de ofertas — negociación de precio entre compradora y vendedora.
 // No se puede ofertar menos de este % del precio publicado.
 export const OFFER_MIN_PCT = 0.5

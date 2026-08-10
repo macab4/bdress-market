@@ -147,6 +147,11 @@ export interface Order {
   courier_tracking_number: string | null
   courier_barcode: string | null
   label_url: string | null
+  label_downloaded_at: string | null
+  label_courier: string | null
+  label_tracking_number: string | null
+  label_uploaded_at: string | null
+  last_ship_reminder_sent_at: string | null
   paid_at: string | null
   shipped_at: string | null
   confirmed_at: string | null

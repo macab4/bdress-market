@@ -810,3 +810,13 @@ alter table public.orders add column label_downloaded_at timestamptz;
 -- Pegar y correr en Supabase Dashboard → SQL Editor.
 -- ============================================================
 alter table public.orders add column last_ship_reminder_sent_at timestamptz;
+
+-- ============================================================
+-- Migración: transportista y seguimiento detectados desde la etiqueta
+-- subida en modo manual. Mismo contenido que
+-- supabase/migrations/20260810030000_label_carrier_detection.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.orders add column label_courier text;
+alter table public.orders add column label_tracking_number text;
+alter table public.orders add column label_uploaded_at timestamptz;

@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createShipment, getShipmentLabel } from '@/lib/starken'
 import { sendEmail, emailLayout, sendInternationalNationallyShippedEmail, sendLabelReadyEmail, sendLabelRequestReceivedEmail } from '@/lib/email'
-import { MANUAL_LABEL_MODE } from '@/lib/catalog'
+import { MANUAL_LABEL_MODE, shipDeadline } from '@/lib/catalog'
+import { carrierInstructions } from '@/lib/shipping/carrierDetection'
 import { isAdminEmail } from '@/lib/admin-auth'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -18,7 +19,7 @@ export async function POST(
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, seller_id, buyer_id, listing_id, status, amount, shipping_name, shipping_phone, shipping_address, shipping_address_extra, shipping_comuna, courier_service_code, international_status')
+    .select('id, seller_id, buyer_id, listing_id, status, amount, shipping_name, shipping_phone, shipping_address, shipping_address_extra, shipping_comuna, courier_service_code, international_status, paid_at')
     .eq('id', id)
     .single()
 
@@ -161,6 +162,8 @@ export async function POST(
       listingTitle: listing.title,
       orderId: id,
       trackingNumber: shipment.trackingNumber,
+      carrierInstructions: carrierInstructions('starken'),
+      deadline: order.paid_at ? shipDeadline(order.paid_at) : null,
     })
   }
 

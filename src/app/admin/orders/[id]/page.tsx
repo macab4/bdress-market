@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Order } from '@/types'
-import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
+import { ORDER_STATUS_CONFIG, shipDeadline } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
 import UploadLabelForm from '@/components/admin/UploadLabelForm'
 
@@ -17,6 +17,10 @@ type AdminOrderDetail = Order & {
 function formatDate(iso: string | null) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function isPast(date: Date) {
+  return date.getTime() < Date.now()
 }
 
 export default async function AdminOrderDetailPage({
@@ -39,6 +43,9 @@ export default async function AdminOrderDetailPage({
   const status = ORDER_STATUS_CONFIG[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-500' }
   const photo = order.listing?.photos?.[0]
   const needsLabel = order.status === 'paid' && !order.label_url
+  const awaitingDispatch = order.status === 'paid' && !!order.label_url
+  const deadline = order.paid_at ? shipDeadline(order.paid_at) : null
+  const deadlinePassed = deadline ? isPast(deadline) : false
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -108,15 +115,43 @@ export default async function AdminOrderDetailPage({
 
             <p className="text-xs text-gray-400">Tamaño: {order.listing?.shipping_size ?? '—'}</p>
 
+            {deadline && (
+              <p className={`text-xs ${deadlinePassed && order.status === 'paid' ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+                Plazo de despacho: {deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                {deadlinePassed && order.status === 'paid' ? ' — vencido' : ''}
+              </p>
+            )}
+
+            {awaitingDispatch && (
+              <p className="text-[9px] tracking-widest uppercase px-2 py-0.5 bg-amber-50 text-amber-600 inline-block">
+                Esperando despacho de la vendedora
+              </p>
+            )}
+
+            {order.label_courier && order.label_tracking_number && (
+              <div className="bg-gray-50 p-3 text-xs text-gray-600 space-y-0.5">
+                <p><span className="text-gray-400">Transportista:</span> {order.label_courier}</p>
+                <p><span className="text-gray-400">N.º de seguimiento:</span> <span className="font-mono">{order.label_tracking_number}</span></p>
+                {order.label_uploaded_at && (
+                  <p className="text-[10px] text-gray-400">Etiqueta enviada: {formatDate(order.label_uploaded_at)}</p>
+                )}
+              </div>
+            )}
+
             {order.tracking_number && (
-              <p className="text-xs text-gray-500">Seguimiento: <span className="font-mono">{order.tracking_number}</span></p>
+              <p className="text-xs text-gray-500">Seguimiento (despacho confirmado): <span className="font-mono">{order.tracking_number}</span></p>
             )}
 
             {order.label_url && (
-              <a href={order.label_url} target="_blank" rel="noopener noreferrer"
-                className="inline-block text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">
-                Ver etiqueta enviada
-              </a>
+              <div className="flex items-center gap-3">
+                <a href={order.label_url} target="_blank" rel="noopener noreferrer"
+                  className="inline-block text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">
+                  Ver etiqueta enviada
+                </a>
+                <span className="text-[10px] text-gray-400">
+                  {order.label_downloaded_at ? `Descargada el ${formatDate(order.label_downloaded_at)}` : 'Todavía no descargada'}
+                </span>
+              </div>
             )}
 
             {needsLabel && (

@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { leadTimeRange, internationalDelayMessage, INTERNATIONAL_AVAILABILITY_WARNING } from '@/lib/international/content'
+import { SHIP_DEADLINE_BUSINESS_DAYS } from '@/lib/catalog'
 
 let client: Resend | null = null
 
@@ -314,35 +315,47 @@ export async function sendLabelRequestReceivedEmail({
 
 // Correo a la vendedora con la etiqueta de envío lista para imprimir —
 // mismo contenido tanto si la generó automáticamente el courier (ver
-// api/orders/[id]/generate-label) como si la admin la subió a mano en modo
-// manual (ver api/admin/orders/[id]/label), para no duplicar este HTML. El
-// link pasa por /api/orders/[id]/label/download (no directo al archivo) para
-// poder registrar cuándo la vendedora lo descarga por primera vez — también
-// queda disponible desde "Mis ventas" con el mismo link.
+// api/orders/[id]/generate-label, siempre Starken) como si la admin la subió
+// a mano en modo manual (ver api/admin/orders/[id]/label, transportista
+// detectado o ingresado a mano), para no duplicar este HTML. El link pasa
+// por /api/orders/[id]/label/download (no directo al archivo) para poder
+// registrar cuándo la vendedora lo descarga por primera vez — también queda
+// disponible desde "Mis ventas" con el mismo link.
 export async function sendLabelReadyEmail({
   to,
   name,
   listingTitle,
   orderId,
   trackingNumber,
+  carrierInstructions,
+  deadline,
 }: {
   to: string
   name: string | null
   listingTitle: string
   orderId: string
   trackingNumber?: string | null
+  carrierInstructions: string
+  deadline?: Date | null
 }) {
   const downloadUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/orders/${orderId}/label/download`
+  const deadlineFmt = deadline ? deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' }) : null
   await sendEmail({
     to,
     subject: `Tu etiqueta de envío está lista — ${listingTitle}`,
-    html: emailLayout('Etiqueta lista', `
+    html: emailLayout('Etiqueta lista 💚', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, tu etiqueta de envío para <strong>${listingTitle}</strong> ya está lista.
+        Hola ${name ?? ''}, tu prenda <strong>${listingTitle}</strong> fue vendida y ya puedes realizar el despacho.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        ${carrierInstructions}
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Tienes un plazo máximo de <strong>${SHIP_DEADLINE_BUSINESS_DAYS} días hábiles</strong>${deadlineFmt ? ` (hasta el ${deadlineFmt})` : ''} para realizar el envío.
       </p>
       ${trackingNumber ? `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Número de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
+        N.º de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
       </p>` : ''}
       <p style="text-align: center; margin: 24px 0;">
         <a href="${downloadUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
@@ -350,7 +363,56 @@ export async function sendLabelReadyEmail({
         </a>
       </p>
       <p style="font-size: 13px; color: #888; line-height: 1.6;">
-        Imprímela, pégala en el paquete, y llévalo a cualquier sucursal de Starken.
+        Recuerda imprimir la etiqueta, pegarla correctamente en el paquete y entregarlo en el punto correspondiente.
+      </p>
+    `),
+  })
+}
+
+// Aviso a la compradora en el mismo momento en que se le envía la etiqueta a
+// la vendedora — antes de esto no recibía nada hasta el correo de "ya fue
+// despachada" (order.status = 'shipped'), este es un touchpoint intermedio
+// para que sepa que su compra ya está en preparación.
+export async function sendLabelSentToBuyerEmail({
+  to,
+  name,
+  listingTitle,
+  carrierLabel,
+  trackingNumber,
+  deadline,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  carrierLabel?: string | null
+  trackingNumber?: string | null
+  deadline?: Date | null
+}) {
+  const deadlineFmt = deadline ? deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' }) : null
+  await sendEmail({
+    to,
+    subject: `Tu compra ya está en preparación — ${listingTitle}`,
+    html: emailLayout('En preparación 💚', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu compra <strong>${listingTitle}</strong> ya está preparando su camino hacia ti.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        La etiqueta de envío ya fue generada y enviada a la vendedora. Tiene un plazo máximo de
+        <strong>${SHIP_DEADLINE_BUSINESS_DAYS} días hábiles</strong>${deadlineFmt ? ` (hasta el ${deadlineFmt})` : ''}
+        para despachar tu compra${carrierLabel ? ` a través de ${carrierLabel}` : ''}.
+      </p>
+      ${trackingNumber ? `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        N.º de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
+      </p>` : ''}
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Una vez que recibas tu compra, tendrás 2 días para informarnos si existe algún problema con el pedido.
+        Pasado ese plazo, la compra se considerará recibida correctamente y podremos liberar el pago a la vendedora.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi compra
+        </a>
       </p>
     `),
   })
