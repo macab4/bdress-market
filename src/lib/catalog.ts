@@ -502,6 +502,12 @@ export const PENDING_ORDER_EXPIRY_MINUTES = 30
 // Volver a false apenas algún courier entregue credenciales reales.
 export const MANUAL_LABEL_MODE = true
 
+// Plazo prometido a la vendedora para despachar tras el pago (ver "Cómo
+// vender" y "Envíos" en /terminos, y el correo "¡Vendiste!"). En días
+// hábiles; el cron de recordatorio (api/cron/ship-reminder) lo aproxima
+// como días corridos para no tener que calcular feriados.
+export const SHIP_DEADLINE_BUSINESS_DAYS = 5
+
 // Sistema de ofertas — negociación de precio entre compradora y vendedora.
 // No se puede ofertar menos de este % del precio publicado.
 export const OFFER_MIN_PCT = 0.5

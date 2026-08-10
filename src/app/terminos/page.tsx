@@ -106,7 +106,12 @@ export default function TerminosPage() {
             <ol className="list-decimal list-inside space-y-2">
               <li>Crea tu cuenta y completa tu perfil, incluyendo tu dirección de despacho (nombre, teléfono, dirección y comuna) — la vas a necesitar para generar etiquetas de envío.</li>
               <li>Publica tu prenda con fotos, título, descripción, categoría y subcategoría, talla, marca, estado (nuevo con etiquetas, nuevo sin etiquetas, muy bueno, bueno o satisfactorio), tamaño de envío y precio. Publicar es gratis y no te cobramos comisión por vender.</li>
-              <li>Cuando alguien compra tu prenda, te avisamos por correo. Entra a «Mis ventas» y genera la etiqueta de envío: se genera automáticamente con Starken y te llega lista para imprimir a tu correo.</li>
+              <li>
+                Cuando alguien compra tu prenda, te avisamos por correo. Entra a «Mis ventas» y pide la etiqueta de
+                envío: nuestro equipo la genera y te la manda lista para imprimir a tu correo (también queda
+                disponible para descargar desde «Mis ventas»). Tienes <strong>5 días hábiles</strong> desde la
+                compra para despachar tu prenda.
+              </li>
               <li>Imprime la etiqueta, pégala en el paquete y llévalo a cualquier sucursal de Starken.</li>
               <li>
                 Cuando la compradora confirma la recepción, esperamos <strong>2 días</strong> por si reporta un
@@ -127,9 +132,9 @@ export default function TerminosPage() {
               al precio de la prenda al momento de pagar.
             </p>
             <p>
-              La vendedora es responsable de despachar la prenda en la sucursal Starken dentro de los días
-              indicados luego de recibir el pago. Si no lo hace a tiempo, la compradora puede solicitar el
-              reembolso completo.
+              La vendedora es responsable de despachar la prenda en la sucursal Starken dentro de los{' '}
+              <strong>5 días hábiles</strong> siguientes a recibir el pago. Si no lo hace a tiempo, la compradora
+              puede solicitar el reembolso completo.
             </p>
           </section>
 
