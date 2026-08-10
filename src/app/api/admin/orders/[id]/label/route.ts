@@ -76,7 +76,7 @@ export async function POST(
       to: seller.email,
       name: seller.name,
       listingTitle: listing?.title ?? 'tu prenda',
-      labelUrl: publicUrl,
+      orderId: id,
       trackingNumber: order.tracking_number,
     })
   }

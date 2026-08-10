@@ -159,7 +159,7 @@ export async function POST(
       to: seller.email,
       name: seller.name,
       listingTitle: listing.title,
-      labelUrl: label_url,
+      orderId: id,
       trackingNumber: shipment.trackingNumber,
     })
   }

@@ -774,3 +774,39 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+
+-- ============================================================
+-- Corrige un descuido de la migración anterior: quedó afuera "city". Mismo
+-- contenido que supabase/migrations/20260810000000_signup_city_fix.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, name, phone, city)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    nullif(new.raw_user_meta_data->>'phone', ''),
+    nullif(new.raw_user_meta_data->>'city', '')
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- ============================================================
+-- Migración: registrar cuándo la vendedora descargó la etiqueta por primera
+-- vez. Mismo contenido que
+-- supabase/migrations/20260810010000_label_downloaded_tracking.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.orders add column label_downloaded_at timestamptz;
+
+-- ============================================================
+-- Migración: evitar mandar el recordatorio diario de despacho más de una vez
+-- por día. Mismo contenido que
+-- supabase/migrations/20260810020000_ship_reminder_tracking.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.orders add column last_ship_reminder_sent_at timestamptz;

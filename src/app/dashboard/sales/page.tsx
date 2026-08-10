@@ -94,7 +94,18 @@ export default async function SalesPage() {
                           <p>{order.shipping_comuna}, {order.shipping_city}</p>
                         </div>
 
-                        <GenerateLabelButton orderId={order.id} />
+                        {order.label_url ? (
+                          <a
+                            href={`/api/orders/${order.id}/label/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full text-center bg-black text-white text-xs tracking-widest uppercase py-3 mt-3 hover:bg-gray-800 transition"
+                          >
+                            Descargar etiqueta
+                          </a>
+                        ) : (
+                          <GenerateLabelButton orderId={order.id} />
+                        )}
                         <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-3 mb-1">
                           ¿Ya tienes el número de seguimiento?
                         </p>

@@ -235,6 +235,55 @@ export async function sendReviewReminderEmail({
   })
 }
 
+// Recordatorio diario a la vendedora mientras su venta siga sin despachar
+// (ver api/cron/ship-reminder) — a propósito insiste en "si ya la enviaste,
+// ignora este correo" porque se manda todos los días sin esperar a que el
+// sistema confirme el despacho, para no generar dudas si hay un desfase
+// entre que ella la despacha y que queda registrado.
+export async function sendShipReminderEmail({
+  to,
+  name,
+  listingTitle,
+  daysElapsed,
+  deadlineDays,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  daysElapsed: number
+  deadlineDays: number
+}) {
+  const overdue = daysElapsed > deadlineDays
+  const daysLeft = deadlineDays - daysElapsed
+
+  const urgencyLine = overdue
+    ? `Ya pasó tu plazo de <strong>${deadlineDays} días hábiles</strong> para despachar — la compradora puede solicitar el reembolso completo en cualquier momento. Despáchala hoy para evitarlo.`
+    : daysLeft <= 1
+      ? `Hoy es tu último día dentro del plazo de <strong>${deadlineDays} días hábiles</strong> para despachar.`
+      : `Te quedan <strong>${daysLeft} días hábiles</strong> de tu plazo de ${deadlineDays} días para despachar.`
+
+  await sendEmail({
+    to,
+    subject: overdue ? `Tu plazo de envío ya venció — ${listingTitle}` : `Recuerda despachar — ${listingTitle}`,
+    html: emailLayout('Recordatorio de despacho', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, todavía no registramos el despacho de <strong>${listingTitle}</strong>.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        ${urgencyLine}
+      </p>
+      <p style="text-align: center; margin: 24px 0;">
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ir a Mis ventas
+        </a>
+      </p>
+      <p style="font-size: 12px; color: #999; line-height: 1.6; text-align: center;">
+        Si ya la enviaste, ignora este correo — puede que todavía no se refleje en el sistema.
+      </p>
+    `),
+  })
+}
+
 // Confirmación inmediata a la vendedora cuando pide la etiqueta en modo
 // manual (MANUAL_LABEL_MODE) — sin esto, no recibía ninguna respuesta hasta
 // que la admin le mandaba la etiqueta real más tarde (sendLabelReadyEmail),
@@ -266,20 +315,24 @@ export async function sendLabelRequestReceivedEmail({
 // Correo a la vendedora con la etiqueta de envío lista para imprimir —
 // mismo contenido tanto si la generó automáticamente el courier (ver
 // api/orders/[id]/generate-label) como si la admin la subió a mano en modo
-// manual (ver api/admin/orders/[id]/label), para no duplicar este HTML.
+// manual (ver api/admin/orders/[id]/label), para no duplicar este HTML. El
+// link pasa por /api/orders/[id]/label/download (no directo al archivo) para
+// poder registrar cuándo la vendedora lo descarga por primera vez — también
+// queda disponible desde "Mis ventas" con el mismo link.
 export async function sendLabelReadyEmail({
   to,
   name,
   listingTitle,
-  labelUrl,
+  orderId,
   trackingNumber,
 }: {
   to: string
   name: string | null
   listingTitle: string
-  labelUrl: string
+  orderId: string
   trackingNumber?: string | null
 }) {
+  const downloadUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/orders/${orderId}/label/download`
   await sendEmail({
     to,
     subject: `Tu etiqueta de envío está lista — ${listingTitle}`,
@@ -292,7 +345,7 @@ export async function sendLabelReadyEmail({
         Número de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
       </p>` : ''}
       <p style="text-align: center; margin: 24px 0;">
-        <a href="${labelUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+        <a href="${downloadUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
           Descargar etiqueta
         </a>
       </p>
