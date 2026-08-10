@@ -152,6 +152,14 @@ export default async function ListingPage({
   const pcLabel = listing.product_category ? productCategoryLabel(listing.category, listing.product_category) : null
   const typeLabel = listing.product_type || listing.subcategory || null
 
+  // Resumen compacto de atributos para mostrar junto al precio, sin repetir
+  // la tabla completa de specs (que se mantiene más abajo en la ficha).
+  const essentialAttrs = [
+    listing.size ? `Talla ${listing.size}` : null,
+    conditionDetail.label,
+    listing.colors && listing.colors.length > 0 ? listing.colors.map(colorLabel).join(', ') : null,
+  ].filter(Boolean).join(' · ')
+
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
       <div className="max-w-5xl mx-auto px-4 py-8">
@@ -192,306 +200,330 @@ export default async function ListingPage({
           </div>
 
           {/* Detalle */}
-          <div className="space-y-6">
-            {listing.status === 'sold' && (
-              <div className="bg-gray-900 text-white text-center text-xs tracking-widest uppercase py-2">
-                Prenda vendida
-              </div>
-            )}
-
-            <div>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  {brandLabel ? (
-                    <Link
-                      href={brandHref}
-                      className="text-[10px] tracking-widest uppercase text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
-                    >
-                      {brandLabel}
-                    </Link>
-                  ) : (
-                    <p className="text-[10px] tracking-widest uppercase text-gray-400">Sin marca</p>
-                  )}
-                  <h1 className="font-serif text-xl tracking-wide mt-0.5">{listing.title}</h1>
+          <div>
+            {/* Bloque principal de compra — se mantiene sticky en desktop
+                mientras la usuaria revisa las fotos, así las acciones
+                principales quedan siempre a mano. Deliberadamente corto: solo
+                lo esencial para decidir y actuar (nombre, precio, datos
+                clave, envío resumido y los 3 CTA) — todo lo demás vive más
+                abajo, fuera del bloque sticky. */}
+            <div className="space-y-5 md:sticky md:top-6 md:bg-[#EBEBEB] md:z-10 md:pb-4">
+              {listing.status === 'sold' && (
+                <div className="bg-gray-900 text-white text-center text-xs tracking-widest uppercase py-2">
+                  Prenda vendida
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>
-                    {conditionGroupLabel(listing.condition)}
-                  </span>
-                  <ShareButton title={listing.title} buttonClassName="border border-gray-200" />
-                  <div className="flex items-center gap-1">
-                    <FavoriteButton
-                      listingId={listing.id}
-                      initialFavorited={isFavorited}
-                      isLoggedIn={user !== null}
-                      buttonClassName="border border-gray-200"
-                    />
-                    {!!favoriteCount && favoriteCount > 0 && (
-                      <span className="text-xs text-gray-400">{favoriteCount}</span>
+              )}
+
+              <div>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    {brandLabel ? (
+                      <Link
+                        href={brandHref}
+                        className="text-[10px] tracking-widest uppercase text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
+                      >
+                        {brandLabel}
+                      </Link>
+                    ) : (
+                      <p className="text-[10px] tracking-widest uppercase text-gray-400">Sin marca</p>
+                    )}
+                    <h1 className="font-serif text-xl tracking-wide mt-0.5">{listing.title}</h1>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>
+                      {conditionGroupLabel(listing.condition)}
+                    </span>
+                    <ShareButton title={listing.title} buttonClassName="border border-gray-200" />
+                    <div className="flex items-center gap-1">
+                      <FavoriteButton
+                        listingId={listing.id}
+                        initialFavorited={isFavorited}
+                        isLoggedIn={user !== null}
+                        buttonClassName="border border-gray-200"
+                      />
+                      {!!favoriteCount && favoriteCount > 0 && (
+                        <span className="text-xs text-gray-400">{favoriteCount}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {essentialAttrs && (
+                  <p className="text-sm text-gray-500 mt-1.5">{essentialAttrs}</p>
+                )}
+
+                <div className="mt-2">
+                  <ProtectedPrice price={listing.price} size="lg" />
+                </div>
+              </div>
+
+              {/* Envío internacional — resumen compacto solamente; la
+                  explicación completa vive en el modal que este mismo
+                  componente ya abre ("¿Cómo funciona?"), sin bloque extra
+                  aquí arriba que empuje el CTA hacia abajo. */}
+              {listing.source_type === 'international_on_demand' && (
+                <InternationalInfoModal
+                  leadTimeMinDays={listing.international_lead_time_min_days}
+                  leadTimeMaxDays={listing.international_lead_time_max_days}
+                />
+              )}
+
+              {/* Acciones principales */}
+              {listing.status === 'active' && (
+                canBuy ? (
+                  <div className="space-y-3">
+                    {offerAccepted && (
+                      <p className="text-xs text-[#5a7a55] bg-[#7fab87]/10 text-center py-2">
+                        ¡Tu oferta de ${myOffer!.offered_price.toLocaleString('es-CL')} fue aceptada! Cómprala antes de que venza.
+                      </p>
+                    )}
+                    <BuyButton listingId={listing.id} total={buyPrice + buyerProtectionFee(buyPrice)} />
+
+                    {/* Sin negociación de precio en productos internacionales — el
+                        precio ya refleja un margen ajustado a un costo de compra que
+                        todavía no se confirma, y no se puede prometer una rebaja
+                        antes de comprar la prenda en origen. */}
+                    {!myOffer && listing.source_type !== 'international_on_demand' && (
+                      <MakeOfferModal listingId={listing.id} sellerId={listing.seller_id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
+                    )}
+                    <Link
+                      href={`/dashboard/messages/${listing.id}/${listing.seller_id}`}
+                      className="block w-full text-center border border-gray-300 text-gray-700 text-xs tracking-widest uppercase py-4 hover:border-[#7fab87] hover:text-[#7fab87] transition"
+                    >
+                      Enviar mensaje
+                    </Link>
+                    {myOffer?.status === 'pending' && myOffer.proposed_by === 'buyer' && (
+                      <p className="text-xs text-gray-400 text-center">
+                        Ofertaste ${myOffer.offered_price.toLocaleString('es-CL')} — esperando respuesta de la vendedora.{' '}
+                        <Link href={`/dashboard/messages/${listing.id}/${listing.seller_id}`} className="text-[#5a7a55] underline underline-offset-2">Ver oferta</Link>
+                      </p>
+                    )}
+                    {myOffer?.status === 'pending' && myOffer.proposed_by === 'seller' && (
+                      <p className="text-xs text-gray-400 text-center">
+                        La vendedora te ofreció ${myOffer.offered_price.toLocaleString('es-CL')}.{' '}
+                        <Link href={`/dashboard/messages/${listing.id}/${listing.seller_id}`} className="text-[#5a7a55] underline underline-offset-2">Responder</Link>
+                      </p>
                     )}
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <ProtectedPrice price={listing.price} size="lg" />
-              </div>
-            </div>
-
-            {/* Specs */}
-            <div>
-              <div className="bg-white divide-y divide-gray-100 text-sm">
-                <div className="flex justify-between px-4 py-2.5">
-                  <span className="text-gray-400">Marca</span>
-                  {brandLabel ? (
-                    <Link
-                      href={brandHref}
-                      className="text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
-                    >
-                      {brandLabel}
+                ) : user === null ? (
+                  <div className="space-y-2">
+                    <Link href="/auth/login"
+                      className="block w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-[#6f9678] transition">
+                      Ingresar para comprar
                     </Link>
-                  ) : (
-                    <span className="text-gray-700">Sin marca</span>
-                  )}
-                </div>
-                <div className="flex justify-between px-4 py-2.5">
-                  <span className="text-gray-400">Talla</span>
-                  <span className="text-gray-700">{listing.size}</span>
-                </div>
-                <div className="flex justify-between px-4 py-2.5">
-                  <span className="text-gray-400">Estado</span>
-                  <span className="text-gray-700">{conditionDetail.label}</span>
-                </div>
-                {listing.colors && listing.colors.length > 0 && (
-                  <div className="flex justify-between px-4 py-2.5 items-center">
-                    <span className="text-gray-400">Color</span>
-                    <span className="text-gray-700 flex items-center gap-3">
-                      {listing.colors.map(color => (
-                        <Link key={color} href={`/?color=${color}`} className={`flex items-center gap-1.5 ${ATTR_LINK}`}>
-                          <span
-                            className="w-3 h-3 rounded-full border border-gray-300 inline-block"
-                            style={{ backgroundColor: colorHex(color) }}
-                          />
-                          {colorLabel(color)}
-                        </Link>
-                      ))}
-                    </span>
+                    <p className="text-[10px] text-gray-400 text-center">
+                      Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción
+                    </p>
                   </div>
-                )}
-                {categoryLabel && (
-                  <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-gray-400">Categoría</span>
-                    <span className="text-gray-700">
-                      <Link href={`/?category=${listing.category}`} className={ATTR_LINK}>{categoryLabel}</Link>
-                      {pcLabel && (
-                        <>
-                          {' · '}
-                          <Link href={`/?category=${listing.category}&productCategory=${listing.product_category}`} className={ATTR_LINK}>{pcLabel}</Link>
-                        </>
-                      )}
-                      {typeLabel && (
-                        listing.product_type ? (
-                          <>
-                            {' · '}
-                            <Link
-                              href={`/?category=${listing.category}&productCategory=${listing.product_category}&productType=${encodeURIComponent(listing.product_type)}`}
-                              className={ATTR_LINK}
-                            >
-                              {typeLabel}
-                            </Link>
-                          </>
-                        ) : ` · ${typeLabel}`
-                      )}
-                    </span>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
+                      Esta es tu prenda publicada
+                    </p>
+                    <Link href={`/listings/${listing.id}/edit`}
+                      className="block w-full text-center text-xs tracking-widest uppercase text-white bg-[#7fab87] hover:bg-[#6f9678] py-3 transition">
+                      Editar prenda
+                    </Link>
                   </div>
-                )}
-                {listing.length && (
-                  <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-gray-400">Largo</span>
-                    <span className="text-gray-700">{listing.length}</span>
-                  </div>
-                )}
-                {listing.occasion && listing.occasion.length > 0 && (
-                  <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-gray-400">Ocasión</span>
-                    <span className="text-gray-700 flex flex-wrap justify-end gap-x-1">
-                      {listing.occasion.map((o, i) => (
-                        <span key={o}>
-                          <Link href={`/?occasion=${encodeURIComponent(o)}`} className={ATTR_LINK}>{o}</Link>
-                          {i < listing.occasion!.length - 1 && ','}
-                        </span>
-                      ))}
-                    </span>
-                  </div>
-                )}
-                {listing.season && (
-                  <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-gray-400">Temporada</span>
-                    <span className="text-gray-700">{listing.season}</span>
-                  </div>
-                )}
-                {listing.style && (
-                  <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-gray-400">Estilo</span>
-                    <span className="text-gray-700">{listing.style}</span>
-                  </div>
-                )}
-                {listing.material && (
-                  <div className="flex justify-between px-4 py-2.5">
-                    <span className="text-gray-400">Material</span>
-                    <span className="text-gray-700">{listing.material}</span>
-                  </div>
-                )}
-                <div className="flex justify-between px-4 py-2.5">
-                  <span className="text-gray-400">Publicado</span>
-                  <span className="text-gray-700">{formatRelativeTime(listing.created_at)}</span>
-                </div>
-              </div>
-              {conditionDetail.description && (
-                <p className="text-xs text-gray-400 mt-2 px-1">{conditionDetail.description}</p>
+                )
               )}
             </div>
 
-            {/* Descripción */}
-            {listing.description && (
+            {/* Resto de la información — debajo de las acciones principales,
+                fuera del bloque sticky. */}
+            <div className="space-y-6 mt-8">
+              {/* Specs */}
               <div>
-                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Descripción</p>
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{listing.description}</p>
-              </div>
-            )}
-
-            {/* Desglose de precio */}
-            <div className="bg-white p-4 text-xs text-gray-500 space-y-1">
-              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Detalle del precio</p>
-              <div className="flex justify-between">
-                <span>Precio de la prenda</span>
-                <span>${listing.price.toLocaleString('es-CL')}</span>
-              </div>
-              <div className="flex justify-between text-gray-400">
-                <BuyerProtectionModal
-                  trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-gray-600">Protección Comprador</span>}
-                  triggerClassName="inline-flex"
-                />
-                <span>+ ${commission.toLocaleString('es-CL')}</span>
-              </div>
-              <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-100 pt-1 mt-1">
-                <span>Total (sin envío)</span>
-                <span>${totalPrice.toLocaleString('es-CL')}</span>
-              </div>
-              <p className="text-[10px] text-gray-400 pt-1">
-                {shippingEstimate
-                  ? `Envío desde $${shippingEstimate.price.toLocaleString('es-CL')} — se confirma en el siguiente paso según tu comuna. `
-                  : 'El envío se calcula en el siguiente paso, según tu dirección. '}
-                Publicar y vender en Bdress Market es gratis para la vendedora.
-              </p>
-            </div>
-
-            {/* Envío internacional */}
-            {listing.source_type === 'international_on_demand' && (
-              <InternationalInfoModal
-                leadTimeMinDays={listing.international_lead_time_min_days}
-                leadTimeMaxDays={listing.international_lead_time_max_days}
-              />
-            )}
-
-            {/* Botón comprar */}
-            {listing.status === 'active' && (
-              canBuy ? (
-                <div className="space-y-3">
-                  {offerAccepted && (
-                    <p className="text-xs text-[#5a7a55] bg-[#7fab87]/10 text-center py-2">
-                      ¡Tu oferta de ${myOffer!.offered_price.toLocaleString('es-CL')} fue aceptada! Cómprala antes de que venza.
-                    </p>
-                  )}
-                  <BuyButton listingId={listing.id} total={buyPrice + buyerProtectionFee(buyPrice)} />
-
-                  {/* Sin negociación de precio en productos internacionales — el
-                      precio ya refleja un margen ajustado a un costo de compra que
-                      todavía no se confirma, y no se puede prometer una rebaja
-                      antes de comprar la prenda en origen. */}
-                  {!myOffer && listing.source_type !== 'international_on_demand' && (
-                    <MakeOfferModal listingId={listing.id} sellerId={listing.seller_id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
-                  )}
-                  <Link
-                    href={`/dashboard/messages/${listing.id}/${listing.seller_id}`}
-                    className="block w-full text-center border border-gray-300 text-gray-700 text-xs tracking-widest uppercase py-4 hover:border-[#7fab87] hover:text-[#7fab87] transition"
-                  >
-                    Enviar mensaje
-                  </Link>
-                  {myOffer?.status === 'pending' && myOffer.proposed_by === 'buyer' && (
-                    <p className="text-xs text-gray-400 text-center">
-                      Ofertaste ${myOffer.offered_price.toLocaleString('es-CL')} — esperando respuesta de la vendedora.{' '}
-                      <Link href={`/dashboard/messages/${listing.id}/${listing.seller_id}`} className="text-[#5a7a55] underline underline-offset-2">Ver oferta</Link>
-                    </p>
-                  )}
-                  {myOffer?.status === 'pending' && myOffer.proposed_by === 'seller' && (
-                    <p className="text-xs text-gray-400 text-center">
-                      La vendedora te ofreció ${myOffer.offered_price.toLocaleString('es-CL')}.{' '}
-                      <Link href={`/dashboard/messages/${listing.id}/${listing.seller_id}`} className="text-[#5a7a55] underline underline-offset-2">Responder</Link>
-                    </p>
-                  )}
-                </div>
-              ) : user === null ? (
-                <div className="space-y-2">
-                  <Link href="/auth/login"
-                    className="block w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-[#6f9678] transition">
-                    Ingresar para comprar
-                  </Link>
-                  <p className="text-[10px] text-gray-400 text-center">
-                    Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
-                    Esta es tu prenda publicada
-                  </p>
-                  <Link href={`/listings/${listing.id}/edit`}
-                    className="block w-full text-center text-xs tracking-widest uppercase text-white bg-[#7fab87] hover:bg-[#6f9678] py-3 transition">
-                    Editar prenda
-                  </Link>
-                </div>
-              )
-            )}
-
-            {/* Confianza */}
-            <div className="bg-white p-4 flex gap-3 items-start">
-              <ShieldCheck size={20} className="text-[#5a7a55] flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-gray-500 leading-relaxed">
-                <span className="text-sm text-black font-medium block mb-0.5">Compra y vende con seguridad</span>
-                Tu pago queda retenido hasta que confirmes que todo llegó bien.{' '}
-                <BuyerProtectionModal
-                  trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-black">Cómo funciona</span>}
-                  triggerClassName="inline-flex"
-                />
-              </p>
-            </div>
-
-            {/* Card vendedora */}
-            <div className="border-t border-gray-200 pt-6">
-              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">Vendedora</p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 overflow-hidden flex-shrink-0">
-                  {listing.seller?.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={listing.seller.avatar_url} alt={listing.seller.name} className="w-full h-full object-cover" />
-                  ) : (
-                    listing.seller?.name?.[0]?.toUpperCase() ?? '?'
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{listing.seller?.name}</p>
-                  <div className="flex items-center gap-1.5">
-                    {listing.seller?.city && (
-                      <p className="text-xs text-gray-400">{listing.seller.city}</p>
+                <div className="bg-white divide-y divide-gray-100 text-sm">
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Marca</span>
+                    {brandLabel ? (
+                      <Link
+                        href={brandHref}
+                        className="text-[#7fab87] underline underline-offset-2 hover:text-[#5a7a55] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#7fab87] focus-visible:rounded-sm"
+                      >
+                        {brandLabel}
+                      </Link>
+                    ) : (
+                      <span className="text-gray-700">Sin marca</span>
                     )}
-                    {sellerRating && <RatingBadge rating={sellerRating.avg} count={sellerRating.count} />}
+                  </div>
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Talla</span>
+                    <span className="text-gray-700">{listing.size}</span>
+                  </div>
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Estado</span>
+                    <span className="text-gray-700">{conditionDetail.label}</span>
+                  </div>
+                  {listing.colors && listing.colors.length > 0 && (
+                    <div className="flex justify-between px-4 py-2.5 items-center">
+                      <span className="text-gray-400">Color</span>
+                      <span className="text-gray-700 flex items-center gap-3">
+                        {listing.colors.map(color => (
+                          <Link key={color} href={`/?color=${color}`} className={`flex items-center gap-1.5 ${ATTR_LINK}`}>
+                            <span
+                              className="w-3 h-3 rounded-full border border-gray-300 inline-block"
+                              style={{ backgroundColor: colorHex(color) }}
+                            />
+                            {colorLabel(color)}
+                          </Link>
+                        ))}
+                      </span>
+                    </div>
+                  )}
+                  {categoryLabel && (
+                    <div className="flex justify-between px-4 py-2.5">
+                      <span className="text-gray-400">Categoría</span>
+                      <span className="text-gray-700">
+                        <Link href={`/?category=${listing.category}`} className={ATTR_LINK}>{categoryLabel}</Link>
+                        {pcLabel && (
+                          <>
+                            {' · '}
+                            <Link href={`/?category=${listing.category}&productCategory=${listing.product_category}`} className={ATTR_LINK}>{pcLabel}</Link>
+                          </>
+                        )}
+                        {typeLabel && (
+                          listing.product_type ? (
+                            <>
+                              {' · '}
+                              <Link
+                                href={`/?category=${listing.category}&productCategory=${listing.product_category}&productType=${encodeURIComponent(listing.product_type)}`}
+                                className={ATTR_LINK}
+                              >
+                                {typeLabel}
+                              </Link>
+                            </>
+                          ) : ` · ${typeLabel}`
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {listing.length && (
+                    <div className="flex justify-between px-4 py-2.5">
+                      <span className="text-gray-400">Largo</span>
+                      <span className="text-gray-700">{listing.length}</span>
+                    </div>
+                  )}
+                  {listing.occasion && listing.occasion.length > 0 && (
+                    <div className="flex justify-between px-4 py-2.5">
+                      <span className="text-gray-400">Ocasión</span>
+                      <span className="text-gray-700 flex flex-wrap justify-end gap-x-1">
+                        {listing.occasion.map((o, i) => (
+                          <span key={o}>
+                            <Link href={`/?occasion=${encodeURIComponent(o)}`} className={ATTR_LINK}>{o}</Link>
+                            {i < listing.occasion!.length - 1 && ','}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  )}
+                  {listing.season && (
+                    <div className="flex justify-between px-4 py-2.5">
+                      <span className="text-gray-400">Temporada</span>
+                      <span className="text-gray-700">{listing.season}</span>
+                    </div>
+                  )}
+                  {listing.style && (
+                    <div className="flex justify-between px-4 py-2.5">
+                      <span className="text-gray-400">Estilo</span>
+                      <span className="text-gray-700">{listing.style}</span>
+                    </div>
+                  )}
+                  {listing.material && (
+                    <div className="flex justify-between px-4 py-2.5">
+                      <span className="text-gray-400">Material</span>
+                      <span className="text-gray-700">{listing.material}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between px-4 py-2.5">
+                    <span className="text-gray-400">Publicado</span>
+                    <span className="text-gray-700">{formatRelativeTime(listing.created_at)}</span>
                   </div>
                 </div>
-                <Link href={`/profile/${listing.seller_id}`}
-                  className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
-                  Ver perfil
-                </Link>
+                {conditionDetail.description && (
+                  <p className="text-xs text-gray-400 mt-2 px-1">{conditionDetail.description}</p>
+                )}
+              </div>
+
+              {/* Descripción */}
+              {listing.description && (
+                <div>
+                  <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Descripción</p>
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{listing.description}</p>
+                </div>
+              )}
+
+              {/* Desglose de precio — accordion, no cambia ningún cálculo */}
+              <details className="bg-white text-xs text-gray-500 group">
+                <summary className="px-4 py-3 text-[10px] tracking-widest uppercase text-gray-400 cursor-pointer list-none flex items-center justify-between">
+                  Ver detalle del precio
+                  <span className="transition group-open:rotate-180">↓</span>
+                </summary>
+                <div className="px-4 pb-4 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Precio de la prenda</span>
+                    <span>${listing.price.toLocaleString('es-CL')}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400">
+                    <BuyerProtectionModal
+                      trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-gray-600">Protección Comprador</span>}
+                      triggerClassName="inline-flex"
+                    />
+                    <span>+ ${commission.toLocaleString('es-CL')}</span>
+                  </div>
+                  <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-100 pt-1 mt-1">
+                    <span>Total (sin envío)</span>
+                    <span>${totalPrice.toLocaleString('es-CL')}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 pt-1">
+                    {shippingEstimate
+                      ? `Envío desde $${shippingEstimate.price.toLocaleString('es-CL')} — se confirma en el siguiente paso según tu comuna. `
+                      : 'El envío se calcula en el siguiente paso, según tu dirección. '}
+                    Publicar y vender en Bdress Market es gratis para la vendedora.
+                  </p>
+                </div>
+              </details>
+
+              {/* Confianza */}
+              <div className="bg-white p-4 flex gap-3 items-start">
+                <ShieldCheck size={20} className="text-[#5a7a55] flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  <span className="text-sm text-black font-medium block mb-0.5">Compra y vende con seguridad</span>
+                  Tu pago queda retenido hasta que confirmes que todo llegó bien.{' '}
+                  <BuyerProtectionModal
+                    trigger={<span className="underline decoration-dotted underline-offset-2 cursor-pointer hover:text-black">Cómo funciona</span>}
+                    triggerClassName="inline-flex"
+                  />
+                </p>
+              </div>
+
+              {/* Card vendedora */}
+              <div className="border-t border-gray-200 pt-6">
+                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">Vendedora</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 overflow-hidden flex-shrink-0">
+                    {listing.seller?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={listing.seller.avatar_url} alt={listing.seller.name} className="w-full h-full object-cover" />
+                    ) : (
+                      listing.seller?.name?.[0]?.toUpperCase() ?? '?'
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{listing.seller?.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      {listing.seller?.city && (
+                        <p className="text-xs text-gray-400">{listing.seller.city}</p>
+                      )}
+                      {sellerRating && <RatingBadge rating={sellerRating.avg} count={sellerRating.count} />}
+                    </div>
+                  </div>
+                  <Link href={`/profile/${listing.seller_id}`}
+                    className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
+                    Ver perfil
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
