@@ -4,10 +4,20 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import starkenCitiesOrigin from '@/lib/starken-cities-origin.json'
+
+// Mismo listado que usa getShippingQuote/findOriginCityCode (src/lib/starken.ts)
+// para cotizar el retiro — si se pidiera la comuna con un selector distinto
+// (ej. el de Chilexpress que usa el checkout para la compradora), un nombre
+// válido ahí podría no existir acá, y volveríamos a "la vendedora no
+// configuró su dirección de despacho" aunque el campo esté lleno.
+const ORIGIN_COMUNAS = Array.from(
+  new Set(starkenCitiesOrigin.flatMap(city => city.comunas.map(c => c.nombreComuna)))
+).sort((a, b) => a.localeCompare(b, 'es'))
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', city: '' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', city: '', comuna: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -26,7 +36,7 @@ export default function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { name: form.name, phone: form.phone, city: form.city } },
+      options: { data: { name: form.name, phone: form.phone, city: form.city, comuna: form.comuna } },
     })
 
     if (error) {
@@ -128,6 +138,24 @@ export default function RegisterPage() {
               />
             </div>
           ))}
+
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
+              Comuna
+            </label>
+            <select
+              value={form.comuna}
+              onChange={e => set('comuna', e.target.value)}
+              required
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400 bg-white"
+            >
+              <option value="">Selecciona tu comuna</option>
+              {ORIGIN_COMUNAS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <p className="text-[10px] text-gray-400 mt-1">
+              La necesitamos para cotizar el envío cuando vendas una prenda.
+            </p>
+          </div>
 
           {error && <p className="text-red-500 text-xs">{error}</p>}
 

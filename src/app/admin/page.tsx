@@ -107,7 +107,7 @@ export default async function AdminPage() {
                       Vendedora: {order.seller?.name ?? '—'} · Pagado el{' '}
                       {order.paid_at && new Date(order.paid_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
                     </p>
-                    <p className="text-sm font-semibold mt-0.5">${order.amount.toLocaleString('es-CL')}</p>
+                    <p className="text-sm font-semibold mt-0.5">${(order.amount + order.shipping_cost).toLocaleString('es-CL')}</p>
                   </div>
                   <RefundOrderButton orderId={order.id} />
                 </div>
@@ -149,7 +149,7 @@ export default async function AdminPage() {
                         <td className="px-4 py-3 truncate max-w-[160px]">{order.listing?.title ?? 'Prenda eliminada'}</td>
                         <td className="px-4 py-3 text-gray-500">{order.buyer?.name ?? '—'}</td>
                         <td className="px-4 py-3 text-gray-500">{order.seller?.name ?? '—'}</td>
-                        <td className="px-4 py-3 text-right font-medium">${order.amount.toLocaleString('es-CL')}</td>
+                        <td className="px-4 py-3 text-right font-medium">${(order.amount + order.shipping_cost).toLocaleString('es-CL')}</td>
                         <td className="px-4 py-3 text-right text-gray-500">${order.commission.toLocaleString('es-CL')}</td>
                         <td className="px-4 py-3">
                           <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 whitespace-nowrap ${status.color}`}>

@@ -75,7 +75,7 @@ export default async function AdminOrderDetailPage({
                 {status.label}
               </span>
             </div>
-            <p className="text-lg font-light mt-1">${order.amount.toLocaleString('es-CL')}</p>
+            <p className="text-lg font-light mt-1">${(order.amount + order.shipping_cost).toLocaleString('es-CL')}</p>
             <Link href={`/listings/${order.listing_id}`} className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
               Ver prenda
             </Link>
@@ -89,7 +89,9 @@ export default async function AdminOrderDetailPage({
             <div className="flex justify-between"><span className="text-gray-400">Compradora</span><span>{order.buyer?.name ?? '—'}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Email</span><span className="truncate ml-2">{order.buyer?.email ?? '—'}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Vendedora</span><span>{order.seller?.name ?? '—'}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Monto</span><span>${order.amount.toLocaleString('es-CL')}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Prenda + Protección</span><span>${order.amount.toLocaleString('es-CL')}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Envío</span><span>${order.shipping_cost.toLocaleString('es-CL')}</span></div>
+            <div className="flex justify-between font-medium border-t border-gray-100 pt-2"><span>Total cobrado</span><span>${(order.amount + order.shipping_cost).toLocaleString('es-CL')}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Protección Bdress</span><span>${order.commission.toLocaleString('es-CL')}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Procesamiento pago</span><span>${order.processing_fee.toLocaleString('es-CL')}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Pagado</span><span>{formatDate(order.paid_at)}</span></div>

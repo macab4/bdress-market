@@ -71,7 +71,7 @@ async function handleNotification(request: Request) {
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', orderId)
       .eq('status', 'pending_payment')
-      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee')
+      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost')
       .maybeSingle()
 
     // Solo marcamos la prenda vendida la primera vez que la orden pasa a pagada
@@ -85,7 +85,13 @@ async function handleNotification(request: Request) {
       ])
 
       const listingTitle = listing?.title ?? 'tu prenda'
-      const amountFmt = `$${updatedOrder.amount.toLocaleString('es-CL')}`
+      // "amount" (prenda + Protección Bdress) es la base de la comisión y del
+      // pago a la vendedora — no incluye el envío a propósito, porque ese
+      // dinero no le corresponde a Bdress ni a la vendedora, va al courier.
+      // Pero Mercado Pago SÍ le cobra el envío a la compradora como línea
+      // aparte (ver api/payment/create), así que el total que le mostramos
+      // acá tiene que sumarlo o no coincide con lo que realmente pagó.
+      const totalPaidFmt = `$${(updatedOrder.amount + (updatedOrder.shipping_cost ?? 0)).toLocaleString('es-CL')}`
       const sellerNetFmt = `$${(updatedOrder.amount - updatedOrder.commission - updatedOrder.processing_fee).toLocaleString('es-CL')}`
       const isInternational = listing?.source_type === 'international_on_demand'
 
@@ -123,7 +129,7 @@ async function handleNotification(request: Request) {
             to: process.env.ADMIN_EMAIL,
             orderId,
             listingTitle,
-            amountFmt,
+            amountFmt: totalPaidFmt,
             buyerName: buyer?.name ?? buyer?.email ?? 'sin datos',
           })
         }
@@ -134,7 +140,7 @@ async function handleNotification(request: Request) {
             subject: `Confirmamos tu compra — ${listingTitle}`,
             html: emailLayout('Compra confirmada', `
               <p style="font-size: 14px; color: #444; line-height: 1.6;">
-                Hola ${buyer.name ?? ''}, confirmamos tu pago de <strong>${amountFmt}</strong> por <strong>${listingTitle}</strong>.
+                Hola ${buyer.name ?? ''}, confirmamos tu pago de <strong>${totalPaidFmt}</strong> por <strong>${listingTitle}</strong>.
                 La vendedora tiene 5 días hábiles para despacharla — te avisamos apenas la envíe.
               </p>
               <p style="font-size: 13px; color: #888; line-height: 1.6;">
@@ -181,7 +187,7 @@ async function handleNotification(request: Request) {
             subject: `Nueva compra pagada — ${listingTitle}`,
             html: emailLayout('Nueva compra pagada', `
               <p style="font-size: 14px; color: #444; line-height: 1.6;">
-                Se pagó la orden <strong>${orderId}</strong> por <strong>${listingTitle}</strong> (${amountFmt}).
+                Se pagó la orden <strong>${orderId}</strong> por <strong>${listingTitle}</strong> (${totalPaidFmt}).
                 Compradora: ${buyer?.name ?? buyer?.email ?? 'sin datos'}. Vendedora: ${seller?.name ?? seller?.email ?? 'sin datos'}.
               </p>
             `),

@@ -820,3 +820,24 @@ alter table public.orders add column last_ship_reminder_sent_at timestamptz;
 alter table public.orders add column label_courier text;
 alter table public.orders add column label_tracking_number text;
 alter table public.orders add column label_uploaded_at timestamptz;
+
+-- ============================================================
+-- Migración: comuna obligatoria al registrarse. Mismo contenido que
+-- supabase/migrations/20260810040000_signup_comuna_required.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, name, phone, city, comuna)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    nullif(new.raw_user_meta_data->>'phone', ''),
+    nullif(new.raw_user_meta_data->>'city', ''),
+    nullif(new.raw_user_meta_data->>'comuna', '')
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
