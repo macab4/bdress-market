@@ -16,6 +16,9 @@ import MakeOfferModal from '@/components/listings/MakeOfferModal'
 import InternationalInfoModal from '@/components/listings/InternationalInfoModal'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
+import PauseListingButton from '@/components/dashboard/PauseListingButton'
+import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
+import MarkSoldButton from '@/components/dashboard/MarkSoldButton'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
@@ -124,10 +127,17 @@ export default async function ListingPage({
       })
     : null
 
+  // Condición central de ownership — de acá cuelga toda la diferencia entre
+  // la vista de compradora y la vista de gestión de la dueña de la
+  // publicación (incluye el perfil "Bdress Internacional": si alguna vez se
+  // inicia sesión como esa cuenta, ve exactamente la misma vista de dueña,
+  // sin lógica aparte).
+  const isOwner = user !== null && user.id === listing.seller_id
+
   const canBuy =
     listing.status === 'active' &&
     user !== null &&
-    user.id !== listing.seller_id
+    !isOwner
 
   let myOffer: { offered_price: number; status: string; proposed_by: string; accepted_expires_at: string | null } | null = null
   if (canBuy) {
@@ -268,8 +278,32 @@ export default async function ListingPage({
                 />
               )}
 
-              {/* Acciones principales */}
-              {listing.status === 'active' && (
+              {/* Acciones principales — se bifurca en el primer nivel según
+                  ownership, no según status, para que la dueña vea su panel
+                  de gestión también con la prenda pausada o vendida (antes
+                  esto solo pasaba con la prenda activa). */}
+              {isOwner ? (
+                <div className="space-y-3">
+                  <p className="text-[10px] tracking-widest uppercase text-gray-400">Tu publicación</p>
+
+                  {listing.status === 'sold' ? (
+                    <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
+                      Esta prenda ya fue vendida.
+                    </p>
+                  ) : (
+                    <>
+                      <Link href={`/listings/${listing.id}/edit`}
+                        className="block w-full text-center text-xs tracking-widest uppercase text-white bg-[#7fab87] hover:bg-[#6f9678] py-4 transition">
+                        Editar publicación
+                      </Link>
+                      <MarkSoldButton listingId={listing.id} listingTitle={listing.title} />
+                      <PauseListingButton listingId={listing.id} currentStatus={listing.status as 'active' | 'paused'} variant="block" />
+                    </>
+                  )}
+
+                  <DeleteListingButton listingId={listing.id} listingTitle={listing.title} variant="block" />
+                </div>
+              ) : listing.status === 'active' && (
                 canBuy ? (
                   <div className="space-y-3">
                     {offerAccepted && (
@@ -305,7 +339,7 @@ export default async function ListingPage({
                       </p>
                     )}
                   </div>
-                ) : user === null ? (
+                ) : (
                   <div className="space-y-2">
                     <Link href="/auth/login"
                       className="block w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 text-center hover:bg-[#6f9678] transition">
@@ -314,16 +348,6 @@ export default async function ListingPage({
                     <p className="text-[10px] text-gray-400 text-center">
                       Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción
                     </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-xs text-gray-400 text-center py-4 border border-gray-200">
-                      Esta es tu prenda publicada
-                    </p>
-                    <Link href={`/listings/${listing.id}/edit`}
-                      className="block w-full text-center text-xs tracking-widest uppercase text-white bg-[#7fab87] hover:bg-[#6f9678] py-3 transition">
-                      Editar prenda
-                    </Link>
                   </div>
                 )
               )}
@@ -498,33 +522,37 @@ export default async function ListingPage({
                 </p>
               </div>
 
-              {/* Card vendedora */}
-              <div className="border-t border-gray-200 pt-6">
-                <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">Vendedora</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 overflow-hidden flex-shrink-0">
-                    {listing.seller?.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={listing.seller.avatar_url} alt={listing.seller.name} className="w-full h-full object-cover" />
-                    ) : (
-                      listing.seller?.name?.[0]?.toUpperCase() ?? '?'
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{listing.seller?.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      {listing.seller?.city && (
-                        <p className="text-xs text-gray-400">{listing.seller.city}</p>
+              {/* Card vendedora — no tiene sentido mostrarle a la dueña su
+                  propia card de "Vendedora" con un link a "Ver perfil" de
+                  sí misma. */}
+              {!isOwner && (
+                <div className="border-t border-gray-200 pt-6">
+                  <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">Vendedora</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 overflow-hidden flex-shrink-0">
+                      {listing.seller?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={listing.seller.avatar_url} alt={listing.seller.name} className="w-full h-full object-cover" />
+                      ) : (
+                        listing.seller?.name?.[0]?.toUpperCase() ?? '?'
                       )}
-                      {sellerRating && <RatingBadge rating={sellerRating.avg} count={sellerRating.count} />}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{listing.seller?.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        {listing.seller?.city && (
+                          <p className="text-xs text-gray-400">{listing.seller.city}</p>
+                        )}
+                        {sellerRating && <RatingBadge rating={sellerRating.avg} count={sellerRating.count} />}
+                      </div>
+                    </div>
+                    <Link href={`/profile/${listing.seller_id}`}
+                      className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
+                      Ver perfil
+                    </Link>
                   </div>
-                  <Link href={`/profile/${listing.seller_id}`}
-                    className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
-                    Ver perfil
-                  </Link>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

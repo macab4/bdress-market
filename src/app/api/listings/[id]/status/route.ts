@@ -1,8 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 
-const VALID_TRANSITIONS: Record<string, string> = {
-  active: 'paused',
-  paused: 'active',
+// "sold" acá es para cuando la vendedora la vende por fuera de B-Dress
+// (ej. en persona) y quiere reflejarlo — la venta normal por B-Dress ya
+// marca la prenda como vendida sola al confirmarse el pago
+// (ver api/payment/confirm). A propósito no hay transición de vuelta desde
+// "sold": una vez vendida, reactivarla o pausarla no tiene sentido y podría
+// pisar el estado de una orden real asociada.
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  active: ['paused', 'sold'],
+  paused: ['active', 'sold'],
 }
 
 export async function PATCH(
@@ -33,7 +39,7 @@ export async function PATCH(
   if (!listing) return Response.json({ error: 'Prenda no encontrada' }, { status: 404 })
   if (listing.seller_id !== user.id) return Response.json({ error: 'Sin permiso' }, { status: 403 })
 
-  if (VALID_TRANSITIONS[listing.status] !== status) {
+  if (!VALID_TRANSITIONS[listing.status]?.includes(status)) {
     return Response.json({ error: `Transición inválida: ${listing.status} → ${status}` }, { status: 409 })
   }
 
