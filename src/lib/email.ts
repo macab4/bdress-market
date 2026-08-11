@@ -656,3 +656,44 @@ export async function sendInternationalAdminActionNeededEmail({
     `),
   })
 }
+
+// Recordatorio semanal a ADMIN_EMAIL (ver api/cron/international-availability-reminder)
+// — nunca revisa Vinted sola, solo le avisa a la admin cuáles le faltan
+// comprobar a mano hace más de 7 días, reusando el mismo botón "Comprobar
+// disponibilidad" que ya existe en /admin/international.
+export async function sendInternationalAvailabilityReminderEmail({
+  to,
+  items,
+}: {
+  to: string
+  items: { listingId: string; title: string; daysSinceVerified: number | null }[]
+}) {
+  const adminLink = `${process.env.NEXT_PUBLIC_SITE_URL}/admin/international`
+  const rows = items.map(item => `
+    <tr>
+      <td style="padding: 8px 0; font-size: 13px; color: #444; border-bottom: 1px solid #eee;">${item.title}</td>
+      <td style="padding: 8px 0; font-size: 13px; color: #888; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">
+        ${item.daysSinceVerified === null ? 'Nunca comprobada' : `Hace ${item.daysSinceVerified} días`}
+      </td>
+    </tr>
+  `).join('')
+
+  await sendEmail({
+    to,
+    subject: `${items.length} ${items.length === 1 ? 'prenda internacional' : 'prendas internacionales'} sin comprobar disponibilidad`,
+    html: emailLayout('Comprobar disponibilidad', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Estas prendas de Selección internacional llevan más de 7 días sin que se confirme si siguen disponibles en la
+        plataforma de origen. Revísalas y usa "Comprobar disponibilidad" en cada una.
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+        ${rows}
+      </table>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${adminLink}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ir a Selección internacional
+        </a>
+      </p>
+    `),
+  })
+}
