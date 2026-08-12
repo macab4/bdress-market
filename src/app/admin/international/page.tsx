@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { Listing, ListingSourcing } from '@/types'
 import AdminNav from '@/components/admin/AdminNav'
 import InternationalAvailabilityCheck from '@/components/admin/InternationalAvailabilityCheck'
+import InternationalStatusControl from '@/components/admin/InternationalStatusControl'
 
 type Row = Listing & { sourcing: ListingSourcing | null }
 
@@ -76,6 +77,7 @@ export default async function AdminInternationalPage() {
                     {sourceStatus.label}
                   </span>
                   <InternationalAvailabilityCheck listingId={listing.id} />
+                  <InternationalStatusControl listingId={listing.id} status={listing.status} />
                   <Link href={`/admin/international/${listing.id}/edit`} className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black flex-shrink-0">
                     Editar
                   </Link>
