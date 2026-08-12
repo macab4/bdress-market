@@ -4,12 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ListingStatus } from '@/types'
 
-const LABEL: Record<ListingStatus, string> = {
-  active: 'Publicada',
-  paused: 'Pausada',
-  sold: 'Vendida',
-}
-
 export default function InternationalStatusControl({ listingId, status }: { listingId: string; status: ListingStatus }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -32,7 +26,7 @@ export default function InternationalStatusControl({ listingId, status }: { list
   if (!open) {
     return (
       <button onClick={() => setOpen(true)} className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black flex-shrink-0">
-        {LABEL[status]}
+        Cambiar estado
       </button>
     )
   }
