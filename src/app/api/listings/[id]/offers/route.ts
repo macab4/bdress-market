@@ -73,6 +73,13 @@ export async function POST(
 
   if (error || !offer) return Response.json({ error: error?.message ?? 'Error creando la oferta' }, { status: 500 })
 
+  await supabase.from('notifications').insert({
+    user_id: listing.seller_id,
+    type: 'offer_received',
+    actor_id: user.id,
+    listing_id: listingId,
+  })
+
   const { data: seller } = await supabase.from('profiles').select('email, name').eq('id', listing.seller_id).single()
   if (seller?.email) {
     await sendEmail({

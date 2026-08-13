@@ -252,7 +252,7 @@ export interface SavedSearch {
   created_at: string
 }
 
-export type NotificationType = 'new_listing'
+export type NotificationType = 'new_listing' | 'offer_received' | 'offer_accepted' | 'offer_rejected' | 'offer_countered'
 
 export interface Notification {
   id: string

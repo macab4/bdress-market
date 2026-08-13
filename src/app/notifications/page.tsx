@@ -9,6 +9,14 @@ type NotificationWithRelations = Notification & {
   listing: { title: string; photos: string[] } | null
 }
 
+const ACTION_TEXT: Record<Notification['type'], string> = {
+  new_listing: 'publicó una prenda nueva',
+  offer_received: 'te hizo una oferta por',
+  offer_accepted: 'aceptó tu oferta por',
+  offer_rejected: 'rechazó tu oferta por',
+  offer_countered: 'te hizo una contraoferta por',
+}
+
 export default async function NotificationsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -51,8 +59,8 @@ export default async function NotificationsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">
-                    <span className="font-medium">{n.actor?.name ?? 'Alguien que sigues'}</span>{' '}
-                    publicó una prenda nueva
+                    <span className="font-medium">{n.actor?.name ?? 'Alguien'}</span>{' '}
+                    {ACTION_TEXT[n.type]}
                     {n.listing?.title && <>: <span className="font-medium">{n.listing.title}</span></>}
                   </p>
                   <p className="text-[10px] text-gray-400 mt-1">

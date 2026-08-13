@@ -66,6 +66,14 @@ export async function POST(
     const { error } = await supabase.from('offers').update({ status: 'rejected' }).eq('id', id)
     if (error) return Response.json({ error: error.message }, { status: 500 })
 
+    const proposerId = offer.proposed_by === 'buyer' ? offer.buyer_id : offer.seller_id
+    await supabase.from('notifications').insert({
+      user_id: proposerId,
+      type: 'offer_rejected',
+      actor_id: user.id,
+      listing_id: offer.listing_id,
+    })
+
     const proposer = offer.proposed_by === 'buyer' ? buyer : seller
     if (proposer?.email) {
       await sendEmail({
@@ -98,6 +106,14 @@ export async function POST(
       .eq('listing_id', offer.listing_id)
       .eq('status', 'pending')
       .neq('id', id)
+
+    const proposerId = offer.proposed_by === 'buyer' ? offer.buyer_id : offer.seller_id
+    await supabase.from('notifications').insert({
+      user_id: proposerId,
+      type: 'offer_accepted',
+      actor_id: user.id,
+      listing_id: offer.listing_id,
+    })
 
     if (buyer?.email) {
       await sendEmail({
@@ -169,6 +185,14 @@ export async function POST(
   if (insertError || !newOffer) {
     return Response.json({ error: insertError?.message ?? 'Error creando la contraoferta' }, { status: 500 })
   }
+
+  const recipientId = responderRole === 'seller' ? offer.buyer_id : offer.seller_id
+  await supabase.from('notifications').insert({
+    user_id: recipientId,
+    type: 'offer_countered',
+    actor_id: user.id,
+    listing_id: offer.listing_id,
+  })
 
   const recipient = responderRole === 'seller' ? buyer : seller
   if (recipient?.email) {
