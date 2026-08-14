@@ -243,7 +243,7 @@ export default async function ListingPage({
                     <span className={`text-[9px] tracking-widest uppercase px-2 py-1 whitespace-nowrap ${conditionGroupColor(listing.condition)}`}>
                       {conditionGroupLabel(listing.condition)}
                     </span>
-                    <ShareButton title={listing.title} buttonClassName="border border-gray-200" />
+                    <ShareButton listingId={listing.id} title={listing.title} buttonClassName="border border-gray-200" />
                     <div className="flex items-center gap-1">
                       <FavoriteButton
                         listingId={listing.id}
