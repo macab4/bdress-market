@@ -10,7 +10,14 @@ interface Props {
   buttonClassName?: string
 }
 
-const IMAGE_FETCH_TIMEOUT_MS = 4000
+// La primera vez que se comparte una prenda, la tarjeta se genera "en frío"
+// en el servidor (fuentes + foto + render) — en producción se midió hasta
+// ~4s. Repeticiones para la misma prenda quedan cacheadas en el CDN (~0.3s).
+// Un timeout corto acá hacía que esa primera vez cayera al fallback de solo
+// URL sin imagen, y por eso Instagram/WhatsApp nunca ofrecían "Compartir en
+// tu historia" (esa opción solo aparece cuando el share sheet recibe una
+// imagen de verdad).
+const IMAGE_FETCH_TIMEOUT_MS = 12000
 
 async function fetchShareImageFile(listingId: string): Promise<File | null> {
   const controller = new AbortController()
