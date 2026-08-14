@@ -138,6 +138,9 @@ export async function POST(
       courier_tracking_number: shipment.trackingNumber,
       courier_barcode: shipment.barcode,
       label_url,
+      label_courier: 'Starken',
+      label_tracking_number: shipment.trackingNumber,
+      label_uploaded_at: new Date().toISOString(),
       ...(isInternational ? { international_status: 'nationally_shipped' } : {}),
     })
     .eq('id', id)

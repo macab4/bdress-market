@@ -7,6 +7,9 @@ import { Order } from '@/types'
 import { ORDER_STATUS_CONFIG, shipDeadline } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
 import UploadLabelForm from '@/components/admin/UploadLabelForm'
+import EditLabelTrackingForm from '@/components/admin/EditLabelTrackingForm'
+
+const CHILEXPRESS_TRACKING_URL = 'https://centrodeayuda.chilexpress.cl/home'
 
 type AdminOrderDetail = Order & {
   listing: { title: string; photos: string[]; shipping_size: string } | null
@@ -46,6 +49,8 @@ export default async function AdminOrderDetailPage({
   const awaitingDispatch = order.status === 'paid' && !!order.label_url
   const deadline = order.paid_at ? shipDeadline(order.paid_at) : null
   const deadlinePassed = deadline ? isPast(deadline) : false
+  const missingTrackingInfo = !!order.label_url && !(order.label_courier && order.label_tracking_number)
+  const isChilexpress = !!order.label_courier && /chilexpress/i.test(order.label_courier)
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -137,8 +142,16 @@ export default async function AdminOrderDetailPage({
                 {order.label_uploaded_at && (
                   <p className="text-[10px] text-gray-400">Etiqueta enviada: {formatDate(order.label_uploaded_at)}</p>
                 )}
+                {isChilexpress && (
+                  <a href={CHILEXPRESS_TRACKING_URL} target="_blank" rel="noopener noreferrer"
+                    className="inline-block text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline pt-1">
+                    Rastrear en Chilexpress
+                  </a>
+                )}
               </div>
             )}
+
+            {missingTrackingInfo && <EditLabelTrackingForm orderId={order.id} />}
 
             {order.tracking_number && (
               <p className="text-xs text-gray-500">Seguimiento (despacho confirmado): <span className="font-mono">{order.tracking_number}</span></p>
