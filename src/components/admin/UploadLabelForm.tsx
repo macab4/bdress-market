@@ -45,8 +45,8 @@ export default function UploadLabelForm({ orderId, sellerEmail }: { orderId: str
     } else if (data.carrierLabel) {
       setCourier(data.carrierLabel)
       setNotice(`Se detectó el transportista (${data.carrierLabel}) pero no el número de seguimiento con certeza — complétalo a mano.`)
-    } else if (data.reason === 'not_pdf') {
-      setNotice('Solo se puede detectar automáticamente desde un PDF — sube el PDF de Chilexpress, o completa transportista y seguimiento a mano.')
+    } else if (data.reason === 'unsupported_type') {
+      setNotice('No se pudo leer este tipo de archivo — completa transportista y seguimiento a mano.')
     } else {
       setNotice('No se pudo detectar transportista ni número de seguimiento automáticamente — complétalos a mano antes de enviar.')
     }

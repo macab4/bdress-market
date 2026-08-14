@@ -37,9 +37,9 @@ export default function EditLabelTrackingForm({ orderId }: { orderId: string }) 
         setCourier(data.carrierLabel)
         setDetectState('not_detected')
         setNotice(`Se detectó el transportista (${data.carrierLabel}) pero no el número de seguimiento con certeza — complétalo a mano.`)
-      } else if (data.reason === 'not_pdf') {
+      } else if (data.reason === 'unsupported_type') {
         setDetectState('not_detected')
-        setNotice('La etiqueta subida no es un PDF — no se puede detectar automáticamente, completa a mano.')
+        setNotice('No se pudo leer este tipo de archivo — completa a mano.')
       } else {
         setDetectState('not_detected')
         setNotice('No se pudo detectar transportista ni número de seguimiento automáticamente — complétalos a mano.')

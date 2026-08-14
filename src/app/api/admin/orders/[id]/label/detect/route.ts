@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { extractPdfText } from '@/lib/shipping/extractPdfText'
-import { detectCarrier } from '@/lib/shipping/carrierDetection'
+import { extractLabelInfo, toSupportedMediaType } from '@/lib/shipping/extractLabelInfo'
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -36,17 +35,12 @@ export async function POST(
     return Response.json({ error: 'No se pudo leer el archivo de la etiqueta' }, { status: 502 })
   }
 
-  const contentType = fileRes.headers.get('content-type') ?? ''
-  if (!contentType.includes('pdf') && !order.label_url.toLowerCase().endsWith('.pdf')) {
-    return Response.json({ carrier: null, carrierLabel: null, trackingNumber: null, reason: 'not_pdf' })
+  const mediaType = toSupportedMediaType(fileRes.headers.get('content-type') ?? '')
+  if (!mediaType) {
+    return Response.json({ carrier: null, carrierLabel: null, trackingNumber: null, reason: 'unsupported_type' })
   }
 
   const bytes = Buffer.from(await fileRes.arrayBuffer())
-  const text = await extractPdfText(bytes)
-  if (!text) {
-    return Response.json({ carrier: null, carrierLabel: null, trackingNumber: null, reason: 'unreadable_pdf' })
-  }
-
-  const result = detectCarrier(text)
+  const result = await extractLabelInfo(bytes, mediaType)
   return Response.json(result)
 }

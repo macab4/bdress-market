@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { extractPdfText } from '@/lib/shipping/extractPdfText'
-import { detectCarrier } from '@/lib/shipping/carrierDetection'
+import { extractLabelInfo, toSupportedMediaType } from '@/lib/shipping/extractLabelInfo'
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -20,19 +19,12 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Falta el archivo de la etiqueta' }, { status: 400 })
   }
 
-  // Solo un PDF trae texto real que se pueda leer — una imagen (PNG/JPG)
-  // requeriría OCR, que a propósito no está implementado (mejor no detectar
-  // nada que arriesgarse a inventar mal un transportista o un número).
-  if (file.type !== 'application/pdf') {
-    return Response.json({ carrier: null, carrierLabel: null, trackingNumber: null, reason: 'not_pdf' })
+  const mediaType = toSupportedMediaType(file.type)
+  if (!mediaType) {
+    return Response.json({ carrier: null, carrierLabel: null, trackingNumber: null, reason: 'unsupported_type' })
   }
 
   const bytes = Buffer.from(await file.arrayBuffer())
-  const text = await extractPdfText(bytes)
-  if (!text) {
-    return Response.json({ carrier: null, carrierLabel: null, trackingNumber: null, reason: 'unreadable_pdf' })
-  }
-
-  const result = detectCarrier(text)
+  const result = await extractLabelInfo(bytes, mediaType)
   return Response.json(result)
 }
