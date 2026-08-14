@@ -8,8 +8,7 @@ import { ORDER_STATUS_CONFIG, shipDeadline } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
 import UploadLabelForm from '@/components/admin/UploadLabelForm'
 import EditLabelTrackingForm from '@/components/admin/EditLabelTrackingForm'
-
-const CHILEXPRESS_TRACKING_URL = 'https://centrodeayuda.chilexpress.cl/home'
+import ChilexpressTrackLink from '@/components/admin/ChilexpressTrackLink'
 
 type AdminOrderDetail = Order & {
   listing: { title: string; photos: string[]; shipping_size: string } | null
@@ -142,11 +141,8 @@ export default async function AdminOrderDetailPage({
                 {order.label_uploaded_at && (
                   <p className="text-[10px] text-gray-400">Etiqueta enviada: {formatDate(order.label_uploaded_at)}</p>
                 )}
-                {isChilexpress && (
-                  <a href={CHILEXPRESS_TRACKING_URL} target="_blank" rel="noopener noreferrer"
-                    className="inline-block text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline pt-1">
-                    Rastrear en Chilexpress
-                  </a>
+                {isChilexpress && order.label_tracking_number && (
+                  <ChilexpressTrackLink trackingNumber={order.label_tracking_number} />
                 )}
               </div>
             )}
