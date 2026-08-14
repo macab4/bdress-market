@@ -149,6 +149,47 @@ export async function sendActivateAccountEmail({
   })
 }
 
+// Cuenta creada a mano desde /admin/users (ej. una contacto de la lista de
+// marketing a la que se le crea la cuenta por adelantado) — a diferencia de
+// sendActivateAccountEmail, no asume prendas migradas ni menciona el
+// relanzamiento, solo invita a poner contraseña y subir su primera prenda.
+export async function sendManualAccountWelcomeEmail({
+  to,
+  name,
+}: {
+  to: string
+  name: string | null
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  await sendEmail({
+    to,
+    subject: 'Te creamos tu cuenta en Bdress Market',
+    html: emailLayout('Bienvenida a Bdress Market', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, te creamos una cuenta en Bdress Market para que puedas
+        subir y vender tus vestidos.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        <strong>Para activarla:</strong>
+      </p>
+      <ol style="font-size: 14px; color: #444; line-height: 1.8; padding-left: 20px;">
+        <li>Entra a bdressmarket.cl y haz clic en "¿Olvidaste tu contraseña?" con
+          tu correo (${to}) para crear tu contraseña — es tu primera vez entrando.</li>
+        <li>Una vez dentro, ve a "+ Vender" y sube tu primera prenda.</li>
+      </ol>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Vender es <strong>100% gratis</strong>, sin comisión.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/auth/forgot-password" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Crear mi contraseña
+        </a>
+      </p>
+    `),
+  })
+}
+
 // Seguimiento para las vendedoras migradas que sí intentaron "olvidé mi
 // contraseña" tras sendActivateAccountEmail pero nunca lograron entrar —
 // el cliente de Supabase usaba PKCE sin ningún endpoint que intercambiara

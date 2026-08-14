@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import AdminNav from '@/components/admin/AdminNav'
+import CreateUserForm from '@/components/admin/CreateUserForm'
 
 export default async function AdminUsersPage({
   searchParams,
@@ -64,6 +65,10 @@ export default async function AdminUsersPage({
         <div>
           <h1 className="text-xl font-light tracking-widest uppercase mb-6">Panel de administración</h1>
           <AdminNav active="/admin/users" />
+        </div>
+
+        <div className="mb-6">
+          <CreateUserForm />
         </div>
 
         <form method="GET" className="mb-6 flex gap-4 items-center flex-wrap">
