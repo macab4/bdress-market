@@ -16,6 +16,7 @@ import MakeOfferModal from '@/components/listings/MakeOfferModal'
 import InternationalInfoModal from '@/components/listings/InternationalInfoModal'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
+import { getFavoriteCounts } from '@/lib/favorites'
 import PauseListingButton from '@/components/dashboard/PauseListingButton'
 import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
 import MarkSoldButton from '@/components/dashboard/MarkSoldButton'
@@ -79,15 +80,16 @@ export default async function ListingPage({
     seller: { id: string; name: string; city: string | null; avatar_url: string | null; bio: string | null; comuna: string | null }
   }
 
-  const [{ data: listing }, { data: { user } }, { count: favoriteCount }] = await Promise.all([
+  const [{ data: listing }, { data: { user } }, favoriteCounts] = await Promise.all([
     supabase
       .from('listings')
       .select('*, seller:profiles(id, name, city, avatar_url, bio, comuna), brand_ref:brands(id, display_name, slug)')
       .eq('id', id)
       .single() as unknown as Promise<{ data: ListingWithSeller | null }>,
     supabase.auth.getUser(),
-    supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('listing_id', id),
+    getFavoriteCounts([id]),
   ])
+  const favoriteCount = favoriteCounts[id] ?? 0
 
   if (!listing) notFound()
 
@@ -244,17 +246,13 @@ export default async function ListingPage({
                       {conditionGroupLabel(listing.condition)}
                     </span>
                     <ShareButton listingId={listing.id} title={listing.title} buttonClassName="border border-gray-200" />
-                    <div className="flex items-center gap-1">
-                      <FavoriteButton
-                        listingId={listing.id}
-                        initialFavorited={isFavorited}
-                        isLoggedIn={user !== null}
-                        buttonClassName="border border-gray-200"
-                      />
-                      {!!favoriteCount && favoriteCount > 0 && (
-                        <span className="text-xs text-gray-400">{favoriteCount}</span>
-                      )}
-                    </div>
+                    <FavoriteButton
+                      listingId={listing.id}
+                      initialFavorited={isFavorited}
+                      initialCount={favoriteCount}
+                      isLoggedIn={user !== null}
+                      buttonClassName="border border-gray-200"
+                    />
                   </div>
                 </div>
 

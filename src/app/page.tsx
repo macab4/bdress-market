@@ -11,6 +11,7 @@ import CatalogFilters from '@/components/listings/CatalogFilters'
 import SaveSearchButton from '@/components/listings/SaveSearchButton'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
+import { getFavoriteCounts } from '@/lib/favorites'
 
 const PAGE_SIZE = 48
 
@@ -106,11 +107,11 @@ export default async function HomePage({
   if (params.max) query = query.lte('price', parseInt(params.max))
 
   // "Más guardados" no tiene una columna que ordenar directamente en la base
-  // de datos (no se agregó un contador a favorites para no tocar ese
-  // sistema) — se resuelve trayendo los ids que matchean el resto de los
-  // filtros, contando sus favoritos aparte (solo lectura) y paginando en
-  // memoria. Con el tamaño actual del catálogo esto es liviano; si el
-  // catálogo crece mucho, esto debería pasar a una columna contador.
+  // de datos — se resuelve trayendo los ids que matchean el resto de los
+  // filtros, contando sus favoritos aparte (getFavoriteCounts, solo lectura)
+  // y paginando en memoria. Con el tamaño actual del catálogo esto es
+  // liviano; si el catálogo crece mucho, esto debería pasar a una columna
+  // contador.
   type ListingWithSeller = Listing & { seller: { name: string; city: string } }
   let listings: ListingWithSeller[] | null = null
   let totalCount = 0
@@ -122,10 +123,8 @@ export default async function HomePage({
 
     let orderedIds = ids
     if (ids.length > 0) {
-      const { data: favRows } = await supabase.from('favorites').select('listing_id').in('listing_id', ids)
-      const counts = new Map<string, number>()
-      for (const row of favRows ?? []) counts.set(row.listing_id, (counts.get(row.listing_id) ?? 0) + 1)
-      orderedIds = [...ids].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
+      const counts = await getFavoriteCounts(ids)
+      orderedIds = [...ids].sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
     }
     const from = (page - 1) * PAGE_SIZE
     const pageIds = orderedIds.slice(from, from + PAGE_SIZE)
@@ -219,6 +218,7 @@ export default async function HomePage({
   const sellerRatings = listings
     ? await getSellerRatings(supabase, listings.map(l => l.seller_id))
     : {}
+  const favoriteCounts = listings ? await getFavoriteCounts(listings.map(l => l.id)) : {}
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -335,6 +335,7 @@ export default async function HomePage({
                       <FavoriteButton
                         listingId={listing.id}
                         initialFavorited={favoritedIds.has(listing.id)}
+                        initialCount={favoriteCounts[listing.id] ?? 0}
                         isLoggedIn={user !== null}
                       />
                     </div>

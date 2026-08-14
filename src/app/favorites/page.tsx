@@ -7,6 +7,7 @@ import { conditionGroupLabel } from '@/lib/catalog'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
+import { getFavoriteCounts } from '@/lib/favorites'
 
 export default async function FavoritesPage() {
   const supabase = await createClient()
@@ -23,6 +24,7 @@ export default async function FavoritesPage() {
 
   const listings = (favorites ?? []).map(f => f.listing).filter((l): l is Listing & { seller: { id: string; name: string } | null } => l !== null)
   const sellerRatings = await getSellerRatings(supabase, listings.map(l => l.seller_id))
+  const favoriteCounts = await getFavoriteCounts(listings.map(l => l.id))
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -58,6 +60,7 @@ export default async function FavoritesPage() {
                     <FavoriteButton
                       listingId={listing.id}
                       initialFavorited={true}
+                      initialCount={favoriteCounts[listing.id] ?? 0}
                       isLoggedIn={true}
                     />
                   </div>

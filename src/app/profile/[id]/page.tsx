@@ -9,6 +9,8 @@ import { conditionGroupLabel } from '@/lib/catalog'
 import StarRating from '@/components/reviews/StarRating'
 import FollowButton from '@/components/profile/FollowButton'
 import ProfileListingsSort from '@/components/profile/ProfileListingsSort'
+import FavoriteButton from '@/components/listings/FavoriteButton'
+import { getFavoriteCounts } from '@/lib/favorites'
 import { hasFastShippingBadge, hasFastReplyBadge, isActiveSeller } from '@/lib/profileStats'
 import PauseListingButton from '@/components/dashboard/PauseListingButton'
 import DeleteListingButton from '@/components/dashboard/DeleteListingButton'
@@ -80,6 +82,17 @@ export default async function ProfilePage({
   else if (sortValue === 'precio_desc') listingsQuery = listingsQuery.order('price', { ascending: false })
   else listingsQuery = listingsQuery.order('created_at', { ascending: false })
   const { data: listings } = await listingsQuery as unknown as { data: Listing[] | null }
+
+  let favoritedIds = new Set<string>()
+  if (user && listings && listings.length > 0) {
+    const { data: favRows } = await supabase
+      .from('favorites')
+      .select('listing_id')
+      .eq('user_id', user.id)
+      .in('listing_id', listings.map(l => l.id))
+    favoritedIds = new Set((favRows ?? []).map(f => f.listing_id))
+  }
+  const favoriteCounts = listings ? await getFavoriteCounts(listings.map(l => l.id)) : {}
 
   let isFollowing = false
   if (user && !isOwnProfile) {
@@ -316,6 +329,14 @@ export default async function ProfilePage({
                               Destacada
                             </span>
                           )}
+                        </div>
+                        <div className="absolute bottom-2 right-2">
+                          <FavoriteButton
+                            listingId={listing.id}
+                            initialFavorited={favoritedIds.has(listing.id)}
+                            initialCount={favoriteCounts[listing.id] ?? 0}
+                            isLoggedIn={user !== null}
+                          />
                         </div>
                       </div>
                       <div className="p-3 pb-1">
