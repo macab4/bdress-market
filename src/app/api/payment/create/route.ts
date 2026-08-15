@@ -1,7 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { getShippingQuote } from '@/lib/starken'
 import { buyerProtectionFee, paymentProcessingFee } from '@/lib/catalog'
 import { INTERNATIONAL_TERMS_VERSION } from '@/lib/international/content'
+import { computeWalletApplication, prorateMercadoPagoItems, recordPurchaseHold, recordPurchaseCompleted, recordPurchaseCancelled, recordSalePending, sendWalletAlertEmail } from '@/lib/wallet'
+import { finalizeOrderPaid } from '@/lib/orderNotifications'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -15,6 +18,7 @@ export async function POST(request: Request) {
 
   let listing_id: string
   let internationalConsent = false
+  let walletAmountRequested = 0
   let shipping: {
     shipping_name: string
     shipping_phone: string
@@ -28,6 +32,10 @@ export async function POST(request: Request) {
     listing_id = body.listing_id
     if (!listing_id) throw new Error()
     internationalConsent = body.international_consent === true
+    // Nunca se confía en este número a ciegas — se capea server-side contra
+    // el saldo disponible real y el total de la orden (ver
+    // computeWalletApplication más abajo).
+    walletAmountRequested = Number.isFinite(Number(body.wallet_amount_requested)) ? Number(body.wallet_amount_requested) : 0
 
     const required = ['shipping_name', 'shipping_phone', 'shipping_address', 'shipping_comuna', 'shipping_city']
     for (const field of required) {
@@ -100,6 +108,27 @@ export async function POST(request: Request) {
 
   const commission = buyerProtectionFee(price)
   const processingFee = paymentProcessingFee(price)
+  const totalAPagar = price + commission + quote.price
+
+  // Cuánto de este total puede cubrirse con saldo B-Dress — el saldo real se
+  // lee server-side (nunca se confía en lo que manda el cliente) con el
+  // cliente admin, porque el hold en sí (más abajo) solo lo puede hacer
+  // service_role.
+  const admin = createAdminClient()
+  let walletAmountApplied = 0
+  let walletTransactionId: string | null = null
+  if (walletAmountRequested > 0) {
+    const { data: account } = await admin
+      .from('wallet_accounts')
+      .select('available_balance')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    walletAmountApplied = computeWalletApplication({
+      totalAmount: totalAPagar,
+      availableBalance: account?.available_balance ?? 0,
+      requestedAmount: walletAmountRequested,
+    })
+  }
 
   // Reserva atómica: bloquea el listing, valida su estado y crea (o
   // reutiliza) la única orden pending_payment permitida para esa prenda —
@@ -143,7 +172,92 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Error creando la orden' }, { status: 500 })
   }
 
-  // Crear preferencia de pago en Mercado Pago (Checkout Pro)
+  // La orden puede haber sido reutilizada de un intento anterior (mismo
+  // listing, mismo/otro reintento de la misma compradora dentro de la
+  // ventana de reserva) — si ya tiene un hold de saldo, se reusa TAL CUAL,
+  // nunca se vuelve a calcular ni se re-intenta el hold (ver comentario de
+  // wallet_amount_applied en la migración de fase 3).
+  const { data: existingWalletState } = await admin
+    .from('orders')
+    .select('wallet_amount_applied, wallet_transaction_id')
+    .eq('id', orderId)
+    .single()
+
+  if (existingWalletState && existingWalletState.wallet_amount_applied > 0) {
+    walletAmountApplied = existingWalletState.wallet_amount_applied
+    walletTransactionId = existingWalletState.wallet_transaction_id
+  } else if (walletAmountApplied > 0) {
+    const hold = await recordPurchaseHold(admin, { orderId, userId: user.id, amount: walletAmountApplied })
+    if (hold.ok && !hold.skipped && hold.transactionId) {
+      const { error: updateErr } = await admin
+        .from('orders')
+        .update({ wallet_amount_applied: walletAmountApplied, wallet_transaction_id: hold.transactionId })
+        .eq('id', orderId)
+      if (updateErr) {
+        // El hold ya quedó en el ledger pero no se pudo registrar en la
+        // orden — no arriesgamos aplicar un descuento que la orden no
+        // refleja; se alerta para corrección manual y esta compra sigue
+        // 100% por Mercado Pago.
+        await sendWalletAlertEmail({ orderId, reason: updateErr.message })
+        walletAmountApplied = 0
+      } else {
+        walletTransactionId = hold.transactionId
+      }
+    } else {
+      // Saldo insuficiente en una carrera (otra pestaña/compra lo gastó
+      // primero) u otro error del RPC — degrada de forma segura a pagar
+      // 100% por Mercado Pago, la orden sigue siendo válida.
+      walletAmountApplied = 0
+    }
+  }
+
+  // Límite de esta fase: si el total recalculado bajó por debajo de un hold
+  // ya fijado en un reintento anterior (ej. la compradora cambió a un envío
+  // más barato), no se ajusta el hold — se le pide reiniciar la compra en
+  // vez de dejar un estado contable inconsistente.
+  if (walletAmountApplied > totalAPagar) {
+    return Response.json({ error: 'El total de tu pedido cambió y ya no coincide con el saldo reservado. Vuelve a intentar la compra desde el principio.' }, { status: 409 })
+  }
+
+  const remaining = totalAPagar - walletAmountApplied
+
+  // El saldo cubre el 100% del total — se confirma directo, sin pasar por
+  // Mercado Pago.
+  if (remaining === 0) {
+    const completed = await recordPurchaseCompleted(admin, {
+      orderId, userId: user.id, amount: walletAmountApplied, holdTransactionId: walletTransactionId,
+    })
+    if (!completed.ok) await sendWalletAlertEmail({ orderId, reason: completed.error })
+
+    // payment_ref queda null a propósito — así el refund (admin/orders/[id]/resolve)
+    // sabe sin ambigüedad que no hay nada que reembolsar por Mercado Pago.
+    await admin.from('orders').update({ status: 'paid', payment_ref: null, paid_at: new Date().toISOString() }).eq('id', orderId)
+
+    // Mismo movimiento que hace payment/confirm en el camino con Mercado
+    // Pago — acá no hay webhook que lo dispare, así que hay que llamarlo acá
+    // mismo o la vendedora nunca vería el saldo pendiente de esta venta.
+    const pending = await recordSalePending(admin, {
+      id: orderId, seller_id: listing.seller_id, listing_id: listing.id,
+      amount: price + commission, commission, processing_fee: processingFee,
+    })
+    if (!pending.ok) await sendWalletAlertEmail({ orderId, reason: pending.error })
+
+    await finalizeOrderPaid(admin, {
+      orderId,
+      listingId: listing.id,
+      buyerId: user.id,
+      sellerId: listing.seller_id,
+      amount: price + commission,
+      commission,
+      processingFee,
+      shippingCost: quote.price,
+    })
+
+    return Response.json({ redirectUrl: `${SITE_URL}/dashboard/purchases/${orderId}/confirmacion` })
+  }
+
+  // Crear preferencia de pago en Mercado Pago (Checkout Pro) — por lo que
+  // falta cubrir después del saldo aplicado (0 si no se usó saldo).
   const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
     headers: {
@@ -151,26 +265,12 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
     },
     body: JSON.stringify({
-      items: [
-        {
-          title: listing.title,
-          quantity: 1,
-          unit_price: price,
-          currency_id: 'CLP',
-        },
-        {
-          title: 'Protección BDress',
-          quantity: 1,
-          unit_price: commission,
-          currency_id: 'CLP',
-        },
-        {
-          title: 'Envío',
-          quantity: 1,
-          unit_price: quote.price,
-          currency_id: 'CLP',
-        },
-      ],
+      items: prorateMercadoPagoItems({ price, commission, shippingCost: quote.price, walletAmountApplied }).map(item => ({
+        title: item.title === 'Prenda' ? listing.title : item.title,
+        quantity: 1,
+        unit_price: item.unitPrice,
+        currency_id: 'CLP',
+      })),
       payer: { email: user.email },
       external_reference: orderId,
       back_urls: {
@@ -185,12 +285,22 @@ export async function POST(request: Request) {
 
   if (!mpRes.ok) {
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+    if (walletAmountApplied > 0) {
+      await recordPurchaseCancelled(admin, {
+        orderId, userId: user.id, amount: walletAmountApplied, reason: 'mercadopago_preference_failed', holdTransactionId: walletTransactionId,
+      })
+    }
     return Response.json({ error: 'Error al conectar con Mercado Pago' }, { status: 502 })
   }
 
   const preference = await mpRes.json()
   if (!preference.init_point) {
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+    if (walletAmountApplied > 0) {
+      await recordPurchaseCancelled(admin, {
+        orderId, userId: user.id, amount: walletAmountApplied, reason: 'mercadopago_preference_failed', holdTransactionId: walletTransactionId,
+      })
+    }
     return Response.json({ error: preference.message ?? 'Error en Mercado Pago' }, { status: 502 })
   }
 

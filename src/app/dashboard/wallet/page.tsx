@@ -11,6 +11,8 @@ const TYPE_LABELS: Record<WalletTransactionType, string> = {
   withdrawal_completed: 'Retiro',
   withdrawal_cancelled: 'Retiro cancelado',
   marketplace_purchase: 'Compra con saldo',
+  marketplace_purchase_hold: 'Saldo reservado para una compra',
+  marketplace_purchase_cancelled: 'Reserva de compra liberada',
   marketplace_purchase_refund: 'Reembolso de compra',
   giftcard_redemption: 'Gift Card',
   admin_credit: 'Ajuste (crédito)',

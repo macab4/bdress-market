@@ -226,6 +226,114 @@ export async function sendWalletAlertEmail(args: { orderId: string; reason: stri
   })
 }
 
+// Se crea al confirmar el checkout con saldo aplicado (parcial o total):
+// mueve el monto de disponible a reservado — el dinero se compromete de
+// inmediato, antes de saber si el resto (si lo hay) se paga por Mercado
+// Pago. idempotency_key por id de orden, generado ANTES de este call —
+// un reintento del checkout sobre la misma orden pending_payment no
+// duplica la reserva.
+export async function recordPurchaseHold(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: 'marketplace_purchase_hold' satisfies WalletTransactionType,
+    p_pending_delta: 0,
+    p_available_delta: -args.amount,
+    p_reserved_delta: args.amount,
+    p_order_id: args.orderId,
+    p_description: 'Saldo aplicado a una compra',
+  })
+}
+
+// La orden quedó 'paid' (ya sea 100% con saldo o pago mixto confirmado por
+// Mercado Pago): el hold se vuelve gasto definitivo, nunca vuelve a
+// disponible. `amount` siempre es el del hold original — nunca se
+// recalcula (ver comentario de wallet_amount_applied en la migración).
+export async function recordPurchaseCompleted(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number; holdTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: 'marketplace_purchase' satisfies WalletTransactionType,
+    p_pending_delta: 0,
+    p_available_delta: 0,
+    p_reserved_delta: -args.amount,
+    p_order_id: args.orderId,
+    p_description: 'Compra pagada con saldo',
+    p_related_transaction_id: args.holdTransactionId ?? null,
+    p_created_by: args.createdBy ?? null,
+  })
+}
+
+// La orden se abandonó/canceló sin pagar (cron expire-pending-orders): el
+// saldo reservado vuelve a disponible.
+export async function recordPurchaseCancelled(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number; reason: string; holdTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: 'marketplace_purchase_cancelled' satisfies WalletTransactionType,
+    p_pending_delta: 0,
+    p_available_delta: args.amount,
+    p_reserved_delta: -args.amount,
+    p_order_id: args.orderId,
+    p_description: args.reason,
+    p_related_transaction_id: args.holdTransactionId ?? null,
+    p_created_by: args.createdBy ?? null,
+  })
+}
+
+// Admin reembolsa una orden ya pagada que incluía saldo — devuelve la parte
+// de saldo a disponible (la parte de Mercado Pago se reembolsa aparte, vía
+// su propio payment_ref, en admin/orders/[id]/resolve).
+export async function recordPurchaseRefund(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number; reason: string; holdTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: 'marketplace_purchase_refund' satisfies WalletTransactionType,
+    p_pending_delta: 0,
+    p_available_delta: args.amount,
+    p_reserved_delta: 0,
+    p_order_id: args.orderId,
+    p_description: args.reason,
+    p_related_transaction_id: args.holdTransactionId ?? null,
+    p_created_by: args.createdBy ?? null,
+  })
+}
+
+// Cuánto del total puede cubrirse con saldo — nunca confía en el monto que
+// pide el cliente: lo capea al disponible real (leído server-side) y al
+// total de la orden. Nunca negativo.
+export function computeWalletApplication(args: {
+  totalAmount: number; availableBalance: number; requestedAmount: number
+}): number {
+  const requested = Math.max(0, Math.round(args.requestedAmount) || 0)
+  return Math.min(requested, Math.max(0, args.availableBalance), Math.max(0, args.totalAmount))
+}
+
+// Arma los ítems de la preferencia de Mercado Pago por lo que falta cubrir
+// después de aplicar el saldo — resta secuencial (Prenda → Protección
+// BDress → Envío), nunca negativa, ítems en $0 se filtran. Evita depender
+// de si Mercado Pago acepta unit_price negativo o en cero (no verificado).
+export function prorateMercadoPagoItems(args: {
+  price: number; commission: number; shippingCost: number; walletAmountApplied: number
+}): { title: string; unitPrice: number }[] {
+  let remaining = args.walletAmountApplied
+  function take(amount: number): number {
+    const deducted = Math.min(remaining, amount)
+    remaining -= deducted
+    return amount - deducted
+  }
+  const items = [
+    { title: 'Prenda', unitPrice: take(args.price) },
+    { title: 'Protección BDress', unitPrice: take(args.commission) },
+    { title: 'Envío', unitPrice: take(args.shippingCost) },
+  ]
+  return items.filter(item => item.unitPrice > 0)
+}
+
 export async function getWalletSummary(admin: AdminClient, userId: string) {
   const { data } = await admin
     .from('wallet_accounts')

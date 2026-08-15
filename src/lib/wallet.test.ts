@@ -9,6 +9,12 @@ import {
   recordWithdrawalHold,
   recordWithdrawalCompleted,
   recordWithdrawalCancelled,
+  recordPurchaseHold,
+  recordPurchaseCompleted,
+  recordPurchaseCancelled,
+  recordPurchaseRefund,
+  computeWalletApplication,
+  prorateMercadoPagoItems,
 } from './wallet'
 
 // Cliente admin fake mínimo — solo implementa lo que wallet.ts realmente usa
@@ -201,6 +207,149 @@ describe('recordWithdrawalCancelled', () => {
       p_type: 'withdrawal_cancelled', p_available_delta: 60000, p_reserved_delta: -60000,
       p_idempotency_key: 'withdrawal_cancelled:w_1',
     }))
+  })
+})
+
+describe('recordPurchaseHold', () => {
+  it('mueve el monto de disponible a reservado con idempotency_key por orden', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_ph1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordPurchaseHold(admin, { orderId: 'order_1', userId: 'buyer_1', amount: 20000 })
+
+    expect(result).toEqual({ ok: true, skipped: false, transactionId: 'tx_ph1' })
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_user_id: 'buyer_1',
+      p_type: 'marketplace_purchase_hold',
+      p_available_delta: -20000,
+      p_reserved_delta: 20000,
+      p_order_id: 'order_1',
+    }))
+  })
+
+  it('saldo insuficiente: el RPC falla y la función propaga el error sin lanzar', async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: 'new row for relation "wallet_accounts" violates check constraint "wallet_accounts_available_nonneg"' },
+    })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordPurchaseHold(admin, { orderId: 'order_1', userId: 'buyer_1', amount: 999999 })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/available_nonneg/)
+  })
+})
+
+describe('recordPurchaseCompleted', () => {
+  it('mueve reservado a cero sin tocar disponible, referenciando el hold original', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_pc1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordPurchaseCompleted(admin, {
+      orderId: 'order_1', userId: 'buyer_1', amount: 20000, holdTransactionId: 'tx_ph1',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'marketplace_purchase', p_available_delta: 0, p_reserved_delta: -20000,
+      p_order_id: 'order_1', p_related_transaction_id: 'tx_ph1',
+    }))
+  })
+})
+
+describe('recordPurchaseCancelled', () => {
+  it('devuelve el monto reservado a disponible (orden abandonada/expirada)', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_pcx1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordPurchaseCancelled(admin, {
+      orderId: 'order_1', userId: 'buyer_1', amount: 20000,
+      reason: 'order_abandoned_or_reassigned', holdTransactionId: 'tx_ph1',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'marketplace_purchase_cancelled', p_available_delta: 20000, p_reserved_delta: -20000,
+      p_order_id: 'order_1', p_related_transaction_id: 'tx_ph1',
+    }))
+  })
+
+  it('idempotencia: si ya se había liberado, el RPC devuelve inserted=false → skipped', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: null, account_id: 'acc_1', inserted: false }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordPurchaseCancelled(admin, {
+      orderId: 'order_1', userId: 'buyer_1', amount: 20000, reason: 'order_abandoned_or_reassigned',
+    })
+
+    expect(result).toEqual({ ok: true, skipped: true, transactionId: undefined })
+  })
+})
+
+describe('recordPurchaseRefund', () => {
+  it('devuelve el monto a disponible sin tocar reservado (la orden ya estaba paid)', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_pr1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordPurchaseRefund(admin, {
+      orderId: 'order_1', userId: 'buyer_1', amount: 20000,
+      reason: 'admin_refund', holdTransactionId: 'tx_ph1', createdBy: 'admin_1',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'marketplace_purchase_refund', p_available_delta: 20000, p_reserved_delta: 0,
+      p_order_id: 'order_1', p_related_transaction_id: 'tx_ph1',
+    }))
+  })
+})
+
+describe('computeWalletApplication', () => {
+  it('capea al disponible cuando la compradora pide más de lo que tiene', () => {
+    expect(computeWalletApplication({ totalAmount: 50000, availableBalance: 10000, requestedAmount: 50000 })).toBe(10000)
+  })
+
+  it('capea al total cuando el saldo disponible supera el total de la orden', () => {
+    expect(computeWalletApplication({ totalAmount: 30000, availableBalance: 100000, requestedAmount: 100000 })).toBe(30000)
+  })
+
+  it('nunca es negativo aunque los inputs lo sean', () => {
+    expect(computeWalletApplication({ totalAmount: 30000, availableBalance: -500, requestedAmount: 10000 })).toBe(0)
+    expect(computeWalletApplication({ totalAmount: 30000, availableBalance: 10000, requestedAmount: -1000 })).toBe(0)
+  })
+
+  it('respeta un monto parcial válido dentro de ambos límites', () => {
+    expect(computeWalletApplication({ totalAmount: 30000, availableBalance: 10000, requestedAmount: 4000 })).toBe(4000)
+  })
+})
+
+describe('prorateMercadoPagoItems', () => {
+  it('sin saldo aplicado, devuelve los 3 ítems completos', () => {
+    const items = prorateMercadoPagoItems({ price: 20000, commission: 2000, shippingCost: 3000, walletAmountApplied: 0 })
+    expect(items).toEqual([
+      { title: 'Prenda', unitPrice: 20000 },
+      { title: 'Protección BDress', unitPrice: 2000 },
+      { title: 'Envío', unitPrice: 3000 },
+    ])
+  })
+
+  it('resta secuencialmente Prenda → Protección → Envío y filtra los ítems en $0', () => {
+    // saldo cubre toda la prenda (20000) + parte de la protección (1500 de 2000)
+    const items = prorateMercadoPagoItems({ price: 20000, commission: 2000, shippingCost: 3000, walletAmountApplied: 21500 })
+    expect(items).toEqual([
+      { title: 'Protección BDress', unitPrice: 500 },
+      { title: 'Envío', unitPrice: 3000 },
+    ])
+  })
+
+  it('saldo cubre el total exacto: no quedan ítems (camino 100% saldo)', () => {
+    const items = prorateMercadoPagoItems({ price: 20000, commission: 2000, shippingCost: 3000, walletAmountApplied: 25000 })
+    expect(items).toEqual([])
+  })
+
+  it('la suma de los ítems resultantes siempre cuadra con lo que falta pagar', () => {
+    const price = 20000, commission = 2000, shippingCost = 3000, walletAmountApplied = 8750
+    const items = prorateMercadoPagoItems({ price, commission, shippingCost, walletAmountApplied })
+    const sum = items.reduce((acc, item) => acc + item.unitPrice, 0)
+    expect(sum).toBe(price + commission + shippingCost - walletAmountApplied)
   })
 })
 

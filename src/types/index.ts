@@ -16,7 +16,8 @@ export type OfferProposedBy = 'buyer' | 'seller'
 export type WalletTransactionType =
   | 'sale_pending' | 'sale_release' | 'sale_reversal'
   | 'withdrawal_hold' | 'withdrawal_completed' | 'withdrawal_cancelled'
-  | 'marketplace_purchase' | 'marketplace_purchase_refund'
+  | 'marketplace_purchase' | 'marketplace_purchase_hold'
+  | 'marketplace_purchase_cancelled' | 'marketplace_purchase_refund'
   | 'giftcard_redemption' | 'admin_credit' | 'admin_debit'
 
 // Retiros — ver src/lib/wallet.ts (recordWithdrawalHold/Completed/Cancelled)

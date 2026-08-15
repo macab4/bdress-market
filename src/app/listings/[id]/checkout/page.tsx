@@ -22,7 +22,7 @@ export default async function CheckoutPage({
   if (listing.status !== 'active') redirect(`/listings/${id}`)
   if (listing.seller_id === user.id) redirect(`/listings/${id}`)
 
-  const [{ data: profile }, { data: acceptedOffer }] = await Promise.all([
+  const [{ data: profile }, { data: acceptedOffer }, { data: walletAccount }] = await Promise.all([
     supabase.from('profiles').select('name, phone, address, comuna, city').eq('id', user.id).single(),
     supabase
       .from('offers')
@@ -32,6 +32,7 @@ export default async function CheckoutPage({
       .eq('status', 'accepted')
       .gt('accepted_expires_at', new Date().toISOString())
       .maybeSingle(),
+    supabase.from('wallet_accounts').select('available_balance').eq('user_id', user.id).maybeSingle(),
   ])
 
   const price = acceptedOffer?.offered_price ?? listing.price
@@ -75,6 +76,7 @@ export default async function CheckoutPage({
         <CheckoutForm
           listingId={listing.id}
           price={price}
+          walletAvailableBalance={walletAccount?.available_balance ?? 0}
           isInternational={listing.source_type === 'international_on_demand'}
           internationalLeadTimeMinDays={listing.international_lead_time_min_days}
           internationalLeadTimeMaxDays={listing.international_lead_time_max_days}

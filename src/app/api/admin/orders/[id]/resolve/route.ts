@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewReminderEmail } from '@/lib/email'
-import { recordSaleRelease, recordSaleReversal, sendWalletAlertEmail } from '@/lib/wallet'
+import { recordSaleRelease, recordSaleReversal, recordPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
@@ -31,7 +31,7 @@ export async function POST(
   const admin = createAdminClient()
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, buyer_id, seller_id, status, payment_ref')
+    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id')
     .eq('id', id)
     .single()
 
@@ -78,22 +78,30 @@ export async function POST(
     return Response.json({ ok: true })
   }
 
-  // action === 'refund'
-  if (!order.payment_ref) {
-    return Response.json({ error: 'Esta orden no tiene un pago de Mercado Pago asociado para reembolsar' }, { status: 409 })
+  // action === 'refund'. Con pago mixto (fase 3) una orden puede no tener
+  // payment_ref (se pagó 100% con saldo) — solo rechazar si NO hay nada que
+  // reembolsar por ningún canal.
+  if (!order.payment_ref && order.wallet_amount_applied === 0) {
+    return Response.json({ error: 'Esta orden no tiene ningún pago asociado para reembolsar' }, { status: 409 })
   }
 
-  const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.payment_ref}/refunds`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
-      'X-Idempotency-Key': crypto.randomUUID(),
-    },
-  })
+  // La preferencia de Mercado Pago (si existió) ya se armó solo por lo que
+  // faltaba después de aplicar el saldo (ver payment/create), así que
+  // reembolsar el 100% de ese payment_ref ya reembolsa exactamente la parte
+  // que correspondía a Mercado Pago — sin ningún cálculo extra.
+  if (order.payment_ref) {
+    const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.payment_ref}/refunds`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+        'X-Idempotency-Key': crypto.randomUUID(),
+      },
+    })
 
-  if (!refundRes.ok) {
-    const errBody = await refundRes.json().catch(() => ({}))
-    return Response.json({ error: errBody.message || 'Error al reembolsar en Mercado Pago' }, { status: 502 })
+    if (!refundRes.ok) {
+      const errBody = await refundRes.json().catch(() => ({}))
+      return Response.json({ error: errBody.message || 'Error al reembolsar en Mercado Pago' }, { status: 502 })
+    }
   }
 
   await admin.from('orders').update({ status: 'cancelled' }).eq('id', id)
@@ -104,6 +112,19 @@ export async function POST(
     createdBy: adminUser.id,
   })
   if (!reversal.ok) await sendWalletAlertEmail({ orderId: id, reason: reversal.error })
+
+  // Devuelve a disponible la parte de saldo que la compradora había
+  // aplicado. Para llegar a 'refund' la orden pasó por 'paid' (disputed
+  // también viene de ahí), así que el hold ya se convirtió en gasto
+  // definitivo (recordPurchaseCompleted, en confirm o en el camino
+  // 100%-saldo) — acá solo se le devuelve el monto a disponible.
+  if (order.wallet_amount_applied > 0) {
+    const purchaseRefund = await recordPurchaseRefund(admin, {
+      orderId: id, userId: order.buyer_id, amount: order.wallet_amount_applied,
+      reason: 'admin_refund', holdTransactionId: order.wallet_transaction_id, createdBy: adminUser.id,
+    })
+    if (!purchaseRefund.ok) await sendWalletAlertEmail({ orderId: id, reason: purchaseRefund.error })
+  }
 
   return Response.json({ ok: true })
 }

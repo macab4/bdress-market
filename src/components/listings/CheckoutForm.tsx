@@ -12,6 +12,7 @@ import {
 interface CheckoutFormProps {
   listingId: string
   price: number
+  walletAvailableBalance?: number
   isInternational?: boolean
   internationalLeadTimeMinDays?: number | null
   internationalLeadTimeMaxDays?: number | null
@@ -25,7 +26,7 @@ interface CheckoutFormProps {
 }
 
 export default function CheckoutForm({
-  listingId, price, isInternational, internationalLeadTimeMinDays, internationalLeadTimeMaxDays, initialValues,
+  listingId, price, walletAvailableBalance = 0, isInternational, internationalLeadTimeMinDays, internationalLeadTimeMaxDays, initialValues,
 }: CheckoutFormProps) {
   const [form, setForm] = useState({
     shipping_name: initialValues?.shipping_name ?? '',
@@ -41,8 +42,12 @@ export default function CheckoutForm({
 
   const [quote, setQuote] = useState<{ cost: number; serviceCode: string } | null>(null)
   const [quoteError, setQuoteError] = useState('')
+  const [useWallet, setUseWallet] = useState(false)
   const quoteLoading = form.shipping_comuna !== '' && !quote && !quoteError
   const commission = buyerProtectionFee(price)
+  const total = price + commission + (quote?.cost ?? 0)
+  const walletAmountApplied = useWallet ? Math.min(walletAvailableBalance, total) : 0
+  const amountDue = total - walletAmountApplied
 
   function set(field: keyof typeof form, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -94,6 +99,7 @@ export default function CheckoutForm({
           shipping_cost: quote.cost,
           courier_service_code: quote.serviceCode,
           international_consent: isInternational ? internationalConsent : undefined,
+          wallet_amount_requested: walletAmountApplied,
         }),
       })
       const data = await res.json()
@@ -177,11 +183,34 @@ export default function CheckoutForm({
               quote ? `$${quote.cost.toLocaleString('es-CL')}` : '—'}
           </span>
         </div>
-        <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1">
+        <div className={`flex justify-between border-t border-gray-200 pt-1 mt-1 ${walletAmountApplied > 0 ? '' : 'font-medium text-[#5a7a55]'}`}>
           <span>Total</span>
-          <span>${(price + commission + (quote?.cost ?? 0)).toLocaleString('es-CL')}</span>
+          <span>${total.toLocaleString('es-CL')}</span>
         </div>
+        {walletAmountApplied > 0 && (
+          <>
+            <div className="flex justify-between text-[#5a7a55]">
+              <span>Saldo B-Dress aplicado</span>
+              <span>-${walletAmountApplied.toLocaleString('es-CL')}</span>
+            </div>
+            <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1">
+              <span>{amountDue === 0 ? 'Total a pagar' : 'A pagar con Mercado Pago'}</span>
+              <span>${amountDue.toLocaleString('es-CL')}</span>
+            </div>
+          </>
+        )}
       </div>
+
+      {walletAvailableBalance > 0 && (
+        <label className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 p-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={useWallet}
+            onChange={e => setUseWallet(e.target.checked)}
+          />
+          Usar mi saldo B-Dress (${walletAvailableBalance.toLocaleString('es-CL')} disponible)
+        </label>
+      )}
 
       {isInternational && (
         <div className="bg-[#7fab87]/10 p-4 space-y-2">
@@ -208,10 +237,12 @@ export default function CheckoutForm({
 
       <button type="submit" disabled={loading || !quote || (isInternational && !internationalConsent)}
         className="w-full bg-[#7fab87] text-white text-xs tracking-widest uppercase py-4 hover:bg-[#6f9678] transition disabled:opacity-50">
-        {loading ? 'Redirigiendo a pago...' : 'Continuar al pago'}
+        {loading ? 'Procesando...' : amountDue === 0 ? 'Confirmar compra' : 'Continuar al pago'}
       </button>
       <p className="text-[10px] text-gray-400 text-center">
-        Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción
+        {amountDue === 0
+          ? 'Se paga con tu saldo B-Dress · Bdress retiene hasta confirmar recepción'
+          : 'Pago seguro vía Mercado Pago · Bdress retiene hasta confirmar recepción'}
       </p>
     </form>
   )
