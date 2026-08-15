@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { sellerPayout } from './catalog'
+import { sellerPayout, buyerProtectionFee, paymentProcessingFee } from './catalog'
 import {
   orderNetAmount,
   recordSalePending,
@@ -34,11 +34,14 @@ function makeAdmin(opts: {
 describe('orderNetAmount', () => {
   it('coincide con sellerPayout(price) de catalog.ts para un rango de precios', () => {
     // amount = price + commission (buyerProtectionFee), processing_fee =
-    // paymentProcessingFee(price) — ver payment/create/route.ts. Si esta
-    // fórmula alguna vez diverge de sellerPayout(), este test lo detecta.
+    // paymentProcessingFee(price) — ver payment/create/route.ts. Se importan
+    // las constantes reales de catalog.ts (nunca hardcodeadas acá) para que
+    // este test no pueda quedar desincronizado si el % de procesamiento
+    // cambia — si esta fórmula alguna vez diverge de sellerPayout(), este
+    // test lo detecta igual.
     for (const price of [5000, 9990, 15000, 32500, 99999, 250000]) {
-      const commission = Math.round(price * 0.10)
-      const processingFee = Math.round(price * 0.035) + 490
+      const commission = buyerProtectionFee(price)
+      const processingFee = paymentProcessingFee(price)
       const amount = price + commission
       expect(orderNetAmount({ amount, commission, processing_fee: processingFee })).toBe(sellerPayout(price))
     }
