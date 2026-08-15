@@ -1,10 +1,13 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CONFIRMED_HOLD_DAYS, SHIPPED_FALLBACK_DAYS } from '@/lib/catalog'
 import { sendReviewReminderEmail } from '@/lib/email'
+import { recordSaleRelease, sendWalletAlertEmail } from '@/lib/wallet'
 
 // Se ejecuta diariamente vía Vercel Cron (ver vercel.json).
-// No mueve plata real, solo marca la orden como "completed" (el pago a
-// la vendedora ya sigue siendo manual).
+// Marca la orden como "completed" y libera el saldo pendiente de la
+// vendedora a disponible (ver src/lib/wallet.ts) — el "monto neto" ya quedó
+// fijo desde que se creó el sale_pending en payment/confirm, acá no se
+// recalcula nada.
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -34,6 +37,7 @@ export async function GET(request: Request) {
   if (confirmedResult.error) return Response.json({ error: confirmedResult.error.message }, { status: 500 })
   if (shippedResult.error) return Response.json({ error: shippedResult.error.message }, { status: 500 })
 
+  const confirmedIds = new Set((confirmedResult.data ?? []).map(o => o.id))
   const releasedIds = [
     ...(confirmedResult.data ?? []).map(o => o.id),
     ...(shippedResult.data ?? []).map(o => o.id),
@@ -42,7 +46,7 @@ export async function GET(request: Request) {
   if (releasedIds.length > 0) {
     const { data: releasedOrders } = await admin
       .from('orders')
-      .select('buyer_id, seller_id, listing_id')
+      .select('id, buyer_id, seller_id, listing_id')
       .in('id', releasedIds)
 
     await Promise.all((releasedOrders ?? []).map(async (order) => {
@@ -52,6 +56,14 @@ export async function GET(request: Request) {
         admin.from('profiles').select('email, name').eq('id', order.seller_id).single(),
       ])
       const listingTitle = listing?.title ?? 'esta prenda'
+
+      const source = confirmedIds.has(order.id) ? 'cron_confirmed_hold' : 'cron_shipped_fallback'
+      const release = await recordSaleRelease(admin, order.id, {
+        source,
+        description: `Venta liberada — ${listingTitle}`,
+      })
+      if (!release.ok) await sendWalletAlertEmail({ orderId: order.id, reason: release.error })
+
       await Promise.all([
         buyer?.email
           ? sendReviewReminderEmail({ to: buyer.email, name: buyer.name, listingTitle, role: 'buyer' })

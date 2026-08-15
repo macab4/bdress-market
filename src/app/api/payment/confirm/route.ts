@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout, sendInternationalOrderReceivedEmail, sendInternationalAdminActionNeededEmail } from '@/lib/email'
 import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, BOOST_DURATION_DAYS } from '@/lib/catalog'
+import { recordSalePending, sendWalletAlertEmail } from '@/lib/wallet'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
@@ -73,6 +74,32 @@ async function handleNotification(request: Request) {
       .eq('status', 'pending_payment')
       .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost')
       .maybeSingle()
+
+    // El saldo pendiente se intenta acreditar SIEMPRE que la orden esté
+    // 'paid', sin depender de si este webhook hizo la transición — Mercado
+    // Pago reintenta webhooks, y si un intento anterior cambió el status
+    // pero se cayó antes de acreditar el saldo, este intento debe poder
+    // completarlo. Idempotente por (order_id, type), así que no hay riesgo
+    // de duplicar si ya se había acreditado.
+    const orderForWallet = updatedOrder ?? (
+      await supabase
+        .from('orders')
+        .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee')
+        .eq('id', orderId)
+        .eq('status', 'paid')
+        .maybeSingle()
+    ).data
+    if (orderForWallet) {
+      const pending = await recordSalePending(supabase, {
+        id: orderId,
+        seller_id: orderForWallet.seller_id,
+        listing_id: orderForWallet.listing_id,
+        amount: orderForWallet.amount,
+        commission: orderForWallet.commission,
+        processing_fee: orderForWallet.processing_fee,
+      })
+      if (!pending.ok) await sendWalletAlertEmail({ orderId, reason: pending.error })
+    }
 
     // Solo marcamos la prenda vendida la primera vez que la orden pasa a pagada
     // (evita reprocesar si Mercado Pago reenvía el mismo webhook).

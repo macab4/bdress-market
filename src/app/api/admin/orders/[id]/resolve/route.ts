@@ -1,20 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewReminderEmail } from '@/lib/email'
+import { recordSaleRelease, recordSaleReversal, sendWalletAlertEmail } from '@/lib/wallet'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
 async function checkAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  return user?.email === process.env.ADMIN_EMAIL
+  return user?.email === process.env.ADMIN_EMAIL ? user : null
 }
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!(await checkAdmin())) return Response.json({ error: 'Sin permiso' }, { status: 403 })
+  const adminUser = await checkAdmin()
+  if (!adminUser) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   const { id } = await params
 
   let action: string
@@ -50,6 +52,13 @@ export async function POST(
       .update({ status: 'completed', completed_at: new Date().toISOString() })
       .eq('id', id)
     if (error) return Response.json({ error: error.message }, { status: 500 })
+
+    const release = await recordSaleRelease(admin, id, {
+      source: 'admin_dispute_release',
+      description: 'Venta liberada — disputa resuelta a favor de la vendedora',
+      createdBy: adminUser.id,
+    })
+    if (!release.ok) await sendWalletAlertEmail({ orderId: id, reason: release.error })
 
     const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
       admin.from('listings').select('title').eq('id', order.listing_id).single(),
@@ -89,6 +98,12 @@ export async function POST(
 
   await admin.from('orders').update({ status: 'cancelled' }).eq('id', id)
   await admin.from('listings').update({ status: 'active' }).eq('id', order.listing_id)
+
+  const reversal = await recordSaleReversal(admin, id, {
+    description: 'Reverso por reembolso de la compradora',
+    createdBy: adminUser.id,
+  })
+  if (!reversal.ok) await sendWalletAlertEmail({ orderId: id, reason: reversal.error })
 
   return Response.json({ ok: true })
 }

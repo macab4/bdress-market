@@ -11,6 +11,19 @@ export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' |
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered' | 'expired' | 'cancelled'
 export type OfferProposedBy = 'buyer' | 'seller'
 
+// Saldo B-Dress (wallet) — ver src/lib/wallet.ts. wallet_transactions es el
+// ledger (fuente de verdad); wallet_accounts es solo un saldo cacheado.
+export type WalletTransactionType =
+  | 'sale_pending' | 'sale_release' | 'sale_reversal'
+  | 'withdrawal_hold' | 'withdrawal_completed' | 'withdrawal_cancelled'
+  | 'marketplace_purchase' | 'marketplace_purchase_refund'
+  | 'giftcard_redemption' | 'admin_credit' | 'admin_debit'
+
+// Retiros — ver src/lib/wallet.ts (recordWithdrawalHold/Completed/Cancelled)
+// y src/lib/bankAccounts.ts.
+export type WithdrawalStatus = 'pending' | 'processing' | 'completed' | 'rejected'
+export type BankAccountType = 'checking' | 'savings' | 'vista' | 'rut'
+
 // Selección internacional (prendas por encargo desde Vinted u otra
 // plataforma internacional) — ver src/lib/international/.
 export type SourceType = 'local' | 'international_on_demand'
@@ -167,6 +180,74 @@ export interface Order {
   listing?: Listing
   buyer?: Profile
   seller?: Profile
+}
+
+export interface WalletAccount {
+  id: string
+  user_id: string
+  available_balance: number
+  pending_balance: number
+  reserved_balance: number
+  created_at: string
+  updated_at: string
+}
+
+export interface WalletTransaction {
+  id: string
+  account_id: string
+  user_id: string
+  type: WalletTransactionType
+  pending_delta: number
+  available_delta: number
+  reserved_delta: number
+  order_id: string | null
+  listing_id: string | null
+  related_transaction_id: string | null
+  description: string
+  metadata: Record<string, unknown>
+  idempotency_key: string | null
+  created_by: string | null
+  created_at: string
+  listing?: { title: string; photos: string[] } | null
+}
+
+export interface BankAccount {
+  id: string
+  user_id: string
+  bank: string
+  account_type: BankAccountType
+  account_number: string
+  holder_rut: string
+  holder_name: string
+  holder_email: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface Withdrawal {
+  id: string
+  user_id: string
+  bank_account_id: string | null
+  amount: number
+  status: WithdrawalStatus
+  bank: string
+  account_type: BankAccountType
+  account_number: string
+  holder_rut: string
+  holder_name: string
+  holder_email: string | null
+  hold_transaction_id: string | null
+  completion_transaction_id: string | null
+  requested_at: string
+  processed_at: string | null
+  admin_id: string | null
+  operation_number: string | null
+  receipt_url: string | null
+  internal_note: string | null
+  created_at: string
+  updated_at: string
+  user?: { name: string; email: string } | null
 }
 
 // Fila del historial de estados internacionales tal como la ve la clienta

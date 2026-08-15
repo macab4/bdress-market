@@ -231,6 +231,9 @@ export default async function ProfilePage({
             <Link href="/dashboard/sales" className="text-gray-500 hover:text-black tracking-widest uppercase">
               Mis ventas
             </Link>
+            <Link href="/dashboard/wallet" className="text-gray-500 hover:text-black tracking-widest uppercase">
+              Mi saldo
+            </Link>
             <Link href="/dashboard/offers" className="text-gray-500 hover:text-black tracking-widest uppercase">
               Mis ofertas
             </Link>

@@ -43,6 +43,9 @@ export default async function Navbar() {
               <Link href="/dashboard/sales" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis ventas
               </Link>
+              <Link href="/dashboard/wallet" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
+                Mi saldo
+              </Link>
               <Link href="/dashboard/purchases" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis compras
               </Link>
