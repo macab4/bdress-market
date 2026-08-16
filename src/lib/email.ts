@@ -1096,3 +1096,49 @@ export async function sendReferralProgramAnnouncementEmail({
     `),
   })
 }
+
+// Anuncio único a cuentas sin activar (auth.users.last_sign_in_at nulo —
+// mismo criterio que ya usa /admin/users, ver la columna "Activó cuenta"
+// ahí) — se dispara desde cron/announce-activation-referral, fijado a una
+// fecha puntual en vercel.json, igual que announce-referral-program. A
+// diferencia de sendActivateAccountEmail/sendManualAccountWelcomeEmail (que
+// asumen un origen específico — migración o creación manual desde admin),
+// este correo es genérico a propósito porque la audiencia acá se define
+// solo por "nunca inició sesión", sin importar cómo se creó la cuenta — y
+// suma, en el mismo correo, el aviso del programa de referidos para que lo
+// primero que sepa una cuenta recién activada sea que también puede ganar
+// crédito invitando a una amiga.
+export async function sendActivateAccountWithReferralEmail({
+  to, name,
+}: { to: string; name: string | null }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  await sendEmail({
+    to,
+    subject: 'Activa tu cuenta en Bdress Market — y de paso, invita y gana $5.000',
+    html: emailLayout('Activa tu cuenta', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, todavía no has activado tu cuenta en Bdress Market.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        <strong>Para activarla:</strong>
+      </p>
+      <ol style="font-size: 14px; color: #444; line-height: 1.8; padding-left: 20px;">
+        <li>Entra a bdressmarket.cl y haz clic en "¿Olvidaste tu contraseña?" con
+          tu correo (${to}) para crear tu contraseña — es tu primera vez entrando.</li>
+        <li>Una vez dentro, ya puedes explorar prendas o publicar la tuya — vender es
+          <strong>100% gratis</strong>, sin comisión.</li>
+      </ol>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/auth/forgot-password" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Activar mi cuenta
+        </a>
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6; margin-top: 28px; padding-top: 20px; border-top: 1px solid #eee;">
+        Ah, y una vez adentro: puedes invitar a una amiga a vender en Bdress Market y ganar
+        <strong>$${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress</strong> cuando ella publique
+        su primera prenda — lo encuentras en "Invita y gana" dentro de tu cuenta.
+      </p>
+    `),
+  })
+}

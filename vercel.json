@@ -43,6 +43,10 @@
     {
       "path": "/api/cron/announce-referral-program",
       "schedule": "30 13 16 8 *"
+    },
+    {
+      "path": "/api/cron/announce-activation-referral",
+      "schedule": "45 13 16 8 *"
     }
   ]
 }
