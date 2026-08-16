@@ -1,8 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { sendEmail, emailLayout } from '@/lib/email'
-import { CONFIRMED_HOLD_DAYS } from '@/lib/catalog'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
+import { sendDeliveryConfirmedEmail } from '@/lib/email'
 
 export async function POST(
   _request: Request,
@@ -56,40 +53,11 @@ export async function POST(
   const listingTitle = listing?.title ?? 'tu compra'
 
   if (buyer?.email) {
-    await sendEmail({
-      to: buyer.email,
-      subject: `Confirmaste la recepción — ${listingTitle}`,
-      html: emailLayout('Recepción confirmada', `
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Hola ${buyer.name ?? ''}, confirmamos que recibiste <strong>${listingTitle}</strong>.
-          Todavía tienes ${CONFIRMED_HOLD_DAYS} días para reportar un problema si algo no está bien.
-          Pasado ese plazo, liberamos el pago a la vendedora.
-        </p>
-        <p style="text-align: center; margin-top: 24px;">
-          <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-            Ver mi compra
-          </a>
-        </p>
-      `),
-    })
+    await sendDeliveryConfirmedEmail({ to: buyer.email, name: buyer.name, listingTitle, role: 'buyer' })
   }
 
   if (seller?.email) {
-    await sendEmail({
-      to: seller.email,
-      subject: `La compradora confirmó la recepción — ${listingTitle}`,
-      html: emailLayout('Recepción confirmada', `
-        <p style="font-size: 14px; color: #444; line-height: 1.6;">
-          Hola ${seller.name ?? ''}, la compradora confirmó que recibió <strong>${listingTitle}</strong>.
-          Si no reporta un problema, en ${CONFIRMED_HOLD_DAYS} días liberamos tu pago.
-        </p>
-        <p style="text-align: center; margin-top: 24px;">
-          <a href="${SITE_URL}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-            Ir a Mis ventas
-          </a>
-        </p>
-      `),
-    })
+    await sendDeliveryConfirmedEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
   }
 
   return Response.json({ ok: true })

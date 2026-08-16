@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { leadTimeRange, internationalDelayMessage, INTERNATIONAL_AVAILABILITY_WARNING } from '@/lib/international/content'
-import { SHIP_DEADLINE_BUSINESS_DAYS } from '@/lib/catalog'
+import { SHIP_DEADLINE_BUSINESS_DAYS, CONFIRMED_HOLD_DAYS } from '@/lib/catalog'
 
 let client: Resend | null = null
 
@@ -739,6 +739,78 @@ export async function sendInternationalAvailabilityReminderEmail({
   })
 }
 
+// Prenda despachada (flujo nacional) — la manda tanto el propio envío de la
+// vendedora (api/orders/[id]/ship) como el respaldo de la admin
+// (api/admin/orders/[id]/mark-shipped) cuando la vendedora nunca vuelve a
+// ingresar el número de seguimiento aunque el courier ya lo tenga.
+export async function sendOrderShippedEmail({
+  to, name, listingTitle, trackingNumber,
+}: { to: string; name: string | null; listingTitle: string; trackingNumber: string }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to,
+    subject: `Tu prenda va en camino — ${listingTitle}`,
+    html: emailLayout('Prenda despachada', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu compra <strong>${listingTitle}</strong> ya fue despachada.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Número de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi compra
+        </a>
+      </p>
+    `),
+  })
+}
+
+// Entrega confirmada — arranca el plazo de CONFIRMED_HOLD_DAYS para
+// reportar un problema antes de liberar el pago a la vendedora. La manda
+// tanto la confirmación de la propia compradora (api/orders/[id]/confirm)
+// como el respaldo de la admin (api/admin/orders/[id]/mark-delivered)
+// cuando el courier ya confirmó la entrega pero la compradora nunca entra a
+// confirmarla — el texto deja explícito que fue la admin quien lo registró,
+// nunca se hace pasar por una confirmación de la compradora que no ocurrió.
+export async function sendDeliveryConfirmedEmail({
+  to, name, listingTitle, role, confirmedByAdmin = false,
+}: { to: string; name: string | null; listingTitle: string; role: 'buyer' | 'seller'; confirmedByAdmin?: boolean }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const dashboardPath = role === 'buyer' ? '/dashboard/purchases' : '/dashboard/sales'
+
+  const subject = role === 'buyer'
+    ? (confirmedByAdmin ? `Registramos la entrega de tu compra — ${listingTitle}` : `Confirmaste la recepción — ${listingTitle}`)
+    : (confirmedByAdmin ? `Se registró la entrega de tu venta — ${listingTitle}` : `La compradora confirmó la recepción — ${listingTitle}`)
+
+  const intro = role === 'buyer'
+    ? (confirmedByAdmin
+        ? `Hola ${name ?? ''}, registramos la entrega de <strong>${listingTitle}</strong> según el seguimiento del courier.`
+        : `Hola ${name ?? ''}, confirmamos que recibiste <strong>${listingTitle}</strong>.`)
+    : (confirmedByAdmin
+        ? `Hola ${name ?? ''}, registramos que se entregó <strong>${listingTitle}</strong> según el seguimiento del courier.`
+        : `Hola ${name ?? ''}, la compradora confirmó que recibió <strong>${listingTitle}</strong>.`)
+
+  const followup = role === 'buyer'
+    ? `Todavía tienes ${CONFIRMED_HOLD_DAYS} días para reportar un problema si algo no está bien. Pasado ese plazo, liberamos el pago a la vendedora.`
+    : `Si no reporta un problema, en ${CONFIRMED_HOLD_DAYS} días liberamos tu pago.`
+
+  await sendEmail({
+    to,
+    subject,
+    html: emailLayout('Recepción confirmada', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        ${intro} ${followup}
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}${dashboardPath}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi ${role === 'buyer' ? 'compra' : 'venta'}
+        </a>
+      </p>
+    `),
+  })
+}
+
 // Aviso de que el Saldo B-Dress de la usuaria cambió — hoy se dispara solo
 // desde dos lugares: cuando se libera una venta (sale_release, dinero recién
 // disponible para usar o retirar) y cuando la admin hace un ajuste manual
@@ -767,6 +839,71 @@ export async function sendWalletBalanceChangedEmail({
           Ver mi saldo
         </a>
       </p>
+    `),
+  })
+}
+
+// Resumen diario a ADMIN_EMAIL (ver cron/admin-shipping-digest) de órdenes
+// nacionales que necesitan que la admin las marque a mano — porque la
+// vendedora nunca volvió a ingresar el seguimiento, o la compradora nunca
+// confirmó recepción aunque el courier ya la haya entregado. Solo se manda
+// si hay al menos una orden en alguna de las dos listas.
+export async function sendAdminShippingDigestEmail({
+  to, awaitingDispatch, awaitingDeliveryConfirmation,
+}: {
+  to: string
+  awaitingDispatch: { orderId: string; listingTitle: string; sellerName: string | null; daysOverdue: number }[]
+  awaitingDeliveryConfirmation: { orderId: string; listingTitle: string; buyerName: string | null; trackingNumber: string | null; daysSinceShipped: number }[]
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const total = awaitingDispatch.length + awaitingDeliveryConfirmation.length
+
+  const dispatchRows = awaitingDispatch.map(o => `
+    <tr>
+      <td style="padding: 8px 0; font-size: 13px; color: #444; border-bottom: 1px solid #eee;">
+        <a href="${siteUrl}/admin/orders/${o.orderId}" style="color: #444;">${o.listingTitle}</a><br/>
+        <span style="font-size: 11px; color: #999;">Vendedora: ${o.sellerName ?? '—'}</span>
+      </td>
+      <td style="padding: 8px 0; font-size: 13px; color: #c0392b; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">
+        ${o.daysOverdue} ${o.daysOverdue === 1 ? 'día' : 'días'} vencido
+      </td>
+    </tr>
+  `).join('')
+
+  const deliveryRows = awaitingDeliveryConfirmation.map(o => `
+    <tr>
+      <td style="padding: 8px 0; font-size: 13px; color: #444; border-bottom: 1px solid #eee;">
+        <a href="${siteUrl}/admin/orders/${o.orderId}" style="color: #444;">${o.listingTitle}</a><br/>
+        <span style="font-size: 11px; color: #999;">Compradora: ${o.buyerName ?? '—'}${o.trackingNumber ? ` · Seguimiento: ${o.trackingNumber}` : ''}</span>
+      </td>
+      <td style="padding: 8px 0; font-size: 13px; color: #888; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">
+        Despachada hace ${o.daysSinceShipped} ${o.daysSinceShipped === 1 ? 'día' : 'días'}
+      </td>
+    </tr>
+  `).join('')
+
+  await sendEmail({
+    to,
+    subject: `${total} ${total === 1 ? 'orden necesita' : 'órdenes necesitan'} tu revisión — despacho/entrega`,
+    html: emailLayout('Órdenes que necesitan tu revisión', `
+      ${awaitingDispatch.length > 0 ? `
+        <p style="font-size: 13px; color: #444; font-weight: 600; margin-bottom: 4px;">
+          Pagadas, plazo de despacho vencido (${awaitingDispatch.length})
+        </p>
+        <p style="font-size: 12px; color: #888; line-height: 1.5; margin-top: 0;">
+          Revisa si la vendedora ya despachó de verdad (por fuera de la app) y usa "Marcar como despachada" si corresponde.
+        </p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">${dispatchRows}</table>
+      ` : ''}
+      ${awaitingDeliveryConfirmation.length > 0 ? `
+        <p style="font-size: 13px; color: #444; font-weight: 600; margin-bottom: 4px;">
+          Despachadas, sin confirmación de la compradora (${awaitingDeliveryConfirmation.length})
+        </p>
+        <p style="font-size: 12px; color: #888; line-height: 1.5; margin-top: 0;">
+          Revisa el seguimiento del courier y usa "Marcar como entregada" con la fecha real si ya llegó.
+        </p>
+        <table style="width: 100%; border-collapse: collapse;">${deliveryRows}</table>
+      ` : ''}
     `),
   })
 }

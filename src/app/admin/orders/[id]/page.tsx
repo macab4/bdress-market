@@ -9,6 +9,8 @@ import AdminNav from '@/components/admin/AdminNav'
 import UploadLabelForm from '@/components/admin/UploadLabelForm'
 import EditLabelTrackingForm from '@/components/admin/EditLabelTrackingForm'
 import ChilexpressTrackLink from '@/components/admin/ChilexpressTrackLink'
+import MarkShippedForm from '@/components/admin/MarkShippedForm'
+import MarkDeliveredForm from '@/components/admin/MarkDeliveredForm'
 
 type AdminOrderDetail = Order & {
   listing: { title: string; photos: string[]; shipping_size: string } | null
@@ -50,6 +52,9 @@ export default async function AdminOrderDetailPage({
   const deadlinePassed = deadline ? isPast(deadline) : false
   const missingTrackingInfo = !!order.label_url && !(order.label_courier && order.label_tracking_number)
   const isChilexpress = !!order.label_courier && /chilexpress/i.test(order.label_courier)
+  const isDomestic = order.international_status === null
+  const canMarkShipped = isDomestic && order.status === 'paid'
+  const canMarkDelivered = isDomestic && order.status === 'shipped'
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -152,6 +157,12 @@ export default async function AdminOrderDetailPage({
             {order.tracking_number && (
               <p className="text-xs text-gray-500">Seguimiento (despacho confirmado): <span className="font-mono">{order.tracking_number}</span></p>
             )}
+
+            {canMarkShipped && (
+              <MarkShippedForm orderId={order.id} defaultTrackingNumber={order.label_tracking_number ?? order.tracking_number ?? ''} />
+            )}
+
+            {canMarkDelivered && <MarkDeliveredForm orderId={order.id} />}
 
             {order.label_url && (
               <div className="flex items-center gap-3">

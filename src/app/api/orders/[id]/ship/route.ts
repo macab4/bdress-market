@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { sendEmail, emailLayout, sendInternationalNationallyShippedEmail } from '@/lib/email'
+import { sendOrderShippedEmail, sendInternationalNationallyShippedEmail } from '@/lib/email'
 import { isAdminEmail } from '@/lib/admin-auth'
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 
 export async function PATCH(
   request: Request,
@@ -75,23 +73,7 @@ export async function PATCH(
     if (isInternational) {
       await sendInternationalNationallyShippedEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? '', trackingNumber: tracking_number })
     } else {
-      await sendEmail({
-        to: buyer.email,
-        subject: `Tu prenda va en camino — ${listing?.title ?? ''}`,
-        html: emailLayout('Prenda despachada', `
-          <p style="font-size: 14px; color: #444; line-height: 1.6;">
-            Hola ${buyer.name ?? ''}, tu compra <strong>${listing?.title ?? ''}</strong> ya fue despachada.
-          </p>
-          <p style="font-size: 14px; color: #444; line-height: 1.6;">
-            Número de seguimiento: <strong style="font-family: monospace;">${tracking_number}</strong>
-          </p>
-          <p style="text-align: center; margin-top: 24px;">
-            <a href="${SITE_URL}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
-              Ver mi compra
-            </a>
-          </p>
-        `),
-      })
+      await sendOrderShippedEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? '', trackingNumber: tracking_number })
     }
   }
 

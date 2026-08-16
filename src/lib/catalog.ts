@@ -443,6 +443,13 @@ export const CONFIRMED_HOLD_DAYS = 2
 // contado desde el despacho.
 export const SHIPPED_FALLBACK_DAYS = 7
 
+// A partir de cuántos días despachada sin que la compradora confirme
+// recepción, el aviso diario a la admin (cron/admin-shipping-digest) le
+// sugiere revisar el seguimiento del courier y marcarla como entregada ella
+// misma — así el plazo de reclamo arranca con la fecha real de entrega en
+// vez de esperar los SHIPPED_FALLBACK_DAYS completos.
+export const ADMIN_SHIPPED_REVIEW_DAYS = 2
+
 // Si nadie dejó reseña a los N días de completada la orden, se manda un
 // recordatorio de seguimiento — ver src/app/api/cron/review-followup/route.ts.
 export const REVIEW_FOLLOWUP_DAYS = 3
