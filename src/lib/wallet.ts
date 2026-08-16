@@ -4,6 +4,26 @@ import type { WalletTransactionType } from '@/types'
 
 type AdminClient = ReturnType<typeof createAdminClient>
 
+// Única fuente de los nombres en español de cada tipo de movimiento — usada
+// tanto en /dashboard/wallet (compradora/vendedora) como en /admin/wallet.
+// Antes vivía duplicado en los dos archivos; ya casi quedan desincronizados
+// cuando se agregaron marketplace_purchase_hold/cancelled en fase 3.
+export const WALLET_TRANSACTION_TYPE_LABELS: Record<WalletTransactionType, string> = {
+  sale_pending: 'Venta pendiente',
+  sale_release: 'Venta liberada',
+  sale_reversal: 'Reverso de venta',
+  withdrawal_hold: 'Retiro solicitado',
+  withdrawal_completed: 'Retiro completado',
+  withdrawal_cancelled: 'Retiro cancelado',
+  marketplace_purchase: 'Compra con saldo',
+  marketplace_purchase_hold: 'Saldo reservado para una compra',
+  marketplace_purchase_cancelled: 'Reserva de compra liberada',
+  marketplace_purchase_refund: 'Reembolso de compra',
+  giftcard_redemption: 'Gift Card',
+  admin_credit: 'Ajuste — crédito',
+  admin_debit: 'Ajuste — débito',
+}
+
 // Monto neto que le corresponde a la vendedora por una orden — usa las
 // columnas ya persistidas en `orders` (congeladas al crear la orden) en vez
 // de recalcular con sellerPayout()/paymentProcessingFee() de catalog.ts. Es
@@ -25,6 +45,52 @@ async function callRecordTransaction(admin: AdminClient, args: Record<string, un
   if (error) return { ok: false, error: error.message }
   const row = (data as RpcRow[] | null)?.[0]
   return { ok: true, skipped: !row?.inserted, transactionId: row?.transaction_id ?? undefined }
+}
+
+// Forma común a recordWithdrawalHold y recordPurchaseHold: comprometer
+// saldo de inmediato, disponible → reservado, atómicamente (si el check
+// available_balance >= 0 falla por una carrera, el RPC devuelve error y el
+// llamador nunca llega a persistir el efecto secundario — fila `withdrawals`
+// o `orders.wallet_amount_applied`, según el caso).
+async function moveAvailableToReserved(admin: AdminClient, args: {
+  userId: string; type: WalletTransactionType; amount: number
+  orderId?: string; description: string; metadata?: Record<string, unknown>; idempotencyKey?: string
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: args.type,
+    p_pending_delta: 0,
+    p_available_delta: -args.amount,
+    p_reserved_delta: args.amount,
+    p_order_id: args.orderId,
+    p_description: args.description,
+    p_metadata: args.metadata,
+    p_idempotency_key: args.idempotencyKey,
+  })
+}
+
+// Forma común a completar/cancelar tanto un retiro como una compra con
+// saldo: resuelve lo reservado, ya sea gastándolo definitivamente
+// (returnToAvailable: false) o devolviéndolo a disponible
+// (returnToAvailable: true).
+async function releaseReserved(admin: AdminClient, args: {
+  userId: string; type: WalletTransactionType; amount: number; returnToAvailable: boolean
+  orderId?: string; description: string; metadata?: Record<string, unknown>
+  idempotencyKey?: string; relatedTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: args.type,
+    p_pending_delta: 0,
+    p_available_delta: args.returnToAvailable ? args.amount : 0,
+    p_reserved_delta: -args.amount,
+    p_order_id: args.orderId,
+    p_description: args.description,
+    p_metadata: args.metadata,
+    p_idempotency_key: args.idempotencyKey,
+    p_related_transaction_id: args.relatedTransactionId ?? null,
+    p_created_by: args.createdBy ?? null,
+  })
 }
 
 // Se crea cuando la orden pasa a 'paid' (el dinero existe pero está
@@ -138,15 +204,13 @@ export async function recordAdminAdjustment(admin: AdminClient, args: {
 export async function recordWithdrawalHold(admin: AdminClient, args: {
   withdrawalId: string; userId: string; amount: number
 }): Promise<RecordResult> {
-  return callRecordTransaction(admin, {
-    p_user_id: args.userId,
-    p_type: 'withdrawal_hold' satisfies WalletTransactionType,
-    p_pending_delta: 0,
-    p_available_delta: -args.amount,
-    p_reserved_delta: args.amount,
-    p_description: 'Retiro solicitado — saldo reservado',
-    p_metadata: { withdrawal_id: args.withdrawalId },
-    p_idempotency_key: `withdrawal_hold:${args.withdrawalId}`,
+  return moveAvailableToReserved(admin, {
+    userId: args.userId,
+    type: 'withdrawal_hold' satisfies WalletTransactionType,
+    amount: args.amount,
+    description: 'Retiro solicitado — saldo reservado',
+    metadata: { withdrawal_id: args.withdrawalId },
+    idempotencyKey: `withdrawal_hold:${args.withdrawalId}`,
   })
 }
 
@@ -157,16 +221,15 @@ export async function recordWithdrawalHold(admin: AdminClient, args: {
 export async function recordWithdrawalCompleted(admin: AdminClient, args: {
   withdrawalId: string; userId: string; amount: number; createdBy: string
 }): Promise<RecordResult> {
-  return callRecordTransaction(admin, {
-    p_user_id: args.userId,
-    p_type: 'withdrawal_completed' satisfies WalletTransactionType,
-    p_pending_delta: 0,
-    p_available_delta: 0,
-    p_reserved_delta: -args.amount,
-    p_description: 'Retiro transferido',
-    p_metadata: { withdrawal_id: args.withdrawalId },
-    p_idempotency_key: `withdrawal_completed:${args.withdrawalId}`,
-    p_created_by: args.createdBy,
+  return releaseReserved(admin, {
+    userId: args.userId,
+    type: 'withdrawal_completed' satisfies WalletTransactionType,
+    amount: args.amount,
+    returnToAvailable: false,
+    description: 'Retiro transferido',
+    metadata: { withdrawal_id: args.withdrawalId },
+    idempotencyKey: `withdrawal_completed:${args.withdrawalId}`,
+    createdBy: args.createdBy,
   })
 }
 
@@ -174,16 +237,15 @@ export async function recordWithdrawalCompleted(admin: AdminClient, args: {
 export async function recordWithdrawalCancelled(admin: AdminClient, args: {
   withdrawalId: string; userId: string; amount: number; reason: string; createdBy: string
 }): Promise<RecordResult> {
-  return callRecordTransaction(admin, {
-    p_user_id: args.userId,
-    p_type: 'withdrawal_cancelled' satisfies WalletTransactionType,
-    p_pending_delta: 0,
-    p_available_delta: args.amount,
-    p_reserved_delta: -args.amount,
-    p_description: args.reason,
-    p_metadata: { withdrawal_id: args.withdrawalId },
-    p_idempotency_key: `withdrawal_cancelled:${args.withdrawalId}`,
-    p_created_by: args.createdBy,
+  return releaseReserved(admin, {
+    userId: args.userId,
+    type: 'withdrawal_cancelled' satisfies WalletTransactionType,
+    amount: args.amount,
+    returnToAvailable: true,
+    description: args.reason,
+    metadata: { withdrawal_id: args.withdrawalId },
+    idempotencyKey: `withdrawal_cancelled:${args.withdrawalId}`,
+    createdBy: args.createdBy,
   })
 }
 
@@ -235,14 +297,12 @@ export async function sendWalletAlertEmail(args: { orderId: string; reason: stri
 export async function recordPurchaseHold(admin: AdminClient, args: {
   orderId: string; userId: string; amount: number
 }): Promise<RecordResult> {
-  return callRecordTransaction(admin, {
-    p_user_id: args.userId,
-    p_type: 'marketplace_purchase_hold' satisfies WalletTransactionType,
-    p_pending_delta: 0,
-    p_available_delta: -args.amount,
-    p_reserved_delta: args.amount,
-    p_order_id: args.orderId,
-    p_description: 'Saldo aplicado a una compra',
+  return moveAvailableToReserved(admin, {
+    userId: args.userId,
+    type: 'marketplace_purchase_hold' satisfies WalletTransactionType,
+    amount: args.amount,
+    orderId: args.orderId,
+    description: 'Saldo aplicado a una compra',
   })
 }
 
@@ -253,16 +313,15 @@ export async function recordPurchaseHold(admin: AdminClient, args: {
 export async function recordPurchaseCompleted(admin: AdminClient, args: {
   orderId: string; userId: string; amount: number; holdTransactionId?: string | null; createdBy?: string | null
 }): Promise<RecordResult> {
-  return callRecordTransaction(admin, {
-    p_user_id: args.userId,
-    p_type: 'marketplace_purchase' satisfies WalletTransactionType,
-    p_pending_delta: 0,
-    p_available_delta: 0,
-    p_reserved_delta: -args.amount,
-    p_order_id: args.orderId,
-    p_description: 'Compra pagada con saldo',
-    p_related_transaction_id: args.holdTransactionId ?? null,
-    p_created_by: args.createdBy ?? null,
+  return releaseReserved(admin, {
+    userId: args.userId,
+    type: 'marketplace_purchase' satisfies WalletTransactionType,
+    amount: args.amount,
+    returnToAvailable: false,
+    orderId: args.orderId,
+    description: 'Compra pagada con saldo',
+    relatedTransactionId: args.holdTransactionId,
+    createdBy: args.createdBy,
   })
 }
 
@@ -271,16 +330,15 @@ export async function recordPurchaseCompleted(admin: AdminClient, args: {
 export async function recordPurchaseCancelled(admin: AdminClient, args: {
   orderId: string; userId: string; amount: number; reason: string; holdTransactionId?: string | null; createdBy?: string | null
 }): Promise<RecordResult> {
-  return callRecordTransaction(admin, {
-    p_user_id: args.userId,
-    p_type: 'marketplace_purchase_cancelled' satisfies WalletTransactionType,
-    p_pending_delta: 0,
-    p_available_delta: args.amount,
-    p_reserved_delta: -args.amount,
-    p_order_id: args.orderId,
-    p_description: args.reason,
-    p_related_transaction_id: args.holdTransactionId ?? null,
-    p_created_by: args.createdBy ?? null,
+  return releaseReserved(admin, {
+    userId: args.userId,
+    type: 'marketplace_purchase_cancelled' satisfies WalletTransactionType,
+    amount: args.amount,
+    returnToAvailable: true,
+    orderId: args.orderId,
+    description: args.reason,
+    relatedTransactionId: args.holdTransactionId,
+    createdBy: args.createdBy,
   })
 }
 

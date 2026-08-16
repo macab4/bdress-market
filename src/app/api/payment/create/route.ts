@@ -253,7 +253,7 @@ export async function POST(request: Request) {
       shippingCost: quote.price,
     })
 
-    return Response.json({ redirectUrl: `${SITE_URL}/dashboard/purchases/${orderId}/confirmacion` })
+    return Response.json({ redirectUrl: `${SITE_URL}/dashboard/purchases/${orderId}/confirmacion`, walletAmountApplied })
   }
 
   // Crear preferencia de pago en Mercado Pago (Checkout Pro) — por lo que
@@ -307,5 +307,5 @@ export async function POST(request: Request) {
   // Guardar referencia de la preferencia en la orden
   await supabase.from('orders').update({ payment_ref: preference.id }).eq('id', orderId)
 
-  return Response.json({ redirectUrl: preference.init_point })
+  return Response.json({ redirectUrl: preference.init_point, walletAmountApplied })
 }

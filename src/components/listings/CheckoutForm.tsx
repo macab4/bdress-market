@@ -108,6 +108,20 @@ export default function CheckoutForm({
         setLoading(false)
         return
       }
+      // El servidor nunca confía en el monto de saldo pedido — si tu saldo
+      // disponible cambió justo antes de confirmar (ej. otra compra en
+      // paralelo), puede aplicar menos de lo que pediste acá. Se avisa antes
+      // de redirigir en vez de sorprenderte con un cobro distinto en
+      // Mercado Pago.
+      if (walletAmountApplied > 0 && data.walletAmountApplied !== walletAmountApplied) {
+        const proceed = confirm(
+          `Tu saldo disponible cambió: se aplicaron $${(data.walletAmountApplied ?? 0).toLocaleString('es-CL')} en vez de los $${walletAmountApplied.toLocaleString('es-CL')} solicitados. ¿Continuar de todas formas?`
+        )
+        if (!proceed) {
+          setLoading(false)
+          return
+        }
+      }
       window.location.href = data.redirectUrl
     } catch {
       setError('Error de conexión. Intenta nuevamente.')

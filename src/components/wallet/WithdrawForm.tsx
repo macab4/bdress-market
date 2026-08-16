@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { BankAccount } from '@/types'
 import { accountTypeLabel, maskAccountNumber } from '@/lib/bankAccounts'
+import { MIN_WITHDRAWAL_AMOUNT } from '@/lib/catalog'
 
 function formatCLP(n: number) {
   return `$${n.toLocaleString('es-CL')}`
@@ -18,7 +19,7 @@ export default function WithdrawForm({ availableBalance, bankAccounts }: { avail
   const [error, setError] = useState('')
 
   const amount = amountMode === 'all' ? availableBalance : Math.round(Number(customAmount) || 0)
-  const amountValid = amount > 0 && amount <= availableBalance
+  const amountValid = amount >= MIN_WITHDRAWAL_AMOUNT && amount <= availableBalance
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -69,14 +70,21 @@ export default function WithdrawForm({ availableBalance, bankAccounts }: { avail
             value={customAmount}
             onChange={e => setCustomAmount(e.target.value)}
             type="number"
-            min={1}
+            min={MIN_WITHDRAWAL_AMOUNT}
             max={availableBalance}
             placeholder="Monto en CLP"
             className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
           />
         )}
         {amountMode === 'custom' && customAmount && !amountValid && (
-          <p className="text-red-500 text-xs">El monto debe ser mayor a $0 y no superar tu saldo disponible.</p>
+          <p className="text-red-500 text-xs">
+            El monto debe ser al menos {formatCLP(MIN_WITHDRAWAL_AMOUNT)} y no superar tu saldo disponible.
+          </p>
+        )}
+        {amountMode === 'all' && availableBalance < MIN_WITHDRAWAL_AMOUNT && (
+          <p className="text-red-500 text-xs">
+            Tu saldo disponible es menor al mínimo para retirar ({formatCLP(MIN_WITHDRAWAL_AMOUNT)}).
+          </p>
         )}
       </div>
 

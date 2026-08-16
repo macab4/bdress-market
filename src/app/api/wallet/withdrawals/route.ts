@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { recordWithdrawalHold, sendWithdrawalAlertEmail } from '@/lib/wallet'
+import { MIN_WITHDRAWAL_AMOUNT } from '@/lib/catalog'
 
 // Crea una solicitud de retiro. Secuencia pensada para no dejar filas
 // huérfanas: primero se genera el id y se intenta la reserva del saldo
@@ -47,6 +48,9 @@ export async function POST(request: Request) {
   const amount = useFullBalance ? availableBalance : Math.round(Number(body?.amount))
   if (!Number.isFinite(amount) || amount <= 0) return Response.json({ error: 'Monto inválido' }, { status: 400 })
   if (amount > availableBalance) return Response.json({ error: 'El monto supera tu saldo disponible' }, { status: 400 })
+  if (amount < MIN_WITHDRAWAL_AMOUNT) {
+    return Response.json({ error: `El monto mínimo para retirar es $${MIN_WITHDRAWAL_AMOUNT.toLocaleString('es-CL')}` }, { status: 400 })
+  }
 
   const withdrawalId = crypto.randomUUID()
 

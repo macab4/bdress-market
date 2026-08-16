@@ -1,23 +1,8 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { WalletAccount, WalletTransaction, WalletTransactionType, Withdrawal } from '@/types'
-
-const TYPE_LABELS: Record<WalletTransactionType, string> = {
-  sale_pending: 'Venta pendiente',
-  sale_release: 'Venta',
-  sale_reversal: 'Reverso de venta',
-  withdrawal_hold: 'Retiro solicitado',
-  withdrawal_completed: 'Retiro',
-  withdrawal_cancelled: 'Retiro cancelado',
-  marketplace_purchase: 'Compra con saldo',
-  marketplace_purchase_hold: 'Saldo reservado para una compra',
-  marketplace_purchase_cancelled: 'Reserva de compra liberada',
-  marketplace_purchase_refund: 'Reembolso de compra',
-  giftcard_redemption: 'Gift Card',
-  admin_credit: 'Ajuste (crédito)',
-  admin_debit: 'Ajuste (débito)',
-}
+import { WalletAccount, WalletTransaction, Withdrawal } from '@/types'
+import { WALLET_TRANSACTION_TYPE_LABELS as TYPE_LABELS } from '@/lib/wallet'
 
 const WITHDRAWAL_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente de revisión',
@@ -70,6 +55,15 @@ export default async function WalletPage() {
   const pending = account?.pending_balance ?? 0
   const reserved = account?.reserved_balance ?? 0
 
+  // reserved_balance es compartido entre retiros en curso (withdrawal_hold)
+  // y saldo aplicado a compras aún no confirmadas (marketplace_purchase_hold,
+  // fase 3) — sin distinguirlos, una compradora que abandonó un checkout
+  // veía su propio saldo atrapado etiquetado como "retiro en curso", algo
+  // que nunca pidió. Como solo puede haber un retiro activo a la vez, el
+  // resto del reservado (si lo hay) es necesariamente de compras pendientes.
+  const reservedForWithdrawal = activeWithdrawal?.amount ?? 0
+  const reservedForPurchase = Math.max(0, reserved - reservedForWithdrawal)
+
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
@@ -82,10 +76,18 @@ export default async function WalletPage() {
             {pending > 0 && (
               <p className="text-xs text-gray-400">Pendiente de liberar: {formatCLP(pending)}</p>
             )}
-            {reserved > 0 && (
-              <p className="text-xs text-gray-400">Retiro en curso: {formatCLP(reserved)}</p>
+            {reservedForWithdrawal > 0 && (
+              <p className="text-xs text-gray-400">Retiro en curso: {formatCLP(reservedForWithdrawal)}</p>
+            )}
+            {reservedForPurchase > 0 && (
+              <p className="text-xs text-gray-400">Reservado para una compra en proceso: {formatCLP(reservedForPurchase)}</p>
             )}
           </div>
+          {reservedForPurchase > 0 && (
+            <p className="text-[10px] text-gray-500 mt-1">
+              Se libera solo automáticamente si no completas esa compra.
+            </p>
+          )}
 
           {activeWithdrawal ? (
             <div className="mt-4 bg-white/10 px-4 py-3">

@@ -7,6 +7,7 @@ import {
   sendInternationalPurchasedEmail, sendInternationalTransitUpdateEmail, sendInternationalReceivedInChileEmail,
   sendInternationalRefundInitiatedEmail, sendInternationalRefundCompletedEmail,
 } from '@/lib/email'
+import { recordSaleReversal, recordPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
 
 // Toda acción administrativa del carril internacional pasa por un único
 // endpoint discriminado por `action` — decisión deliberada para no crear 15
@@ -46,7 +47,7 @@ export async function POST(
 
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, buyer_id, amount, status, international_status')
+    .select('id, listing_id, buyer_id, amount, status, international_status, wallet_amount_applied, wallet_transaction_id')
     .eq('id', orderId)
     .single()
 
@@ -189,6 +190,37 @@ export async function POST(
 
   const { error: orderErr } = await admin.from('orders').update(orderUpdate).eq('id', orderId)
   if (orderErr) return Response.json({ error: orderErr.message }, { status: 500 })
+
+  // La orden internacional pagada nunca llegó a completarse (producto
+  // agotado en origen) — hay que revertir en el ledger exactamente lo mismo
+  // que revierte un reembolso nacional (admin/orders/[id]/resolve): el
+  // crédito pendiente de la vendedora, y si la compradora aplicó saldo
+  // B-Dress, devolvérselo a disponible. El reembolso de Mercado Pago (si lo
+  // hubo) lo procesa la admin manualmente fuera de la app antes de confirmar
+  // esta acción — por eso este endpoint nunca llama a la API de Mercado Pago.
+  if (action === 'confirm_refund') {
+    const reversal = await recordSaleReversal(admin, orderId, {
+      description: 'Reverso por reembolso de compra internacional (producto agotado en origen)',
+      createdBy: user!.id,
+    })
+    if (!reversal.ok) await sendWalletAlertEmail({ orderId, reason: reversal.error })
+
+    if (order.wallet_amount_applied > 0) {
+      const purchaseRefund = await recordPurchaseRefund(admin, {
+        orderId, userId: order.buyer_id, amount: order.wallet_amount_applied,
+        reason: 'international_admin_refund', holdTransactionId: order.wallet_transaction_id, createdBy: user!.id,
+      })
+      if (!purchaseRefund.ok) await sendWalletAlertEmail({ orderId, reason: purchaseRefund.error })
+    }
+
+    // finalizeOrderPaid ya había marcado el listing 'sold' al pagarse — como
+    // el producto resultó no disponible en origen, no vuelve a 'active'
+    // (no es vendible, no hay nada que despachar), pero tampoco debe quedar
+    // 'sold' para siempre (invisible, pero contando como inventario
+    // vendido). 'paused' lo saca de circulación y lo deja visible para que
+    // la admin decida si lo reactiva o lo elimina.
+    await admin.from('listings').update({ status: 'paused' }).eq('id', order.listing_id)
+  }
 
   const internalNote = typeof payload.internal_note === 'string' ? payload.internal_note : null
   await recordHistory(nextStatus, previousStatus, publicNote, internalNote)

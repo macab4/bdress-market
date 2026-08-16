@@ -1,25 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminUser } from '@/lib/admin-auth'
-import { WalletTransaction, WalletTransactionType } from '@/types'
+import { WalletTransaction } from '@/types'
+import { WALLET_TRANSACTION_TYPE_LABELS as TYPE_LABELS } from '@/lib/wallet'
 import AdminNav from '@/components/admin/AdminNav'
 import AdminWalletAdjustForm from '@/components/admin/AdminWalletAdjustForm'
 import WalletSubNav from '@/components/admin/WalletSubNav'
-
-const TYPE_LABELS: Record<WalletTransactionType, string> = {
-  sale_pending: 'Venta pendiente',
-  sale_release: 'Venta liberada',
-  sale_reversal: 'Reverso de venta',
-  withdrawal_hold: 'Retiro solicitado',
-  withdrawal_completed: 'Retiro completado',
-  withdrawal_cancelled: 'Retiro cancelado',
-  marketplace_purchase: 'Compra con saldo',
-  marketplace_purchase_hold: 'Saldo reservado para una compra',
-  marketplace_purchase_cancelled: 'Reserva de compra liberada',
-  marketplace_purchase_refund: 'Reembolso de compra',
-  giftcard_redemption: 'Gift Card',
-  admin_credit: 'Ajuste — crédito',
-  admin_debit: 'Ajuste — débito',
-}
 
 function formatCLP(n: number) {
   return `$${n.toLocaleString('es-CL')}`
@@ -34,13 +19,25 @@ export default async function AdminWalletPage() {
   await requireAdminUser()
   const admin = createAdminClient()
 
-  const [{ data: accounts }, { data: movements }] = await Promise.all([
+  const [{ data: accounts }, { data: movements }, { data: pendingHolds }] = await Promise.all([
     admin.from('wallet_accounts').select('available_balance, pending_balance, reserved_balance'),
     admin
       .from('wallet_transactions')
       .select('*, user:profiles!wallet_transactions_user_id_fkey(name, email), listing:listings(title)')
       .order('created_at', { ascending: false })
       .limit(100) as unknown as Promise<{ data: TxWithRelations[] | null }>,
+    // Mismo criterio que usa el cron diario (expire-pending-orders) para
+    // liberar holds huérfanos — se muestra acá para que la admin pueda ver,
+    // entre corridas del cron, qué compradoras tienen saldo reservado en
+    // una compra todavía sin resolver.
+    admin
+      .from('orders')
+      .select('id, wallet_amount_applied, status, created_at, buyer:profiles!orders_buyer_id_fkey(name, email), listing:listings(title)')
+      .gt('wallet_amount_applied', 0)
+      .neq('status', 'paid')
+      .order('created_at', { ascending: false }) as unknown as Promise<{
+        data: { id: string; wallet_amount_applied: number; status: string; created_at: string; buyer: { name: string; email: string } | null; listing: { title: string } | null }[] | null
+      }>,
   ])
 
   const totals = (accounts ?? []).reduce(
@@ -80,6 +77,46 @@ export default async function AdminWalletPage() {
         <div className="mb-6">
           <AdminWalletAdjustForm />
         </div>
+
+        {pendingHolds && pendingHolds.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
+              Holds de compra pendientes de liberar ({pendingHolds.length})
+            </h2>
+            <div className="bg-white overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 text-[10px] tracking-widest uppercase text-gray-400">
+                    <th className="text-left px-4 py-3">Compradora</th>
+                    <th className="text-left px-4 py-3">Prenda</th>
+                    <th className="text-right px-4 py-3">Monto reservado</th>
+                    <th className="text-left px-4 py-3">Estado orden</th>
+                    <th className="text-left px-4 py-3">Desde</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingHolds.map(order => (
+                    <tr key={order.id} className="border-b border-gray-50 last:border-0">
+                      <td className="px-4 py-3">
+                        <p className="truncate">{order.buyer?.name ?? '—'}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{order.buyer?.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500 truncate max-w-[220px]">{order.listing?.title ?? '—'}</td>
+                      <td className="px-4 py-3 text-right text-xs tabular-nums">{formatCLP(order.wallet_amount_applied)}</td>
+                      <td className="px-4 py-3 text-xs text-gray-500">{order.status}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
+                        {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2">
+              Se liberan automáticamente en la próxima corrida del cron diario si la orden no llega a pagarse.
+            </p>
+          </div>
+        )}
 
         <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">Movimientos recientes</h2>
         <div className="bg-white overflow-x-auto">

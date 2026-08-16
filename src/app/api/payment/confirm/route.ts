@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout } from '@/lib/email'
 import { BOOST_DURATION_DAYS } from '@/lib/catalog'
-import { recordSalePending, recordPurchaseCompleted, sendWalletAlertEmail } from '@/lib/wallet'
+import { recordSalePending, recordPurchaseCompleted, recordPurchaseCancelled, sendWalletAlertEmail } from '@/lib/wallet'
 import { finalizeOrderPaid } from '@/lib/orderNotifications'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
@@ -133,12 +133,25 @@ async function handleNotification(request: Request) {
     const supabase = createAdminClient()
     const { data: order } = await supabase
       .from('orders')
-      .select('listing_id, buyer_id')
+      .select('listing_id, buyer_id, wallet_amount_applied, wallet_transaction_id')
       .eq('id', orderId)
       .eq('status', 'pending_payment')
       .maybeSingle()
 
     if (order) {
+      // Si la compradora había aplicado saldo B-Dress a esta orden, el
+      // rechazo de la tarjeta no debe dejarlo atrapado hasta la próxima
+      // corrida del cron (una vez al día) — se libera de inmediato, igual
+      // que cuando falla la creación de la preferencia en payment/create.
+      if (order.wallet_amount_applied > 0) {
+        await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+        const cancelled = await recordPurchaseCancelled(supabase, {
+          orderId, userId: order.buyer_id, amount: order.wallet_amount_applied,
+          reason: 'mercadopago_payment_rejected', holdTransactionId: order.wallet_transaction_id,
+        })
+        if (!cancelled.ok) await sendWalletAlertEmail({ orderId, reason: cancelled.error })
+      }
+
       const [{ data: listing }, { data: buyer }] = await Promise.all([
         supabase.from('listings').select('title').eq('id', order.listing_id).single(),
         supabase.from('profiles').select('email, name').eq('id', order.buyer_id).single(),

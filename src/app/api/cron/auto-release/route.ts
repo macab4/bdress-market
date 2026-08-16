@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CONFIRMED_HOLD_DAYS, SHIPPED_FALLBACK_DAYS } from '@/lib/catalog'
-import { sendReviewReminderEmail } from '@/lib/email'
-import { recordSaleRelease, sendWalletAlertEmail } from '@/lib/wallet'
+import { sendReviewReminderEmail, sendWalletBalanceChangedEmail } from '@/lib/email'
+import { recordSaleRelease, orderNetAmount, sendWalletAlertEmail } from '@/lib/wallet'
 
 // Se ejecuta diariamente vía Vercel Cron (ver vercel.json).
 // Marca la orden como "completed" y libera el saldo pendiente de la
@@ -46,7 +46,7 @@ export async function GET(request: Request) {
   if (releasedIds.length > 0) {
     const { data: releasedOrders } = await admin
       .from('orders')
-      .select('id, buyer_id, seller_id, listing_id')
+      .select('id, buyer_id, seller_id, listing_id, amount, commission, processing_fee')
       .in('id', releasedIds)
 
     await Promise.all((releasedOrders ?? []).map(async (order) => {
@@ -70,6 +70,12 @@ export async function GET(request: Request) {
           : Promise.resolve(),
         seller?.email
           ? sendReviewReminderEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
+          : Promise.resolve(),
+        seller?.email && release.ok
+          ? sendWalletBalanceChangedEmail({
+              to: seller.email, name: seller.name, amount: orderNetAmount(order),
+              reason: `Venta liberada — ${listingTitle}`,
+            })
           : Promise.resolve(),
       ])
     }))

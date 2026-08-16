@@ -489,6 +489,12 @@ export function paymentProcessingFee(price: number): number {
   return Math.round(price * PROCESSING_FEE_PCT) + PROCESSING_FEE_FIXED
 }
 
+// Monto mínimo para pedir un retiro de Saldo B-Dress — cada retiro se
+// transfiere a mano (ver AdminWithdrawalActions.tsx), así que un retiro de
+// unos pocos pesos igual consume el mismo trabajo administrativo que uno
+// grande. No bloquea gastar ese saldo en una compra, solo transferirlo.
+export const MIN_WITHDRAWAL_AMOUNT = 5000
+
 // Reserva de pago: si una orden queda pending_payment más de este tiempo sin
 // completarse, el cron expire-pending-orders la cancela y libera el listing
 // para que otra compradora pueda intentarlo (ver create_or_reuse_pending_order

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { recordAdminAdjustment } from '@/lib/wallet'
+import { sendWalletBalanceChangedEmail } from '@/lib/email'
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -29,9 +30,10 @@ export async function POST(request: Request) {
   if (!reason) return Response.json({ error: 'El motivo es obligatorio' }, { status: 400 })
 
   const admin = createAdminClient()
-  const { data: profile } = await admin.from('profiles').select('id').eq('email', email).maybeSingle()
+  const { data: profile } = await admin.from('profiles').select('id, name').eq('email', email).maybeSingle()
   if (!profile) return Response.json({ error: 'No existe una cuenta con ese email' }, { status: 404 })
 
+  const signedAmount = type === 'admin_credit' ? Math.round(amount) : -Math.round(amount)
   const result = await recordAdminAdjustment(admin, {
     userId: profile.id,
     type,
@@ -42,5 +44,6 @@ export async function POST(request: Request) {
   })
 
   if (!result.ok) return Response.json({ error: result.error }, { status: 500 })
+  await sendWalletBalanceChangedEmail({ to: email, name: profile.name, amount: signedAmount, reason })
   return Response.json({ ok: true })
 }

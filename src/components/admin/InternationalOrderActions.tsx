@@ -47,7 +47,7 @@ function buildPayloadFor(action: InternationalStatusAction): Record<string, unkn
     return { confirm: true }
   }
   if (action === 'confirm_refund') {
-    if (!confirm('¿Confirmas que Mercado Pago ya procesó el reembolso completo? Esta acción no se puede deshacer.')) return null
+    if (!confirm('¿Confirmas que ya se procesó el reembolso completo (Mercado Pago y/o saldo B-Dress, según corresponda)? Esta acción no se puede deshacer.')) return null
     return { confirm: true }
   }
   return {}

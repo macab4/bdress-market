@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendReviewReminderEmail } from '@/lib/email'
-import { recordSaleRelease, recordSaleReversal, recordPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
+import { sendReviewReminderEmail, sendWalletBalanceChangedEmail } from '@/lib/email'
+import { recordSaleRelease, recordSaleReversal, recordPurchaseRefund, orderNetAmount, sendWalletAlertEmail } from '@/lib/wallet'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
@@ -31,7 +31,7 @@ export async function POST(
   const admin = createAdminClient()
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id')
+    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id, amount, commission, processing_fee')
     .eq('id', id)
     .single()
 
@@ -72,6 +72,12 @@ export async function POST(
         : Promise.resolve(),
       seller?.email
         ? sendReviewReminderEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
+        : Promise.resolve(),
+      seller?.email && release.ok
+        ? sendWalletBalanceChangedEmail({
+            to: seller.email, name: seller.name, amount: orderNetAmount(order),
+            reason: `Venta liberada — ${listingTitle}`,
+          })
         : Promise.resolve(),
     ])
 

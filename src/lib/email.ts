@@ -738,3 +738,35 @@ export async function sendInternationalAvailabilityReminderEmail({
     `),
   })
 }
+
+// Aviso de que el Saldo B-Dress de la usuaria cambió — hoy se dispara solo
+// desde dos lugares: cuando se libera una venta (sale_release, dinero recién
+// disponible para usar o retirar) y cuando la admin hace un ajuste manual
+// (admin_credit/admin_debit). Los movimientos automáticos de compra
+// (hold/completed/cancelled) no mandan este correo a propósito — pasan
+// dentro del mismo flujo de checkout que la usuaria ya está viendo en
+// pantalla, avisarle por email además sería ruido.
+export async function sendWalletBalanceChangedEmail({
+  to, name, amount, reason,
+}: { to: string; name: string | null; amount: number; reason: string }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const isCredit = amount > 0
+  await sendEmail({
+    to,
+    subject: isCredit ? 'Tu Saldo B-Dress aumentó' : 'Tu Saldo B-Dress cambió',
+    html: emailLayout(isCredit ? 'Saldo acreditado' : 'Ajuste de saldo', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu Saldo B-Dress ${isCredit ? 'aumentó en' : 'se ajustó en'}
+        <strong>${isCredit ? '+' : '-'}$${Math.abs(amount).toLocaleString('es-CL')}</strong>.
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Motivo: ${reason}.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/dashboard/wallet" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi saldo
+        </a>
+      </p>
+    `),
+  })
+}
