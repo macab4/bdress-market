@@ -55,6 +55,9 @@ export default async function Navbar() {
               <Link href="/dashboard/saved-searches" className="text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 Mis búsquedas
               </Link>
+              <Link href="/dashboard/referrals" className="text-xs text-[#5a7a55] hover:text-black tracking-widest uppercase">
+                Invita y gana
+              </Link>
               <Link href="/dashboard/messages" className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-black tracking-widest uppercase">
                 <MessageCircle size={14} />
                 Mensajes

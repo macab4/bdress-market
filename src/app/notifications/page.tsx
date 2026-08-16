@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Notification } from '@/types'
+import { REFERRAL_REWARD_AMOUNT } from '@/lib/catalog'
 
 type NotificationWithRelations = Notification & {
   actor: { name: string } | null
@@ -15,6 +16,7 @@ const ACTION_TEXT: Record<Notification['type'], string> = {
   offer_accepted: 'aceptó tu oferta por',
   offer_rejected: 'rechazó tu oferta por',
   offer_countered: 'te hizo una contraoferta por',
+  referral_bonus: `publicó su primera prenda — ganaste $${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress 💚`,
 }
 
 export default async function NotificationsPage() {
@@ -47,11 +49,13 @@ export default async function NotificationsPage() {
             {list.map(n => (
               <Link
                 key={n.id}
-                href={n.listing_id ? `/listings/${n.listing_id}` : '#'}
+                href={n.type === 'referral_bonus' ? '/dashboard/wallet' : n.listing_id ? `/listings/${n.listing_id}` : '#'}
                 className="flex items-center gap-3 bg-white p-4 hover:bg-gray-50 transition"
               >
                 <div className="w-12 h-16 bg-gray-100 flex-shrink-0 overflow-hidden relative">
-                  {n.listing?.photos?.[0] ? (
+                  {n.type === 'referral_bonus' ? (
+                    <div className="w-full h-full flex items-center justify-center bg-[#7fab87]/10 text-lg">💚</div>
+                  ) : n.listing?.photos?.[0] ? (
                     <Image src={n.listing.photos[0]} alt={n.listing.title} fill className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-[9px]">Sin foto</div>

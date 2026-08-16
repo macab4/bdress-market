@@ -69,6 +69,16 @@ export async function GET(request: Request) {
     if (referrer?.email) {
       await sendReferralBonusEmail({ to: referrer.email, name: referrer.name, referredName: referred?.name ?? null })
     }
+
+    // Además del correo, una notificación real en la campanita — el correo
+    // se puede perder de vista, la campanita con contador no. actor_id es
+    // la referida (fue su acción la que disparó el bono), no la propia
+    // admin ni un sistema — mismo patrón que usan offer_received/etc.
+    await admin.from('notifications').insert({
+      user_id: referral.referrer_user_id,
+      type: 'referral_bonus',
+      actor_id: referral.referred_user_id,
+    })
   }
 
   return Response.json({ rewarded, skippedLimit, evaluated: (qualified ?? []).length })
