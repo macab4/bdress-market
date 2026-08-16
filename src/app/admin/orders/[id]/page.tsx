@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Order } from '@/types'
-import { ORDER_STATUS_CONFIG, shipDeadline } from '@/lib/catalog'
+import { ORDER_STATUS_CONFIG, shipDeadline, daysUntilRelease } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
 import UploadLabelForm from '@/components/admin/UploadLabelForm'
 import EditLabelTrackingForm from '@/components/admin/EditLabelTrackingForm'
@@ -163,6 +163,21 @@ export default async function AdminOrderDetailPage({
             )}
 
             {canMarkDelivered && <MarkDeliveredForm orderId={order.id} />}
+
+            {order.confirmed_at && (
+              <div className="bg-gray-50 p-3 text-xs text-gray-600 space-y-0.5">
+                <p><span className="text-gray-400">Entregado:</span> {formatDate(order.confirmed_at)}</p>
+                {order.status === 'delivered' && (
+                  <p>Se libera el pago a la vendedora en {daysUntilRelease(order.confirmed_at)}, si la compradora no reporta un problema.</p>
+                )}
+                {order.status === 'completed' && (
+                  <p className="text-[#5a7a55]">Pago liberado a la vendedora.</p>
+                )}
+                {order.status === 'disputed' && (
+                  <p className="text-red-500">Disputa abierta — el pago está retenido.</p>
+                )}
+              </div>
+            )}
 
             {order.label_url && (
               <div className="flex items-center gap-3">
