@@ -849,14 +849,15 @@ export async function sendWalletBalanceChangedEmail({
 // confirmó recepción aunque el courier ya la haya entregado. Solo se manda
 // si hay al menos una orden en alguna de las dos listas.
 export async function sendAdminShippingDigestEmail({
-  to, awaitingDispatch, awaitingDeliveryConfirmation,
+  to, awaitingDispatch, awaitingDeliveryConfirmation, awaitingReturn,
 }: {
   to: string
   awaitingDispatch: { orderId: string; listingTitle: string; sellerName: string | null; daysOverdue: number }[]
   awaitingDeliveryConfirmation: { orderId: string; listingTitle: string; buyerName: string | null; trackingNumber: string | null; daysSinceShipped: number }[]
+  awaitingReturn: { orderId: string; listingTitle: string; buyerName: string | null; hasLabel: boolean; trackingNumber: string | null; daysSinceApproved: number }[]
 }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  const total = awaitingDispatch.length + awaitingDeliveryConfirmation.length
+  const total = awaitingDispatch.length + awaitingDeliveryConfirmation.length + awaitingReturn.length
 
   const dispatchRows = awaitingDispatch.map(o => `
     <tr>
@@ -882,9 +883,21 @@ export async function sendAdminShippingDigestEmail({
     </tr>
   `).join('')
 
+  const returnRows = awaitingReturn.map(o => `
+    <tr>
+      <td style="padding: 8px 0; font-size: 13px; color: #444; border-bottom: 1px solid #eee;">
+        <a href="${siteUrl}/admin/orders/${o.orderId}" style="color: #444;">${o.listingTitle}</a><br/>
+        <span style="font-size: 11px; color: #999;">Compradora: ${o.buyerName ?? '—'}${o.trackingNumber ? ` · Seguimiento: ${o.trackingNumber}` : ''}</span>
+      </td>
+      <td style="padding: 8px 0; font-size: 13px; color: #888; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap;">
+        ${o.hasLabel ? `Esperando entrega hace ${o.daysSinceApproved} ${o.daysSinceApproved === 1 ? 'día' : 'días'}` : 'Falta subir la etiqueta'}
+      </td>
+    </tr>
+  `).join('')
+
   await sendEmail({
     to,
-    subject: `${total} ${total === 1 ? 'orden necesita' : 'órdenes necesitan'} tu revisión — despacho/entrega`,
+    subject: `${total} ${total === 1 ? 'orden necesita' : 'órdenes necesitan'} tu revisión — despacho/entrega/devolución`,
     html: emailLayout('Órdenes que necesitan tu revisión', `
       ${awaitingDispatch.length > 0 ? `
         <p style="font-size: 13px; color: #444; font-weight: 600; margin-bottom: 4px;">
@@ -902,8 +915,108 @@ export async function sendAdminShippingDigestEmail({
         <p style="font-size: 12px; color: #888; line-height: 1.5; margin-top: 0;">
           Revisa el seguimiento del courier y usa "Marcar como entregada" con la fecha real si ya llegó.
         </p>
-        <table style="width: 100%; border-collapse: collapse;">${deliveryRows}</table>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">${deliveryRows}</table>
       ` : ''}
+      ${awaitingReturn.length > 0 ? `
+        <p style="font-size: 13px; color: #444; font-weight: 600; margin-bottom: 4px;">
+          Devoluciones en curso (${awaitingReturn.length})
+        </p>
+        <p style="font-size: 12px; color: #888; line-height: 1.5; margin-top: 0;">
+          Si falta la etiqueta, súbela. Si ya está en camino, revisa el seguimiento y usa "Devolución recibida" cuando la vendedora la reciba.
+        </p>
+        <table style="width: 100%; border-collapse: collapse;">${returnRows}</table>
+      ` : ''}
+    `),
+  })
+}
+
+// Disputa resuelta a favor de la compradora — admin/orders/[id]/resolve,
+// acción 'refund'. Antes esta rama no avisaba a nadie por correo (a
+// diferencia de 'release', que sí); esto lo cierra con el mismo patrón.
+export async function sendOrderRefundedEmail({
+  to, name, listingTitle, role,
+}: { to: string; name: string | null; listingTitle: string; role: 'buyer' | 'seller' }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const dashboardPath = role === 'buyer' ? '/dashboard/purchases' : '/dashboard/sales'
+  const subject = role === 'buyer' ? `Te reembolsamos tu compra — ${listingTitle}` : `Se anuló tu venta — ${listingTitle}`
+  const intro = role === 'buyer'
+    ? `Hola ${name ?? ''}, revisamos tu reporte sobre <strong>${listingTitle}</strong> y te reembolsamos el pago completo.`
+    : `Hola ${name ?? ''}, revisamos el reporte de la compradora sobre <strong>${listingTitle}</strong> y decidimos reembolsarle el pago — esta venta se anula, no vas a recibir el pago por ella.`
+
+  await sendEmail({
+    to,
+    subject,
+    html: emailLayout('Reembolso procesado', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">${intro}</p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}${dashboardPath}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi ${role === 'buyer' ? 'compra' : 'venta'}
+        </a>
+      </p>
+    `),
+  })
+}
+
+// Admin aprobó la devolución (api/admin/orders/[id]/approve-return) — el
+// reembolso queda retenido hasta que la prenda vuelva a manos de la
+// vendedora. Deja explícito desde el primer correo que el reembolso no es
+// inmediato, para que la compradora no se sorprenda si no ve la plata al toque.
+export async function sendReturnApprovedEmail({
+  to, name, listingTitle,
+}: { to: string; name: string | null; listingTitle: string }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to,
+    subject: `Aprobamos tu devolución — ${listingTitle}`,
+    html: emailLayout('Devolución aprobada', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, revisamos tu reporte sobre <strong>${listingTitle}</strong> y aprobamos la devolución.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        En breve te enviamos la etiqueta para devolver la prenda — el envío de vuelta corre por cuenta de Bdress,
+        no tienes que pagar nada. Apenas la vendedora la reciba, te reembolsamos el pago completo.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/dashboard/purchases" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi compra
+        </a>
+      </p>
+    `),
+  })
+}
+
+// Etiqueta de devolución lista (api/admin/orders/[id]/return-label) — mismo
+// patrón que sendLabelReadyEmail (etiqueta de ida a la vendedora), pero acá
+// la destinataria es la compradora y el link apunta directo al archivo
+// subido (sin el wrapper de /label/download que sí tiene la etiqueta de
+// ida, porque no hace falta registrar cuándo la descarga).
+export async function sendReturnLabelReadyEmail({
+  to, name, listingTitle, labelUrl, trackingNumber, carrierInstructions,
+}: {
+  to: string; name: string | null; listingTitle: string
+  labelUrl: string; trackingNumber: string; carrierInstructions: string
+}) {
+  await sendEmail({
+    to,
+    subject: `Tu etiqueta de devolución está lista — ${listingTitle}`,
+    html: emailLayout('Etiqueta de devolución lista', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, ya puedes devolver <strong>${listingTitle}</strong>.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        ${carrierInstructions}
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        N.º de seguimiento: <strong style="font-family: monospace;">${trackingNumber}</strong>
+      </p>
+      <p style="text-align: center; margin: 24px 0;">
+        <a href="${labelUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Descargar etiqueta
+        </a>
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Apenas la vendedora reciba el paquete, te reembolsamos el pago completo.
+      </p>
     `),
   })
 }

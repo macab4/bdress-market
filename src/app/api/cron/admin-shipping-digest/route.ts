@@ -63,10 +63,36 @@ export async function GET(request: Request) {
     })
     .filter(o => o.daysSinceShipped >= ADMIN_SHIPPED_REVIEW_DAYS)
 
-  const total = awaitingDispatch.length + awaitingDeliveryConfirmation.length
+  type ReturnRow = {
+    id: string; return_approved_at: string | null; return_label_url: string | null; return_label_tracking_number: string | null
+    buyer: { name: string } | { name: string }[] | null; listing: { title: string } | { title: string }[] | null
+  }
+  const { data: returnCandidates } = await admin
+    .from('orders')
+    .select('id, return_approved_at, return_label_url, return_label_tracking_number, buyer:profiles!orders_buyer_id_fkey(name), listing:listings(title)')
+    .eq('status', 'return_pending') as unknown as { data: ReturnRow[] | null }
+
+  const awaitingReturn = (returnCandidates ?? [])
+    .map(order => {
+      const daysSinceApproved = order.return_approved_at
+        ? Math.floor((now - new Date(order.return_approved_at).getTime()) / DAY_MS)
+        : 0
+      const buyer = Array.isArray(order.buyer) ? order.buyer[0] : order.buyer
+      const listing = Array.isArray(order.listing) ? order.listing[0] : order.listing
+      return {
+        orderId: order.id, listingTitle: listing?.title ?? 'Prenda eliminada', buyerName: buyer?.name ?? null,
+        hasLabel: !!order.return_label_url, trackingNumber: order.return_label_tracking_number, daysSinceApproved,
+      }
+    })
+    .filter(o => !o.hasLabel || o.daysSinceApproved >= ADMIN_SHIPPED_REVIEW_DAYS)
+
+  const total = awaitingDispatch.length + awaitingDeliveryConfirmation.length + awaitingReturn.length
   if (total > 0) {
-    await sendAdminShippingDigestEmail({ to: process.env.ADMIN_EMAIL, awaitingDispatch, awaitingDeliveryConfirmation })
+    await sendAdminShippingDigestEmail({ to: process.env.ADMIN_EMAIL, awaitingDispatch, awaitingDeliveryConfirmation, awaitingReturn })
   }
 
-  return Response.json({ sent: total > 0, awaitingDispatch: awaitingDispatch.length, awaitingDeliveryConfirmation: awaitingDeliveryConfirmation.length })
+  return Response.json({
+    sent: total > 0, awaitingDispatch: awaitingDispatch.length,
+    awaitingDeliveryConfirmation: awaitingDeliveryConfirmation.length, awaitingReturn: awaitingReturn.length,
+  })
 }

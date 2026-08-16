@@ -1,6 +1,12 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendEmail, emailLayout, sendInternationalOrderReceivedEmail, sendInternationalAdminActionNeededEmail } from '@/lib/email'
+import {
+  sendEmail, emailLayout, sendInternationalOrderReceivedEmail, sendInternationalAdminActionNeededEmail,
+  sendOrderRefundedEmail,
+} from '@/lib/email'
 import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import { recordSaleReversal, recordPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
+
+const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
 type AdminClient = ReturnType<typeof createAdminClient>
 
@@ -140,4 +146,67 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
       })
     }
   }
+}
+
+// Reembolso real: Mercado Pago (si hubo) + reverso del saldo pendiente de
+// la vendedora + devolución del saldo B-Dress que la compradora haya
+// aplicado + avisos por correo a ambas. Usada tanto por el reembolso
+// instantáneo (admin/orders/[id]/resolve, para cuando no hay nada físico
+// que devolver) como por el reembolso con devolución (mark-return-received,
+// una vez que la prenda ya volvió a manos de la vendedora) — es la MISMA
+// operación de dinero, solo cambia qué la dispara.
+export async function executeOrderRefund(admin: AdminClient, order: {
+  orderId: string; listingId: string; buyerId: string; sellerId: string
+  paymentRef: string | null; walletAmountApplied: number; walletTransactionId: string | null
+}, opts: { createdBy: string; reversalDescription: string; walletRefundReason: string; returnReceivedAt?: string }): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (order.paymentRef) {
+    const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.paymentRef}/refunds`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
+        'X-Idempotency-Key': crypto.randomUUID(),
+      },
+    })
+    if (!refundRes.ok) {
+      const errBody = await refundRes.json().catch(() => ({}))
+      return { ok: false, error: errBody.message || 'Error al reembolsar en Mercado Pago' }
+    }
+  }
+
+  await admin.from('orders').update({
+    status: 'cancelled',
+    ...(opts.returnReceivedAt ? { return_received_at: opts.returnReceivedAt } : {}),
+  }).eq('id', order.orderId)
+  await admin.from('listings').update({ status: 'active' }).eq('id', order.listingId)
+
+  const reversal = await recordSaleReversal(admin, order.orderId, {
+    description: opts.reversalDescription,
+    createdBy: opts.createdBy,
+  })
+  if (!reversal.ok) await sendWalletAlertEmail({ orderId: order.orderId, reason: reversal.error })
+
+  if (order.walletAmountApplied > 0) {
+    const purchaseRefund = await recordPurchaseRefund(admin, {
+      orderId: order.orderId, userId: order.buyerId, amount: order.walletAmountApplied,
+      reason: opts.walletRefundReason, holdTransactionId: order.walletTransactionId, createdBy: opts.createdBy,
+    })
+    if (!purchaseRefund.ok) await sendWalletAlertEmail({ orderId: order.orderId, reason: purchaseRefund.error })
+  }
+
+  const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
+    admin.from('listings').select('title').eq('id', order.listingId).single(),
+    admin.from('profiles').select('email, name').eq('id', order.buyerId).single(),
+    admin.from('profiles').select('email, name').eq('id', order.sellerId).single(),
+  ])
+  const listingTitle = listing?.title ?? 'esta prenda'
+  await Promise.all([
+    buyer?.email
+      ? sendOrderRefundedEmail({ to: buyer.email, name: buyer.name, listingTitle, role: 'buyer' })
+      : Promise.resolve(),
+    seller?.email
+      ? sendOrderRefundedEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
+      : Promise.resolve(),
+  ])
+
+  return { ok: true }
 }

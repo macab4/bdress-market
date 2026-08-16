@@ -7,7 +7,7 @@ export type ListingColor =
   | 'amarillo' | 'plateado' | 'dorado' | 'varios' | 'transparente'
 export type ListingShippingSize = 'pequeno' | 'mediano' | 'grande'
 export type ListingStatus = 'active' | 'sold' | 'paused'
-export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled'
+export type OrderStatus = 'pending_payment' | 'paid' | 'shipped' | 'delivered' | 'completed' | 'disputed' | 'cancelled' | 'return_pending'
 export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'countered' | 'expired' | 'cancelled'
 export type OfferProposedBy = 'buyer' | 'seller'
 
@@ -165,6 +165,12 @@ export interface Order {
   label_courier: string | null
   label_tracking_number: string | null
   label_uploaded_at: string | null
+  return_approved_at: string | null
+  return_label_url: string | null
+  return_label_courier: string | null
+  return_label_tracking_number: string | null
+  return_label_uploaded_at: string | null
+  return_received_at: string | null
   last_ship_reminder_sent_at: string | null
   paid_at: string | null
   shipped_at: string | null

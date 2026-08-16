@@ -94,10 +94,14 @@ export default function BuyerProtectionModal({ iconSize = 13, trigger, triggerCl
                   <li>llega dañado</li>
                   <li>no corresponde a su descripción</li>
                 </ul>
-                <p>
+                <p className="mb-2">
                   Cuando te llegue tu pedido, confirma la recepción — desde ese momento tienes{' '}
                   <strong>2 días</strong> para reportar un problema. Si no confirmas nada, asumimos que todo llegó
-                  bien. Conoce más en nuestra{' '}
+                  bien.
+                </p>
+                <p>
+                  Si ya recibiste la prenda y hay que devolverla, te enviamos la etiqueta sin costo y el reembolso
+                  completo se procesa cuando la vendedora la recibe de vuelta. Conoce más en nuestra{' '}
                   <Link href="/terminos#disputas" onClick={stopBubble} className="text-[#5a7a55] underline underline-offset-2">
                     política de devoluciones
                   </Link>.

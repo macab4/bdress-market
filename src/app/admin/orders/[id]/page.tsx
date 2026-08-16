@@ -11,6 +11,8 @@ import EditLabelTrackingForm from '@/components/admin/EditLabelTrackingForm'
 import ChilexpressTrackLink from '@/components/admin/ChilexpressTrackLink'
 import MarkShippedForm from '@/components/admin/MarkShippedForm'
 import MarkDeliveredForm from '@/components/admin/MarkDeliveredForm'
+import UploadReturnLabelForm from '@/components/admin/UploadReturnLabelForm'
+import MarkReturnReceivedForm from '@/components/admin/MarkReturnReceivedForm'
 
 type AdminOrderDetail = Order & {
   listing: { title: string; photos: string[]; shipping_size: string } | null
@@ -199,6 +201,41 @@ export default async function AdminOrderDetailPage({
             )}
           </section>
         </div>
+
+        {(order.dispute_reason || order.status === 'return_pending' || order.return_received_at) && (
+          <section className="bg-white p-5 space-y-3 text-sm mt-6">
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Disputa / Devolución</p>
+
+            {order.dispute_reason && (
+              <div className="bg-red-50 p-3 text-sm text-red-700">{order.dispute_reason}</div>
+            )}
+
+            {order.status === 'return_pending' && !order.return_label_url && (
+              <UploadReturnLabelForm orderId={order.id} />
+            )}
+
+            {order.return_label_courier && order.return_label_tracking_number && (
+              <div className="bg-gray-50 p-3 text-xs text-gray-600 space-y-0.5">
+                <p><span className="text-gray-400">Transportista (devolución):</span> {order.return_label_courier}</p>
+                <p><span className="text-gray-400">N.º de seguimiento:</span> <span className="font-mono">{order.return_label_tracking_number}</span></p>
+                {order.return_label_uploaded_at && (
+                  <p className="text-[10px] text-gray-400">Etiqueta enviada: {formatDate(order.return_label_uploaded_at)}</p>
+                )}
+                {/chilexpress/i.test(order.return_label_courier) && (
+                  <ChilexpressTrackLink trackingNumber={order.return_label_tracking_number} />
+                )}
+              </div>
+            )}
+
+            {order.status === 'return_pending' && order.return_label_url && (
+              <MarkReturnReceivedForm orderId={order.id} />
+            )}
+
+            {order.return_received_at && (
+              <p className="text-xs text-[#5a7a55]">Devolución recibida: {formatDate(order.return_received_at)} — reembolso procesado.</p>
+            )}
+          </section>
+        )}
       </div>
     </div>
   )

@@ -34,7 +34,7 @@ export default function TerminosPage() {
       <div className="max-w-2xl mx-auto px-4 py-12">
         <p className="text-xs tracking-[6px] uppercase text-[#7fab87] mb-3">Bdress Market</p>
         <h1 className="text-2xl font-light tracking-widest uppercase mb-2">Términos y condiciones</h1>
-        <p className="text-xs text-gray-400 mb-8">Última actualización: 14 de julio de 2026</p>
+        <p className="text-xs text-gray-400 mb-8">Última actualización: 18 de agosto de 2026</p>
 
         {/* Menú */}
         <nav className="bg-white p-5 mb-6">
@@ -234,8 +234,8 @@ export default function TerminosPage() {
             </p>
             <ul className="list-disc list-inside space-y-2 mb-3">
               <li>
-                <strong>Te piden coordinar por fuera</strong> ("pásame tu whatsapp para no pagar comisión", "te
-                transfiero directo"). Bdress Market no cobra comisión y ya resuelve el envío y el pago dentro de la
+                <strong>Te piden coordinar por fuera</strong> (&ldquo;pásame tu whatsapp para no pagar comisión&rdquo;, &ldquo;te
+                transfiero directo&rdquo;). Bdress Market no cobra comisión y ya resuelve el envío y el pago dentro de la
                 plataforma — no hay ninguna razón real para salir del chat.
               </li>
               <li>
@@ -245,7 +245,7 @@ export default function TerminosPage() {
                 WhatsApp.
               </li>
               <li>
-                <strong>Códigos QR o links de pago</strong> enviados por otra usuaria para "completar" una compra o
+                <strong>Códigos QR o links de pago</strong> enviados por otra usuaria para &ldquo;completar&rdquo; una compra o
                 venta. En Bdress Market el pago siempre se hace dentro del checkout oficial — nunca a través de un
                 link o QR que te manda otra persona.
               </li>
@@ -270,9 +270,29 @@ export default function TerminosPage() {
               <Link href="/contacto" className="text-black underline underline-offset-2">página de contacto</Link>{' '}
               y lo revisamos caso a caso.
             </p>
+            <p className="mb-2">
+              Nuestro equipo revisa cada disputa de forma manual y resuelve de una de estas formas:
+            </p>
+            <ul className="list-disc list-inside space-y-2 mb-2">
+              <li>
+                <strong>Liberamos el pago a la vendedora</strong> — si la prenda corresponde a lo publicado y todo
+                está en orden.
+              </li>
+              <li>
+                <strong>Reembolsamos directo, sin devolver la prenda</strong> — cuando no hay nada físico que
+                devolver, por ejemplo si la prenda nunca fue despachada.
+              </li>
+              <li>
+                <strong>Aprobamos la devolución</strong> — si la compradora ya tiene la prenda en sus manos y no
+                corresponde a lo publicado o llegó dañada. En este caso te enviamos una etiqueta para devolverla
+                (el envío de vuelta corre por cuenta de Bdress, no pagas nada) y el reembolso se procesa recién
+                cuando la vendedora la recibe de vuelta — así ninguna de las dos partes queda perjudicada.
+              </li>
+            </ul>
             <p>
-              Nuestro equipo revisa cada disputa de forma manual y resuelve reembolsando el pago completo a la
-              compradora a través de Mercado Pago, o liberando el pago a la vendedora, según corresponda.
+              En cualquiera de los dos casos de reembolso, se te devuelve el <strong>pago completo</strong>,
+              incluida la Protección BDress — nunca nos quedamos con esa comisión si terminas usando la garantía
+              que justamente pagaste para tener.
             </p>
           </section>
 

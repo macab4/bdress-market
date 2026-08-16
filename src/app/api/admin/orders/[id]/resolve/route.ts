@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewReminderEmail, sendWalletBalanceChangedEmail } from '@/lib/email'
-import { recordSaleRelease, recordSaleReversal, recordPurchaseRefund, orderNetAmount, sendWalletAlertEmail } from '@/lib/wallet'
-
-const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
+import { recordSaleRelease, orderNetAmount, sendWalletAlertEmail } from '@/lib/wallet'
+import { executeOrderRefund } from '@/lib/orderNotifications'
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -84,53 +83,28 @@ export async function POST(
     return Response.json({ ok: true })
   }
 
-  // action === 'refund'. Con pago mixto (fase 3) una orden puede no tener
-  // payment_ref (se pagó 100% con saldo) — solo rechazar si NO hay nada que
-  // reembolsar por ningún canal.
+  // action === 'refund' — instantáneo, para cuando no hay nada físico que
+  // devolver (ej. la vendedora nunca despachó). Si la compradora ya tiene
+  // la prenda en mano, usar 'Aprobar devolución' en vez de esto (ver
+  // api/admin/orders/[id]/approve-return) — ese reembolso queda retenido
+  // hasta que la prenda vuelva a manos de la vendedora.
+  //
+  // Con pago mixto (fase 3) una orden puede no tener payment_ref (se pagó
+  // 100% con saldo) — solo rechazar si NO hay nada que reembolsar por
+  // ningún canal.
   if (!order.payment_ref && order.wallet_amount_applied === 0) {
     return Response.json({ error: 'Esta orden no tiene ningún pago asociado para reembolsar' }, { status: 409 })
   }
 
-  // La preferencia de Mercado Pago (si existió) ya se armó solo por lo que
-  // faltaba después de aplicar el saldo (ver payment/create), así que
-  // reembolsar el 100% de ese payment_ref ya reembolsa exactamente la parte
-  // que correspondía a Mercado Pago — sin ningún cálculo extra.
-  if (order.payment_ref) {
-    const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.payment_ref}/refunds`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
-        'X-Idempotency-Key': crypto.randomUUID(),
-      },
-    })
-
-    if (!refundRes.ok) {
-      const errBody = await refundRes.json().catch(() => ({}))
-      return Response.json({ error: errBody.message || 'Error al reembolsar en Mercado Pago' }, { status: 502 })
-    }
-  }
-
-  await admin.from('orders').update({ status: 'cancelled' }).eq('id', id)
-  await admin.from('listings').update({ status: 'active' }).eq('id', order.listing_id)
-
-  const reversal = await recordSaleReversal(admin, id, {
-    description: 'Reverso por reembolso de la compradora',
+  const result = await executeOrderRefund(admin, {
+    orderId: order.id, listingId: order.listing_id, buyerId: order.buyer_id, sellerId: order.seller_id,
+    paymentRef: order.payment_ref, walletAmountApplied: order.wallet_amount_applied, walletTransactionId: order.wallet_transaction_id,
+  }, {
     createdBy: adminUser.id,
+    reversalDescription: 'Reverso por reembolso de la compradora',
+    walletRefundReason: 'admin_refund',
   })
-  if (!reversal.ok) await sendWalletAlertEmail({ orderId: id, reason: reversal.error })
 
-  // Devuelve a disponible la parte de saldo que la compradora había
-  // aplicado. Para llegar a 'refund' la orden pasó por 'paid' (disputed
-  // también viene de ahí), así que el hold ya se convirtió en gasto
-  // definitivo (recordPurchaseCompleted, en confirm o en el camino
-  // 100%-saldo) — acá solo se le devuelve el monto a disponible.
-  if (order.wallet_amount_applied > 0) {
-    const purchaseRefund = await recordPurchaseRefund(admin, {
-      orderId: id, userId: order.buyer_id, amount: order.wallet_amount_applied,
-      reason: 'admin_refund', holdTransactionId: order.wallet_transaction_id, createdBy: adminUser.id,
-    })
-    if (!purchaseRefund.ok) await sendWalletAlertEmail({ orderId: id, reason: purchaseRefund.error })
-  }
-
+  if (!result.ok) return Response.json({ error: result.error }, { status: 502 })
   return Response.json({ ok: true })
 }

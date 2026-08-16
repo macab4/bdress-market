@@ -568,6 +568,7 @@ export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string 
   completed:       { label: 'Completado',     color: 'bg-[#7fab87]/10 text-[#5a7a55]' },
   disputed:        { label: 'En disputa',     color: 'bg-red-50 text-red-600' },
   cancelled:       { label: 'Cancelado',      color: 'bg-gray-100 text-gray-400' },
+  return_pending:  { label: 'Devolución en curso', color: 'bg-amber-50 text-amber-600' },
 }
 
 // Renovar — gratis, mueve la prenda al tope de "Más recientes" actualizando
