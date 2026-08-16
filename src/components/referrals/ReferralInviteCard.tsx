@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { MessageCircle } from 'lucide-react'
 import { REFERRAL_STATUS_CONFIG } from '@/lib/catalog'
 import { ReferralStatus } from '@/types'
 
@@ -49,6 +50,16 @@ export default function ReferralInviteCard({ link, rewardAmount, monthlyLimit, r
     await handleCopy()
   }
 
+  // El selector nativo (handleShare) no siempre incluye WhatsApp — en Mac
+  // de escritorio, WhatsApp Desktop no se registra como destino ahí aunque
+  // esté instalado (limitación del sistema, no nuestra). wa.me sí funciona
+  // en cualquier dispositivo: abre la app si está instalada, o
+  // web.whatsapp.com si no.
+  function handleWhatsApp() {
+    const text = `Únete a Bdress Market y vende tu ropa usada — usa mi link de invitación: ${link}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer')
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-white p-6 sm:p-8 space-y-6">
@@ -78,6 +89,15 @@ export default function ReferralInviteCard({ link, rewardAmount, monthlyLimit, r
             Invitar a una amiga
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={handleWhatsApp}
+          className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-black transition mx-auto sm:mx-0"
+        >
+          <MessageCircle size={14} />
+          Enviar por WhatsApp
+        </button>
 
         {/* Cómo funciona — horizontal en desktop, apilado en mobile */}
         <div className="border-t border-gray-100 pt-6">
