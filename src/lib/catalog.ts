@@ -581,11 +581,17 @@ export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string 
   return_pending:  { label: 'Devolución en curso', color: 'bg-amber-50 text-amber-600' },
 }
 
-export const REFERRAL_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  registered: { label: 'Registrada', color: 'bg-gray-100 text-gray-500' },
-  qualified:  { label: 'Publicó su primera prenda', color: 'bg-blue-50 text-blue-600' },
-  rewarded:   { label: 'Acreditado', color: 'bg-[#7fab87]/10 text-[#5a7a55]' },
-  rejected:   { label: 'Rechazado', color: 'bg-red-50 text-red-600' },
+// `detail` es la segunda línea que se le muestra a la propia referrer en
+// /dashboard/referrals (más humana que el label solo) — el admin solo usa
+// `label`/`color`, así que agregar `detail` acá no le cambia nada a esa
+// página. 'qualified' cubre el caso real donde la referida ya publicó pero
+// el mes de la referrer ya llegó al tope (ver REFERRAL_MONTHLY_LIMIT) —
+// sigue calificada, se acredita sola apenas haya cupo.
+export const REFERRAL_STATUS_CONFIG: Record<string, { label: string; color: string; detail: string }> = {
+  registered: { label: 'Registrada', color: 'bg-gray-100 text-gray-500', detail: 'Pendiente de publicar su primera prenda' },
+  qualified:  { label: 'Publicó su primera prenda', color: 'bg-blue-50 text-blue-600', detail: 'Esperando cupo del mes para acreditar tu bono' },
+  rewarded:   { label: 'Acreditado', color: 'bg-[#7fab87]/10 text-[#5a7a55]', detail: `+$${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} acreditado ✓` },
+  rejected:   { label: 'No calificó', color: 'bg-red-50 text-red-600', detail: 'Esta invitación no cumplió las condiciones' },
 }
 
 // Renovar — gratis, mueve la prenda al tope de "Más recientes" actualizando

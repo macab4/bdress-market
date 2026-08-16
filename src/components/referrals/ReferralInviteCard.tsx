@@ -1,12 +1,30 @@
 'use client'
 
 import { useState } from 'react'
+import { REFERRAL_STATUS_CONFIG } from '@/lib/catalog'
+import { ReferralStatus } from '@/types'
 
 // Mismo patrón simple de Web Share API que ya usa ShareButton.tsx (compartir
 // una prenda) — acá no hace falta la complejidad de generar/adjuntar una
 // imagen, así que no se reutiliza ese componente completo, solo el mismo
 // enfoque: navigator.share si existe, si no, copiar al portapapeles.
-export default function ReferralInviteCard({ link, rewardAmount }: { link: string; rewardAmount: number }) {
+//
+// Este componente concentra TODO el cuerpo interactivo de la página (link,
+// botones, cómo funciona, tus invitaciones) en vez de estar separado de la
+// lista de abajo — así el botón "Invitar ahora" del estado vacío puede
+// llamar exactamente a la misma handleShare que el botón principal, sin
+// duplicar la lógica de compartir en dos componentes distintos.
+const STEPS = ['Comparte tu link', 'Tu amiga se registra', 'Publica su primera prenda']
+
+interface ReferralInviteCardProps {
+  link: string
+  rewardAmount: number
+  monthlyLimit: number
+  rewardedThisMonth: number
+  referrals: { id: string; name: string | null; status: ReferralStatus }[]
+}
+
+export default function ReferralInviteCard({ link, rewardAmount, monthlyLimit, rewardedThisMonth, referrals }: ReferralInviteCardProps) {
   const [copied, setCopied] = useState(false)
 
   async function handleCopy() {
@@ -32,39 +50,97 @@ export default function ReferralInviteCard({ link, rewardAmount }: { link: strin
   }
 
   return (
-    <div className="bg-white p-6 space-y-4">
-      <p className="text-sm text-gray-600">
-        Invita a una amiga a vender en Bdress Market y gana{' '}
-        <strong className="text-black">${rewardAmount.toLocaleString('es-CL')} de crédito</strong>{' '}
-        cuando publique su primera prenda.
-      </p>
+    <div className="space-y-4">
+      <div className="bg-white p-6 sm:p-8 space-y-6">
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Invita a una amiga a vender en Bdress Market. Cuando publique su primera prenda, recibes{' '}
+          <strong className="text-[#5a7a55]">${rewardAmount.toLocaleString('es-CL')} de crédito</strong> para comprar.
+        </p>
 
-      <div>
-        <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Tu link de invitación</p>
-        <div className="bg-gray-50 px-3 py-2.5 text-sm text-gray-700 break-all">{link}</div>
+        <div>
+          <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Tu link de invitación</p>
+          <div className="bg-gray-50 px-3 py-2.5 text-sm text-gray-700 break-all">{link}</div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex-1 border border-gray-200 text-xs tracking-widest uppercase py-3 hover:border-gray-400 transition"
+          >
+            {copied ? 'Copiado ✓' : 'Copiar link'}
+          </button>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex-1 bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition"
+          >
+            Invitar a una amiga
+          </button>
+        </div>
+
+        {/* Cómo funciona — horizontal en desktop, apilado en mobile */}
+        <div className="border-t border-gray-100 pt-6">
+          <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">¿Cómo funciona?</p>
+          <div className="flex flex-col sm:flex-row sm:items-stretch gap-3 sm:gap-2">
+            {STEPS.map((step, i) => (
+              <div key={step} className="flex items-center gap-3 sm:flex-1 sm:flex-col sm:text-center sm:gap-1.5">
+                <span className="text-base font-light text-[#7fab87] sm:text-xl">{i + 1}</span>
+                <p className="text-xs text-gray-600 sm:leading-tight">{step}</p>
+              </div>
+            ))}
+            <div className="sm:flex-1 bg-[#7fab87]/10 py-3 px-3 flex items-center justify-center">
+              <p className="text-xs font-medium tracking-wide text-[#5a7a55] uppercase text-center">
+                Tú ganas ${rewardAmount.toLocaleString('es-CL')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[10px] text-gray-400 leading-relaxed">
+          Crédito promocional válido solo para compras en Bdress Market. No transferible ni retirable en dinero.
+        </p>
       </div>
 
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="flex-1 border border-gray-200 text-xs tracking-widest uppercase py-3 hover:border-gray-400 transition"
-        >
-          {copied ? 'Copiado ✓' : 'Copiar link'}
-        </button>
-        <button
-          type="button"
-          onClick={handleShare}
-          className="flex-1 bg-[#7fab87] text-white text-xs tracking-widest uppercase py-3 hover:bg-[#6f9678] transition"
-        >
-          Compartir
-        </button>
-      </div>
+      <section className="bg-white p-6 sm:p-8">
+        <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Tus invitaciones</p>
+        <p className="text-sm mb-5">
+          <span className="font-medium text-[#5a7a55]">{rewardedThisMonth}</span> de {monthlyLimit} invitaciones premiadas este mes
+        </p>
 
-      <p className="text-[10px] text-gray-400 leading-relaxed">
-        Recibes ${rewardAmount.toLocaleString('es-CL')} de crédito para comprar en Bdress Market. Este crédito es
-        promocional y no puede transferirse ni retirarse en dinero.
-      </p>
+        {referrals.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-500 mb-1">Aún no has invitado a nadie.</p>
+            <p className="text-xs text-gray-400 mb-5">
+              Comparte tu link y gana ${rewardAmount.toLocaleString('es-CL')} cuando una amiga publique su primera prenda.
+            </p>
+            <button
+              type="button"
+              onClick={handleShare}
+              className="bg-[#7fab87] text-white text-xs tracking-widest uppercase px-6 py-3 hover:bg-[#6f9678] transition"
+            >
+              Invitar ahora
+            </button>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {referrals.map(referral => {
+              const status = REFERRAL_STATUS_CONFIG[referral.status] ?? { label: referral.status, color: 'bg-gray-100 text-gray-500', detail: '' }
+              return (
+                <div key={referral.id} className="py-3 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{referral.name || 'Usuaria invitada'}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{status.detail}</p>
+                  </div>
+                  <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 whitespace-nowrap flex-shrink-0 ${status.color}`}>
+                    {status.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
     </div>
   )
 }
