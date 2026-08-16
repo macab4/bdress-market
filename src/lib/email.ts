@@ -1054,3 +1054,45 @@ export async function sendReferralBonusEmail({
     `),
   })
 }
+
+// Anuncio único del programa de referidos a vendedoras actuales (tienen al
+// menos una prenda publicada) — se dispara una sola vez desde
+// cron/announce-referral-program, fijado a una fecha puntual en
+// vercel.json (no es un cron recurrente). El link ya viene armado con el
+// código de la destinataria (ensureReferralCode ya se llamó antes de armar
+// este correo) para que pueda copiarlo y compartirlo directo desde el
+// celular, sin tener que entrar primero al sitio.
+export async function sendReferralProgramAnnouncementEmail({
+  to, name, referralLink,
+}: { to: string; name: string | null; referralLink: string }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to,
+    subject: 'Nuevo: invita a una amiga y gana $5.000 💚',
+    html: emailLayout('Invita y gana', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tenemos algo nuevo: ahora puedes ganar <strong>$${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')}
+        de Crédito B-Dress</strong> por cada amiga que invites a vender en Bdress Market.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Le compartes tu link, ella se registra y publica su primera prenda — apenas la publique, el crédito
+        queda acreditado en tu cuenta, listo para usar en tu próxima compra.
+      </p>
+      <div style="background: #f7f7f5; padding: 16px; margin: 20px 0; text-align: center;">
+        <p style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #999; margin: 0 0 8px;">
+          Tu link de invitación
+        </p>
+        <p style="font-size: 13px; color: #333; word-break: break-all; margin: 0;">${referralLink}</p>
+      </div>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/dashboard/referrals" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi link e invitar
+        </a>
+      </p>
+      <p style="font-size: 12px; color: #888; line-height: 1.6; margin-top: 20px;">
+        Este crédito es promocional: sirve para comprar en Bdress Market, pero no se puede transferir ni
+        retirar en dinero. Máximo 5 amigas premiadas por mes.
+      </p>
+    `),
+  })
+}
