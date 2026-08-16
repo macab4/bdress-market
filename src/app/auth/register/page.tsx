@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import starkenCitiesOrigin from '@/lib/starken-cities-origin.json'
@@ -16,7 +16,17 @@ const ORIGIN_COMUNAS = Array.from(
 ).sort((a, b) => a.localeCompare(b, 'es'))
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
+  )
+}
+
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const referralCode = searchParams.get('ref')
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', city: '', comuna: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,7 +46,12 @@ export default function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { name: form.name, phone: form.phone, city: form.city, comuna: form.comuna } },
+      options: {
+        data: {
+          name: form.name, phone: form.phone, city: form.city, comuna: form.comuna,
+          ...(referralCode ? { referral_code: referralCode } : {}),
+        },
+      },
     })
 
     if (error) {
@@ -100,6 +115,12 @@ export default function RegisterPage() {
         <p className="text-center text-sm text-gray-500 mb-8">
           Crea tu cuenta y empieza a vender
         </p>
+
+        {referralCode && (
+          <p className="text-center text-xs text-[#5a7a55] bg-[#7fab87]/10 py-2 mb-6">
+            Te invitaron a Bdress Market 💚
+          </p>
+        )}
 
         <form onSubmit={handleRegister} className="space-y-4">
           <div>

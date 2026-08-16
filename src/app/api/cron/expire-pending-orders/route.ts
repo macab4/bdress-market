@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PENDING_ORDER_EXPIRY_MINUTES } from '@/lib/catalog'
-import { recordPurchaseCancelled } from '@/lib/wallet'
+import { recordPurchaseCancelled, recordPromoPurchaseCancelled } from '@/lib/wallet'
 
 // Se ejecuta diariamente vía Vercel Cron (ver vercel.json). La liberación
 // real de una reserva de LISTING abandonada ya ocurre de forma atómica y
@@ -65,5 +65,27 @@ export async function GET(request: Request) {
     if (result.ok && !result.skipped) releasedHolds++
   }
 
-  return Response.json({ expired: data?.length ?? 0, releasedHolds })
+  // Mismo barrido, para holds de Crédito B-Dress huérfanos — nunca se
+  // liberan hacia available_balance, siempre vuelven a promo_balance
+  // (recordPromoPurchaseCancelled).
+  const { data: ordersWithOrphanPromoHold } = await admin
+    .from('orders')
+    .select('id, buyer_id, promo_amount_applied, promo_transaction_id')
+    .gt('promo_amount_applied', 0)
+    .neq('status', 'paid')
+    .lt('created_at', cutoff)
+
+  let releasedPromoHolds = 0
+  for (const order of ordersWithOrphanPromoHold ?? []) {
+    const result = await recordPromoPurchaseCancelled(admin, {
+      orderId: order.id,
+      userId: order.buyer_id,
+      amount: order.promo_amount_applied,
+      reason: 'order_abandoned_or_reassigned',
+      holdTransactionId: order.promo_transaction_id,
+    })
+    if (result.ok && !result.skipped) releasedPromoHolds++
+  }
+
+  return Response.json({ expired: data?.length ?? 0, releasedHolds, releasedPromoHolds })
 }

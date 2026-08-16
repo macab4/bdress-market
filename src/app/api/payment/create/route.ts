@@ -3,7 +3,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getShippingQuote } from '@/lib/starken'
 import { buyerProtectionFee, paymentProcessingFee } from '@/lib/catalog'
 import { INTERNATIONAL_TERMS_VERSION } from '@/lib/international/content'
-import { computeWalletApplication, prorateMercadoPagoItems, recordPurchaseHold, recordPurchaseCompleted, recordPurchaseCancelled, recordSalePending, sendWalletAlertEmail } from '@/lib/wallet'
+import {
+  computeWalletApplication, prorateMercadoPagoItems, recordPurchaseHold, recordPurchaseCompleted, recordPurchaseCancelled,
+  recordPromoPurchaseHold, recordPromoPurchaseCompleted, recordPromoPurchaseCancelled, recordSalePending, sendWalletAlertEmail,
+} from '@/lib/wallet'
 import { finalizeOrderPaid } from '@/lib/orderNotifications'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
@@ -110,21 +113,34 @@ export async function POST(request: Request) {
   const processingFee = paymentProcessingFee(price)
   const totalAPagar = price + commission + quote.price
 
-  // Cuánto de este total puede cubrirse con saldo B-Dress — el saldo real se
-  // lee server-side (nunca se confía en lo que manda el cliente) con el
-  // cliente admin, porque el hold en sí (más abajo) solo lo puede hacer
-  // service_role.
+  // Cuánto de este total puede cubrirse con saldo B-Dress y con Crédito
+  // B-Dress (promocional) — el saldo real se lee server-side (nunca se
+  // confía en lo que manda el cliente) con el cliente admin, porque el hold
+  // en sí (más abajo) solo lo puede hacer service_role.
   const admin = createAdminClient()
+  const { data: account } = await admin
+    .from('wallet_accounts')
+    .select('available_balance, promo_balance')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  // El Crédito B-Dress se aplica SIEMPRE que exista, sin que la compradora
+  // tenga que pedirlo — es el saldo más restringido (solo sirve para
+  // comprar, ver sección 12 del encargo de referidos), así que conviene
+  // gastarlo primero. El saldo de ventas (available_balance) sigue siendo
+  // opt-in vía el checkbox existente en CheckoutForm.
+  let promoAmountApplied = computeWalletApplication({
+    totalAmount: totalAPagar,
+    availableBalance: account?.promo_balance ?? 0,
+    requestedAmount: account?.promo_balance ?? 0,
+  })
+  let promoTransactionId: string | null = null
+
   let walletAmountApplied = 0
   let walletTransactionId: string | null = null
   if (walletAmountRequested > 0) {
-    const { data: account } = await admin
-      .from('wallet_accounts')
-      .select('available_balance')
-      .eq('user_id', user.id)
-      .maybeSingle()
     walletAmountApplied = computeWalletApplication({
-      totalAmount: totalAPagar,
+      totalAmount: totalAPagar - promoAmountApplied,
       availableBalance: account?.available_balance ?? 0,
       requestedAmount: walletAmountRequested,
     })
@@ -174,14 +190,39 @@ export async function POST(request: Request) {
 
   // La orden puede haber sido reutilizada de un intento anterior (mismo
   // listing, mismo/otro reintento de la misma compradora dentro de la
-  // ventana de reserva) — si ya tiene un hold de saldo, se reusa TAL CUAL,
-  // nunca se vuelve a calcular ni se re-intenta el hold (ver comentario de
-  // wallet_amount_applied en la migración de fase 3).
+  // ventana de reserva) — si ya tiene un hold de saldo y/o de Crédito
+  // B-Dress, se reusa TAL CUAL, nunca se vuelve a calcular ni se re-intenta
+  // el hold (ver comentario de wallet_amount_applied en la migración de
+  // fase 3, y el mismo criterio aplicado a promo_amount_applied).
   const { data: existingWalletState } = await admin
     .from('orders')
-    .select('wallet_amount_applied, wallet_transaction_id')
+    .select('wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
     .eq('id', orderId)
     .single()
+
+  if (existingWalletState && existingWalletState.promo_amount_applied > 0) {
+    promoAmountApplied = existingWalletState.promo_amount_applied
+    promoTransactionId = existingWalletState.promo_transaction_id
+  } else if (promoAmountApplied > 0) {
+    const promoHold = await recordPromoPurchaseHold(admin, { orderId, userId: user.id, amount: promoAmountApplied })
+    if (promoHold.ok && !promoHold.skipped && promoHold.transactionId) {
+      const { error: updateErr } = await admin
+        .from('orders')
+        .update({ promo_amount_applied: promoAmountApplied, promo_transaction_id: promoHold.transactionId })
+        .eq('id', orderId)
+      if (updateErr) {
+        await sendWalletAlertEmail({ orderId, reason: updateErr.message })
+        promoAmountApplied = 0
+      } else {
+        promoTransactionId = promoHold.transactionId
+      }
+    } else {
+      // Saldo promocional insuficiente en una carrera u otro error del RPC
+      // — degrada de forma segura, el resto de la compra sigue su curso
+      // normal (saldo de ventas y/o Mercado Pago).
+      promoAmountApplied = 0
+    }
+  }
 
   if (existingWalletState && existingWalletState.wallet_amount_applied > 0) {
     walletAmountApplied = existingWalletState.wallet_amount_applied
@@ -215,19 +256,27 @@ export async function POST(request: Request) {
   // ya fijado en un reintento anterior (ej. la compradora cambió a un envío
   // más barato), no se ajusta el hold — se le pide reiniciar la compra en
   // vez de dejar un estado contable inconsistente.
-  if (walletAmountApplied > totalAPagar) {
+  if (promoAmountApplied + walletAmountApplied > totalAPagar) {
     return Response.json({ error: 'El total de tu pedido cambió y ya no coincide con el saldo reservado. Vuelve a intentar la compra desde el principio.' }, { status: 409 })
   }
 
-  const remaining = totalAPagar - walletAmountApplied
+  const remaining = totalAPagar - promoAmountApplied - walletAmountApplied
 
-  // El saldo cubre el 100% del total — se confirma directo, sin pasar por
-  // Mercado Pago.
+  // El saldo (real y/o promocional) cubre el 100% del total — se confirma
+  // directo, sin pasar por Mercado Pago.
   if (remaining === 0) {
-    const completed = await recordPurchaseCompleted(admin, {
-      orderId, userId: user.id, amount: walletAmountApplied, holdTransactionId: walletTransactionId,
-    })
-    if (!completed.ok) await sendWalletAlertEmail({ orderId, reason: completed.error })
+    if (promoAmountApplied > 0) {
+      const promoCompleted = await recordPromoPurchaseCompleted(admin, {
+        orderId, userId: user.id, amount: promoAmountApplied, holdTransactionId: promoTransactionId,
+      })
+      if (!promoCompleted.ok) await sendWalletAlertEmail({ orderId, reason: promoCompleted.error })
+    }
+    if (walletAmountApplied > 0) {
+      const completed = await recordPurchaseCompleted(admin, {
+        orderId, userId: user.id, amount: walletAmountApplied, holdTransactionId: walletTransactionId,
+      })
+      if (!completed.ok) await sendWalletAlertEmail({ orderId, reason: completed.error })
+    }
 
     // payment_ref queda null a propósito — así el refund (admin/orders/[id]/resolve)
     // sabe sin ambigüedad que no hay nada que reembolsar por Mercado Pago.
@@ -253,11 +302,13 @@ export async function POST(request: Request) {
       shippingCost: quote.price,
     })
 
-    return Response.json({ redirectUrl: `${SITE_URL}/dashboard/purchases/${orderId}/confirmacion`, walletAmountApplied })
+    return Response.json({ redirectUrl: `${SITE_URL}/dashboard/purchases/${orderId}/confirmacion`, walletAmountApplied, promoAmountApplied })
   }
 
   // Crear preferencia de pago en Mercado Pago (Checkout Pro) — por lo que
-  // falta cubrir después del saldo aplicado (0 si no se usó saldo).
+  // falta cubrir después del Crédito B-Dress y el saldo de ventas aplicados
+  // (0 si no se usó ninguno). A prorateMercadoPagoItems no le importa de
+  // qué bucket vino cada peso, solo cuánto ya está cubierto en total.
   const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
     headers: {
@@ -265,7 +316,7 @@ export async function POST(request: Request) {
       Authorization: `Bearer ${MP_ACCESS_TOKEN}`,
     },
     body: JSON.stringify({
-      items: prorateMercadoPagoItems({ price, commission, shippingCost: quote.price, walletAmountApplied }).map(item => ({
+      items: prorateMercadoPagoItems({ price, commission, shippingCost: quote.price, walletAmountApplied: promoAmountApplied + walletAmountApplied }).map(item => ({
         title: item.title === 'Prenda' ? listing.title : item.title,
         quantity: 1,
         unit_price: item.unitPrice,
@@ -285,6 +336,11 @@ export async function POST(request: Request) {
 
   if (!mpRes.ok) {
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+    if (promoAmountApplied > 0) {
+      await recordPromoPurchaseCancelled(admin, {
+        orderId, userId: user.id, amount: promoAmountApplied, reason: 'mercadopago_preference_failed', holdTransactionId: promoTransactionId,
+      })
+    }
     if (walletAmountApplied > 0) {
       await recordPurchaseCancelled(admin, {
         orderId, userId: user.id, amount: walletAmountApplied, reason: 'mercadopago_preference_failed', holdTransactionId: walletTransactionId,
@@ -296,6 +352,11 @@ export async function POST(request: Request) {
   const preference = await mpRes.json()
   if (!preference.init_point) {
     await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+    if (promoAmountApplied > 0) {
+      await recordPromoPurchaseCancelled(admin, {
+        orderId, userId: user.id, amount: promoAmountApplied, reason: 'mercadopago_preference_failed', holdTransactionId: promoTransactionId,
+      })
+    }
     if (walletAmountApplied > 0) {
       await recordPurchaseCancelled(admin, {
         orderId, userId: user.id, amount: walletAmountApplied, reason: 'mercadopago_preference_failed', holdTransactionId: walletTransactionId,
@@ -307,5 +368,5 @@ export async function POST(request: Request) {
   // Guardar referencia de la preferencia en la orden
   await supabase.from('orders').update({ payment_ref: preference.id }).eq('id', orderId)
 
-  return Response.json({ redirectUrl: preference.init_point, walletAmountApplied })
+  return Response.json({ redirectUrl: preference.init_point, walletAmountApplied, promoAmountApplied })
 }

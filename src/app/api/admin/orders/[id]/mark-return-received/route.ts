@@ -23,7 +23,7 @@ export async function POST(
   const admin = createAdminClient()
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id')
+    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
     .eq('id', id)
     .single()
 
@@ -35,6 +35,7 @@ export async function POST(
   const result = await executeOrderRefund(admin, {
     orderId: order.id, listingId: order.listing_id, buyerId: order.buyer_id, sellerId: order.seller_id,
     paymentRef: order.payment_ref, walletAmountApplied: order.wallet_amount_applied, walletTransactionId: order.wallet_transaction_id,
+    promoAmountApplied: order.promo_amount_applied, promoTransactionId: order.promo_transaction_id,
   }, {
     createdBy: adminUser.id,
     reversalDescription: 'Reverso por devolución — la vendedora recibió la prenda de vuelta',

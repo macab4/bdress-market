@@ -23,6 +23,10 @@ export async function POST(request: Request) {
   const type = body?.type === 'admin_credit' || body?.type === 'admin_debit' ? body.type : null
   const amount = Number(body?.amount)
   const reason = typeof body?.reason === 'string' ? body.reason.trim() : ''
+  // 'promotional' agrega Crédito B-Dress (no transferible) en vez de saldo
+  // real — acción explícitamente distinta a propósito (sección 16 del
+  // encargo de referidos), nunca un default silencioso.
+  const balanceType = body?.balanceType === 'promotional' ? 'promotional' : 'real'
 
   if (!email) return Response.json({ error: 'Falta el email de la usuaria' }, { status: 400 })
   if (!type) return Response.json({ error: 'Tipo de ajuste inválido' }, { status: 400 })
@@ -41,9 +45,10 @@ export async function POST(request: Request) {
     reason,
     idempotencyKey: crypto.randomUUID(),
     createdBy: adminUser.id,
+    balanceType,
   })
 
   if (!result.ok) return Response.json({ error: result.error }, { status: 500 })
-  await sendWalletBalanceChangedEmail({ to: email, name: profile.name, amount: signedAmount, reason })
+  await sendWalletBalanceChangedEmail({ to: email, name: profile.name, amount: signedAmount, reason, balanceType })
   return Response.json({ ok: true })
 }

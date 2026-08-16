@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { WalletAccount, WalletTransaction, Withdrawal } from '@/types'
-import { WALLET_TRANSACTION_TYPE_LABELS as TYPE_LABELS } from '@/lib/wallet'
+import { WALLET_TRANSACTION_TYPE_LABELS as TYPE_LABELS, computeWalletBreakdown } from '@/lib/wallet'
 
 const WITHDRAWAL_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente de revisión',
@@ -24,7 +24,16 @@ function movementAmount(tx: WalletTransaction): number {
     case 'sale_reversal':
       return tx.pending_delta
     case 'withdrawal_completed':
+    case 'marketplace_purchase':
+    case 'promo_purchase_completed':
       return tx.reserved_delta
+    case 'referral_bonus':
+    case 'promo_purchase_hold':
+    case 'promo_purchase_cancelled':
+    case 'promo_purchase_refund':
+    case 'admin_promo_credit':
+    case 'admin_promo_debit':
+      return tx.promo_delta
     default:
       return tx.available_delta
   }
@@ -51,9 +60,8 @@ export default async function WalletPage() {
       .maybeSingle() as unknown as Promise<{ data: Withdrawal | null }>,
   ])
 
-  const available = account?.available_balance ?? 0
-  const pending = account?.pending_balance ?? 0
-  const reserved = account?.reserved_balance ?? 0
+  const breakdown = computeWalletBreakdown(account ?? { available_balance: 0, pending_balance: 0, reserved_balance: 0, promo_balance: 0 })
+  const { transferable: available, promotional: promo, pending, reserved } = breakdown
 
   // reserved_balance es compartido entre retiros en curso (withdrawal_hold)
   // y saldo aplicado a compras aún no confirmadas (marketplace_purchase_hold,
@@ -71,8 +79,29 @@ export default async function WalletPage() {
 
         <div className="bg-black text-white p-6">
           <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Saldo B-Dress</p>
-          <p className="text-3xl font-light">{formatCLP(available)}</p>
-          <div className="flex flex-wrap gap-x-4 mt-2">
+
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[10px] text-gray-400">Saldo de ventas</p>
+              <p className="text-2xl font-light">{formatCLP(available)}</p>
+              <p className="text-[10px] text-gray-400">Transferible</p>
+            </div>
+            {promo > 0 && (
+              <div className="text-right">
+                <p className="text-[10px] text-gray-400">Crédito B-Dress</p>
+                <p className="text-2xl font-light text-[#7fab87]">{formatCLP(promo)}</p>
+                <p className="text-[10px] text-gray-400">Solo para compras</p>
+              </div>
+            )}
+          </div>
+
+          {promo > 0 && (
+            <p className="text-sm font-medium mt-3 pt-3 border-t border-white/10">
+              Total disponible para comprar: {formatCLP(available + promo)}
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-x-4 mt-3">
             {pending > 0 && (
               <p className="text-xs text-gray-400">Pendiente de liberar: {formatCLP(pending)}</p>
             )}
@@ -103,11 +132,19 @@ export default async function WalletPage() {
               Transferir
             </Link>
           )}
+          <p className="text-[10px] text-gray-500 mt-2">
+            Solo el saldo de ventas se puede transferir — el Crédito B-Dress es promocional, no se retira ni se canjea por dinero.
+          </p>
         </div>
 
-        <Link href="/dashboard/wallet/bank-accounts" className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
-          Mis cuentas bancarias
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard/wallet/bank-accounts" className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">
+            Mis cuentas bancarias
+          </Link>
+          <Link href="/dashboard/referrals" className="text-[10px] tracking-widest uppercase text-[#5a7a55] hover:text-black">
+            Invita a una amiga 💚
+          </Link>
+        </div>
 
         <section className="bg-white p-5">
           <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">Tus movimientos</p>

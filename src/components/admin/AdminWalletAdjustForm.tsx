@@ -8,6 +8,7 @@ export default function AdminWalletAdjustForm() {
   const [open, setOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [type, setType] = useState<'admin_credit' | 'admin_debit'>('admin_credit')
+  const [balanceType, setBalanceType] = useState<'real' | 'promotional'>('real')
   const [amount, setAmount] = useState('')
   const [reason, setReason] = useState('')
   const [sending, setSending] = useState(false)
@@ -23,7 +24,7 @@ export default function AdminWalletAdjustForm() {
     const res = await fetch('/api/admin/wallet/adjust', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.trim(), type, amount: Number(amount), reason: reason.trim() }),
+      body: JSON.stringify({ email: email.trim(), type, balanceType, amount: Number(amount), reason: reason.trim() }),
     })
     const data = await res.json().catch(() => ({}))
 
@@ -37,6 +38,7 @@ export default function AdminWalletAdjustForm() {
     setEmail('')
     setAmount('')
     setReason('')
+    setBalanceType('real')
     setSending(false)
     router.refresh()
   }
@@ -84,6 +86,19 @@ export default function AdminWalletAdjustForm() {
           placeholder="Monto CLP"
           className="flex-1 border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-gray-400"
         />
+      </div>
+      <div>
+        <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Tipo de saldo</p>
+        <div className="flex gap-3 text-xs">
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input type="radio" checked={balanceType === 'real'} onChange={() => setBalanceType('real')} />
+            Real (transferible)
+          </label>
+          <label className="flex items-center gap-1.5 cursor-pointer">
+            <input type="radio" checked={balanceType === 'promotional'} onChange={() => setBalanceType('promotional')} />
+            Crédito B-Dress (no transferible)
+          </label>
+        </div>
       </div>
       <textarea
         value={reason}

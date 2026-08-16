@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { leadTimeRange, internationalDelayMessage, INTERNATIONAL_AVAILABILITY_WARNING } from '@/lib/international/content'
-import { SHIP_DEADLINE_BUSINESS_DAYS, CONFIRMED_HOLD_DAYS } from '@/lib/catalog'
+import { SHIP_DEADLINE_BUSINESS_DAYS, CONFIRMED_HOLD_DAYS, REFERRAL_REWARD_AMOUNT } from '@/lib/catalog'
 
 let client: Resend | null = null
 
@@ -819,18 +819,23 @@ export async function sendDeliveryConfirmedEmail({
 // dentro del mismo flujo de checkout que la usuaria ya está viendo en
 // pantalla, avisarle por email además sería ruido.
 export async function sendWalletBalanceChangedEmail({
-  to, name, amount, reason,
-}: { to: string; name: string | null; amount: number; reason: string }) {
+  to, name, amount, reason, balanceType = 'real',
+}: { to: string; name: string | null; amount: number; reason: string; balanceType?: 'real' | 'promotional' }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
   const isCredit = amount > 0
+  const balanceLabel = balanceType === 'promotional' ? 'Crédito B-Dress' : 'Saldo B-Dress'
   await sendEmail({
     to,
-    subject: isCredit ? 'Tu Saldo B-Dress aumentó' : 'Tu Saldo B-Dress cambió',
+    subject: isCredit ? `Tu ${balanceLabel} aumentó` : `Tu ${balanceLabel} cambió`,
     html: emailLayout(isCredit ? 'Saldo acreditado' : 'Ajuste de saldo', `
       <p style="font-size: 14px; color: #444; line-height: 1.6;">
-        Hola ${name ?? ''}, tu Saldo B-Dress ${isCredit ? 'aumentó en' : 'se ajustó en'}
+        Hola ${name ?? ''}, tu ${balanceLabel} ${isCredit ? 'aumentó en' : 'se ajustó en'}
         <strong>${isCredit ? '+' : '-'}$${Math.abs(amount).toLocaleString('es-CL')}</strong>.
       </p>
+      ${balanceType === 'promotional' ? `
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Este crédito es promocional: sirve para comprar en Bdress Market, pero no se puede transferir ni retirar.
+      </p>` : ''}
       <p style="font-size: 13px; color: #888; line-height: 1.6;">
         Motivo: ${reason}.
       </p>
@@ -1016,6 +1021,35 @@ export async function sendReturnLabelReadyEmail({
       </p>
       <p style="font-size: 13px; color: #888; line-height: 1.6;">
         Apenas la vendedora reciba el paquete, te reembolsamos el pago completo.
+      </p>
+    `),
+  })
+}
+
+// La amiga invitada publicó su primera prenda y el bono ya se acreditó
+// (cron/referral-rewards) — deja explícito desde el asunto que es Crédito
+// B-Dress, no plata retirable, para no generar la expectativa equivocada.
+export async function sendReferralBonusEmail({
+  to, name, referredName,
+}: { to: string; name: string | null; referredName: string | null }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to,
+    subject: `Ganaste $${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress 💚`,
+    html: emailLayout('Bono por invitar a una amiga', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, ${referredName ? `<strong>${referredName}</strong>` : 'tu amiga'} ya publicó su primera
+        prenda en Bdress Market — como la invitaste tú, te acreditamos
+        <strong>$${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress</strong>.
+      </p>
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        Este crédito es promocional: sirve para pagar tu próxima compra en Bdress Market, pero no se puede
+        transferir a tu cuenta bancaria ni canjear por dinero.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/dashboard/wallet" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi saldo
+        </a>
       </p>
     `),
   })

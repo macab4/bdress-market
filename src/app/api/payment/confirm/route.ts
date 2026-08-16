@@ -1,7 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout } from '@/lib/email'
 import { BOOST_DURATION_DAYS } from '@/lib/catalog'
-import { recordSalePending, recordPurchaseCompleted, recordPurchaseCancelled, sendWalletAlertEmail } from '@/lib/wallet'
+import {
+  recordSalePending, recordPurchaseCompleted, recordPurchaseCancelled,
+  recordPromoPurchaseCompleted, recordPromoPurchaseCancelled, sendWalletAlertEmail,
+} from '@/lib/wallet'
 import { finalizeOrderPaid } from '@/lib/orderNotifications'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
@@ -73,7 +76,7 @@ async function handleNotification(request: Request) {
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', orderId)
       .eq('status', 'pending_payment')
-      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id')
+      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
       .maybeSingle()
 
     // El saldo pendiente se intenta acreditar SIEMPRE que la orden esté
@@ -85,7 +88,7 @@ async function handleNotification(request: Request) {
     const orderForWallet = updatedOrder ?? (
       await supabase
         .from('orders')
-        .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, wallet_amount_applied, wallet_transaction_id')
+        .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
         .eq('id', orderId)
         .eq('status', 'paid')
         .maybeSingle()
@@ -101,11 +104,18 @@ async function handleNotification(request: Request) {
       })
       if (!pending.ok) await sendWalletAlertEmail({ orderId, reason: pending.error })
 
-      // Pago mixto (fase 3): si la compradora aplicó saldo al momento de
-      // armar la preferencia de Mercado Pago, ese hold se vuelve gasto
-      // definitivo recién ahora que el pago se confirmó de verdad —
-      // idempotente por (order_id, type), un reintento del webhook no
-      // duplica nada.
+      // Pago mixto (fase 3, y ahora también referidos): si la compradora
+      // aplicó saldo y/o Crédito B-Dress al momento de armar la preferencia
+      // de Mercado Pago, esos holds se vuelven gasto definitivo recién
+      // ahora que el pago se confirmó de verdad — idempotente por
+      // (order_id, type), un reintento del webhook no duplica nada.
+      if (orderForWallet.promo_amount_applied > 0) {
+        const promoCompleted = await recordPromoPurchaseCompleted(supabase, {
+          orderId, userId: orderForWallet.buyer_id, amount: orderForWallet.promo_amount_applied,
+          holdTransactionId: orderForWallet.promo_transaction_id,
+        })
+        if (!promoCompleted.ok) await sendWalletAlertEmail({ orderId, reason: promoCompleted.error })
+      }
       if (orderForWallet.wallet_amount_applied > 0) {
         const completed = await recordPurchaseCompleted(supabase, {
           orderId, userId: orderForWallet.buyer_id, amount: orderForWallet.wallet_amount_applied,
@@ -133,18 +143,28 @@ async function handleNotification(request: Request) {
     const supabase = createAdminClient()
     const { data: order } = await supabase
       .from('orders')
-      .select('listing_id, buyer_id, wallet_amount_applied, wallet_transaction_id')
+      .select('listing_id, buyer_id, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
       .eq('id', orderId)
       .eq('status', 'pending_payment')
       .maybeSingle()
 
     if (order) {
-      // Si la compradora había aplicado saldo B-Dress a esta orden, el
-      // rechazo de la tarjeta no debe dejarlo atrapado hasta la próxima
-      // corrida del cron (una vez al día) — se libera de inmediato, igual
-      // que cuando falla la creación de la preferencia en payment/create.
-      if (order.wallet_amount_applied > 0) {
+      // Si la compradora había aplicado saldo B-Dress y/o Crédito B-Dress a
+      // esta orden, el rechazo de la tarjeta no debe dejarlos atrapados
+      // hasta la próxima corrida del cron (una vez al día) — se liberan de
+      // inmediato, igual que cuando falla la creación de la preferencia en
+      // payment/create.
+      if (order.wallet_amount_applied > 0 || order.promo_amount_applied > 0) {
         await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
+      }
+      if (order.promo_amount_applied > 0) {
+        const promoCancelled = await recordPromoPurchaseCancelled(supabase, {
+          orderId, userId: order.buyer_id, amount: order.promo_amount_applied,
+          reason: 'mercadopago_payment_rejected', holdTransactionId: order.promo_transaction_id,
+        })
+        if (!promoCancelled.ok) await sendWalletAlertEmail({ orderId, reason: promoCancelled.error })
+      }
+      if (order.wallet_amount_applied > 0) {
         const cancelled = await recordPurchaseCancelled(supabase, {
           orderId, userId: order.buyer_id, amount: order.wallet_amount_applied,
           reason: 'mercadopago_payment_rejected', holdTransactionId: order.wallet_transaction_id,

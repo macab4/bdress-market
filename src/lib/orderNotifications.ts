@@ -4,7 +4,7 @@ import {
   sendOrderRefundedEmail,
 } from '@/lib/email'
 import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
-import { recordSaleReversal, recordPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
+import { recordSaleReversal, recordPurchaseRefund, recordPromoPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
@@ -158,6 +158,7 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
 export async function executeOrderRefund(admin: AdminClient, order: {
   orderId: string; listingId: string; buyerId: string; sellerId: string
   paymentRef: string | null; walletAmountApplied: number; walletTransactionId: string | null
+  promoAmountApplied?: number; promoTransactionId?: string | null
 }, opts: { createdBy: string; reversalDescription: string; walletRefundReason: string; returnReceivedAt?: string }): Promise<{ ok: true } | { ok: false; error: string }> {
   if (order.paymentRef) {
     const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.paymentRef}/refunds`, {
@@ -191,6 +192,18 @@ export async function executeOrderRefund(admin: AdminClient, order: {
       reason: opts.walletRefundReason, holdTransactionId: order.walletTransactionId, createdBy: opts.createdBy,
     })
     if (!purchaseRefund.ok) await sendWalletAlertEmail({ orderId: order.orderId, reason: purchaseRefund.error })
+  }
+
+  // El Crédito B-Dress vuelve SIEMPRE como Crédito B-Dress, nunca como
+  // saldo transferible — recordPromoPurchaseRefund escribe a promo_delta,
+  // no a available_delta, por construcción (ver sección 13 del encargo de
+  // referidos: un refund jamás puede convertir promocional en real).
+  if ((order.promoAmountApplied ?? 0) > 0) {
+    const promoRefund = await recordPromoPurchaseRefund(admin, {
+      orderId: order.orderId, userId: order.buyerId, amount: order.promoAmountApplied!,
+      reason: opts.walletRefundReason, holdTransactionId: order.promoTransactionId, createdBy: opts.createdBy,
+    })
+    if (!promoRefund.ok) await sendWalletAlertEmail({ orderId: order.orderId, reason: promoRefund.error })
   }
 
   const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([

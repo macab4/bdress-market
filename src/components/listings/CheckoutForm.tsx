@@ -13,6 +13,7 @@ interface CheckoutFormProps {
   listingId: string
   price: number
   walletAvailableBalance?: number
+  promoBalance?: number
   isInternational?: boolean
   internationalLeadTimeMinDays?: number | null
   internationalLeadTimeMaxDays?: number | null
@@ -26,7 +27,7 @@ interface CheckoutFormProps {
 }
 
 export default function CheckoutForm({
-  listingId, price, walletAvailableBalance = 0, isInternational, internationalLeadTimeMinDays, internationalLeadTimeMaxDays, initialValues,
+  listingId, price, walletAvailableBalance = 0, promoBalance = 0, isInternational, internationalLeadTimeMinDays, internationalLeadTimeMaxDays, initialValues,
 }: CheckoutFormProps) {
   const [form, setForm] = useState({
     shipping_name: initialValues?.shipping_name ?? '',
@@ -46,8 +47,14 @@ export default function CheckoutForm({
   const quoteLoading = form.shipping_comuna !== '' && !quote && !quoteError
   const commission = buyerProtectionFee(price)
   const total = price + commission + (quote?.cost ?? 0)
-  const walletAmountApplied = useWallet ? Math.min(walletAvailableBalance, total) : 0
-  const amountDue = total - walletAmountApplied
+  // El Crédito B-Dress (promocional) se aplica siempre que exista, sin
+  // checkbox — es el saldo más restringido (solo sirve para comprar, nunca
+  // se puede retirar), así que conviene gastarlo primero, antes que el
+  // saldo de ventas (que sí es opt-in, porque esa plata la compradora
+  // podría preferir dejarla para transferir).
+  const promoAmountApplied = Math.min(promoBalance, total)
+  const walletAmountApplied = useWallet ? Math.min(walletAvailableBalance, total - promoAmountApplied) : 0
+  const amountDue = total - promoAmountApplied - walletAmountApplied
 
   function set(field: keyof typeof form, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -109,13 +116,15 @@ export default function CheckoutForm({
         return
       }
       // El servidor nunca confía en el monto de saldo pedido — si tu saldo
-      // disponible cambió justo antes de confirmar (ej. otra compra en
-      // paralelo), puede aplicar menos de lo que pediste acá. Se avisa antes
-      // de redirigir en vez de sorprenderte con un cobro distinto en
-      // Mercado Pago.
-      if (walletAmountApplied > 0 && data.walletAmountApplied !== walletAmountApplied) {
+      // (de ventas o Crédito B-Dress) cambió justo antes de confirmar (ej.
+      // otra compra en paralelo), puede aplicar menos de lo que se calculó
+      // acá. Se avisa antes de redirigir en vez de sorprenderte con un
+      // cobro distinto en Mercado Pago.
+      const expectedCovered = promoAmountApplied + walletAmountApplied
+      const actualCovered = (data.promoAmountApplied ?? 0) + (data.walletAmountApplied ?? 0)
+      if (expectedCovered > 0 && actualCovered !== expectedCovered) {
         const proceed = confirm(
-          `Tu saldo disponible cambió: se aplicaron $${(data.walletAmountApplied ?? 0).toLocaleString('es-CL')} en vez de los $${walletAmountApplied.toLocaleString('es-CL')} solicitados. ¿Continuar de todas formas?`
+          `Tu saldo disponible cambió: se aplicaron $${actualCovered.toLocaleString('es-CL')} en vez de los $${expectedCovered.toLocaleString('es-CL')} calculados. ¿Continuar de todas formas?`
         )
         if (!proceed) {
           setLoading(false)
@@ -197,23 +206,35 @@ export default function CheckoutForm({
               quote ? `$${quote.cost.toLocaleString('es-CL')}` : '—'}
           </span>
         </div>
-        <div className={`flex justify-between border-t border-gray-200 pt-1 mt-1 ${walletAmountApplied > 0 ? '' : 'font-medium text-[#5a7a55]'}`}>
+        <div className={`flex justify-between border-t border-gray-200 pt-1 mt-1 ${(promoAmountApplied > 0 || walletAmountApplied > 0) ? '' : 'font-medium text-[#5a7a55]'}`}>
           <span>Total</span>
           <span>${total.toLocaleString('es-CL')}</span>
         </div>
+        {promoAmountApplied > 0 && (
+          <div className="flex justify-between text-[#5a7a55]">
+            <span>Crédito B-Dress aplicado</span>
+            <span>-${promoAmountApplied.toLocaleString('es-CL')}</span>
+          </div>
+        )}
         {walletAmountApplied > 0 && (
-          <>
-            <div className="flex justify-between text-[#5a7a55]">
-              <span>Saldo B-Dress aplicado</span>
-              <span>-${walletAmountApplied.toLocaleString('es-CL')}</span>
-            </div>
-            <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1">
-              <span>{amountDue === 0 ? 'Total a pagar' : 'A pagar con Mercado Pago'}</span>
-              <span>${amountDue.toLocaleString('es-CL')}</span>
-            </div>
-          </>
+          <div className="flex justify-between text-[#5a7a55]">
+            <span>Saldo B-Dress aplicado</span>
+            <span>-${walletAmountApplied.toLocaleString('es-CL')}</span>
+          </div>
+        )}
+        {(promoAmountApplied > 0 || walletAmountApplied > 0) && (
+          <div className="flex justify-between font-medium text-[#5a7a55] border-t border-gray-200 pt-1 mt-1">
+            <span>{amountDue === 0 ? 'Total a pagar' : 'A pagar con Mercado Pago'}</span>
+            <span>${amountDue.toLocaleString('es-CL')}</span>
+          </div>
         )}
       </div>
+
+      {promoAmountApplied > 0 && (
+        <p className="text-[10px] text-gray-400 -mt-2">
+          Tu Crédito B-Dress (${promoBalance.toLocaleString('es-CL')} disponible) se aplica automáticamente — es promocional, no transferible.
+        </p>
+      )}
 
       {walletAvailableBalance > 0 && (
         <label className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 p-3 cursor-pointer">

@@ -19,8 +19,8 @@ export default async function AdminWalletPage() {
   await requireAdminUser()
   const admin = createAdminClient()
 
-  const [{ data: accounts }, { data: movements }, { data: pendingHolds }] = await Promise.all([
-    admin.from('wallet_accounts').select('available_balance, pending_balance, reserved_balance'),
+  const [{ data: accounts }, { data: movements }, { data: pendingHolds }, { data: pendingPromoHolds }] = await Promise.all([
+    admin.from('wallet_accounts').select('available_balance, pending_balance, reserved_balance, promo_balance'),
     admin
       .from('wallet_transactions')
       .select('*, user:profiles!wallet_transactions_user_id_fkey(name, email), listing:listings(title)')
@@ -38,6 +38,15 @@ export default async function AdminWalletPage() {
       .order('created_at', { ascending: false }) as unknown as Promise<{
         data: { id: string; wallet_amount_applied: number; status: string; created_at: string; buyer: { name: string; email: string } | null; listing: { title: string } | null }[] | null
       }>,
+    // Mismo criterio, para holds de Crédito B-Dress.
+    admin
+      .from('orders')
+      .select('id, promo_amount_applied, status, created_at, buyer:profiles!orders_buyer_id_fkey(name, email), listing:listings(title)')
+      .gt('promo_amount_applied', 0)
+      .neq('status', 'paid')
+      .order('created_at', { ascending: false }) as unknown as Promise<{
+        data: { id: string; promo_amount_applied: number; status: string; created_at: string; buyer: { name: string; email: string } | null; listing: { title: string } | null }[] | null
+      }>,
   ])
 
   const totals = (accounts ?? []).reduce(
@@ -45,8 +54,9 @@ export default async function AdminWalletPage() {
       available: acc.available + a.available_balance,
       pending: acc.pending + a.pending_balance,
       reserved: acc.reserved + a.reserved_balance,
+      promo: acc.promo + a.promo_balance,
     }),
-    { available: 0, pending: 0, reserved: 0 }
+    { available: 0, pending: 0, reserved: 0, promo: 0 }
   )
 
   return (
@@ -59,10 +69,16 @@ export default async function AdminWalletPage() {
 
         <WalletSubNav active="movimientos" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div className="bg-white p-5">
             <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Disponible (todas)</p>
             <p className="text-xl font-light">{formatCLP(totals.available)}</p>
+            <p className="text-[9px] text-gray-400 mt-0.5">Transferible</p>
+          </div>
+          <div className="bg-white p-5">
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Crédito B-Dress (todas)</p>
+            <p className="text-xl font-light text-[#7fab87]">{formatCLP(totals.promo)}</p>
+            <p className="text-[9px] text-gray-400 mt-0.5">No transferible</p>
           </div>
           <div className="bg-white p-5">
             <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Pendiente de liberar</p>
@@ -118,6 +134,46 @@ export default async function AdminWalletPage() {
           </div>
         )}
 
+        {pendingPromoHolds && pendingPromoHolds.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
+              Holds de Crédito B-Dress pendientes de liberar ({pendingPromoHolds.length})
+            </h2>
+            <div className="bg-white overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 text-[10px] tracking-widest uppercase text-gray-400">
+                    <th className="text-left px-4 py-3">Compradora</th>
+                    <th className="text-left px-4 py-3">Prenda</th>
+                    <th className="text-right px-4 py-3">Monto reservado</th>
+                    <th className="text-left px-4 py-3">Estado orden</th>
+                    <th className="text-left px-4 py-3">Desde</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingPromoHolds.map(order => (
+                    <tr key={order.id} className="border-b border-gray-50 last:border-0">
+                      <td className="px-4 py-3">
+                        <p className="truncate">{order.buyer?.name ?? '—'}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{order.buyer?.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500 truncate max-w-[220px]">{order.listing?.title ?? '—'}</td>
+                      <td className="px-4 py-3 text-right text-xs tabular-nums">{formatCLP(order.promo_amount_applied)}</td>
+                      <td className="px-4 py-3 text-xs text-gray-500">{order.status}</td>
+                      <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
+                        {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2">
+              Se liberan automáticamente en la próxima corrida del cron diario si la orden no llega a pagarse.
+            </p>
+          </div>
+        )}
+
         <h2 className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">Movimientos recientes</h2>
         <div className="bg-white overflow-x-auto">
           <table className="w-full text-sm">
@@ -128,6 +184,7 @@ export default async function AdminWalletPage() {
                 <th className="text-left px-4 py-3">Prenda / motivo</th>
                 <th className="text-right px-4 py-3">Pendiente</th>
                 <th className="text-right px-4 py-3">Disponible</th>
+                <th className="text-right px-4 py-3">Crédito B-Dress</th>
                 <th className="text-left px-4 py-3">Fecha</th>
               </tr>
             </thead>
@@ -146,6 +203,9 @@ export default async function AdminWalletPage() {
                   <td className="px-4 py-3 text-right text-xs tabular-nums">
                     {tx.available_delta !== 0 ? `${tx.available_delta > 0 ? '+' : ''}${formatCLP(tx.available_delta)}` : '—'}
                   </td>
+                  <td className="px-4 py-3 text-right text-xs tabular-nums text-[#5a7a55]">
+                    {tx.promo_delta !== 0 ? `${tx.promo_delta > 0 ? '+' : ''}${formatCLP(tx.promo_delta)}` : '—'}
+                  </td>
                   <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                     {new Date(tx.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
@@ -153,7 +213,7 @@ export default async function AdminWalletPage() {
               ))}
               {(!movements || movements.length === 0) && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-gray-400 text-sm">Todavía no hay movimientos.</td>
+                  <td colSpan={7} className="px-4 py-10 text-center text-gray-400 text-sm">Todavía no hay movimientos.</td>
                 </tr>
               )}
             </tbody>

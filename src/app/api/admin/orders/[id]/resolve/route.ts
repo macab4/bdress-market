@@ -30,7 +30,7 @@ export async function POST(
   const admin = createAdminClient()
   const { data: order } = await admin
     .from('orders')
-    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id, amount, commission, processing_fee')
+    .select('id, listing_id, buyer_id, seller_id, status, payment_ref, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id, amount, commission, processing_fee')
     .eq('id', id)
     .single()
 
@@ -89,16 +89,17 @@ export async function POST(
   // api/admin/orders/[id]/approve-return) — ese reembolso queda retenido
   // hasta que la prenda vuelva a manos de la vendedora.
   //
-  // Con pago mixto (fase 3) una orden puede no tener payment_ref (se pagó
-  // 100% con saldo) — solo rechazar si NO hay nada que reembolsar por
-  // ningún canal.
-  if (!order.payment_ref && order.wallet_amount_applied === 0) {
+  // Con pago mixto (fase 3, y ahora también Crédito B-Dress) una orden
+  // puede no tener payment_ref (se pagó 100% con saldo/crédito) — solo
+  // rechazar si NO hay nada que reembolsar por ningún canal.
+  if (!order.payment_ref && order.wallet_amount_applied === 0 && order.promo_amount_applied === 0) {
     return Response.json({ error: 'Esta orden no tiene ningún pago asociado para reembolsar' }, { status: 409 })
   }
 
   const result = await executeOrderRefund(admin, {
     orderId: order.id, listingId: order.listing_id, buyerId: order.buyer_id, sellerId: order.seller_id,
     paymentRef: order.payment_ref, walletAmountApplied: order.wallet_amount_applied, walletTransactionId: order.wallet_transaction_id,
+    promoAmountApplied: order.promo_amount_applied, promoTransactionId: order.promo_transaction_id,
   }, {
     createdBy: adminUser.id,
     reversalDescription: 'Reverso por reembolso de la compradora',

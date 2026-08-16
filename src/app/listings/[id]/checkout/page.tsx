@@ -32,7 +32,7 @@ export default async function CheckoutPage({
       .eq('status', 'accepted')
       .gt('accepted_expires_at', new Date().toISOString())
       .maybeSingle(),
-    supabase.from('wallet_accounts').select('available_balance').eq('user_id', user.id).maybeSingle(),
+    supabase.from('wallet_accounts').select('available_balance, promo_balance').eq('user_id', user.id).maybeSingle(),
   ])
 
   const price = acceptedOffer?.offered_price ?? listing.price
@@ -77,6 +77,7 @@ export default async function CheckoutPage({
           listingId={listing.id}
           price={price}
           walletAvailableBalance={walletAccount?.available_balance ?? 0}
+          promoBalance={walletAccount?.promo_balance ?? 0}
           isInternational={listing.source_type === 'international_on_demand'}
           internationalLeadTimeMinDays={listing.international_lead_time_min_days}
           internationalLeadTimeMaxDays={listing.international_lead_time_max_days}

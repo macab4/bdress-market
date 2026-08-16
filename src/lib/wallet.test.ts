@@ -13,8 +13,14 @@ import {
   recordPurchaseCompleted,
   recordPurchaseCancelled,
   recordPurchaseRefund,
+  recordPromoPurchaseHold,
+  recordPromoPurchaseCompleted,
+  recordPromoPurchaseCancelled,
+  recordPromoPurchaseRefund,
+  recordReferralBonus,
   computeWalletApplication,
   prorateMercadoPagoItems,
+  computeWalletBreakdown,
 } from './wallet'
 
 // Cliente admin fake mínimo — solo implementa lo que wallet.ts realmente usa
@@ -381,5 +387,220 @@ describe('recordAdminAdjustment', () => {
     expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
       p_available_delta: -3000,
     }))
+  })
+})
+
+// ==================== Crédito B-Dress (programa de referidos) ====================
+// Garantía central que estos tests verifican una y otra vez: el crédito
+// promocional SIEMPRE mueve p_promo_delta, NUNCA p_available_delta — esa es
+// la separación real (no una convención de UI) que impide que se pueda
+// retirar por error (ver sección 11 del encargo de referidos).
+
+describe('recordPromoPurchaseHold', () => {
+  it('mueve el monto de promo_balance a reservado — nunca toca available_delta', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_ph1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordPromoPurchaseHold(admin, { orderId: 'order_1', userId: 'buyer_1', amount: 5000 })
+
+    expect(result).toEqual({ ok: true, skipped: false, transactionId: 'tx_ph1' })
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_user_id: 'buyer_1',
+      p_type: 'promo_purchase_hold',
+      p_available_delta: 0,
+      p_promo_delta: -5000,
+      p_reserved_delta: 5000,
+      p_order_id: 'order_1',
+    }))
+  })
+})
+
+describe('recordPromoPurchaseCompleted', () => {
+  it('mueve reservado a cero sin devolver nada a available_balance ni a promo_balance', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_pc1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordPromoPurchaseCompleted(admin, { orderId: 'order_1', userId: 'buyer_1', amount: 5000, holdTransactionId: 'tx_ph1' })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'promo_purchase_completed', p_available_delta: 0, p_promo_delta: 0, p_reserved_delta: -5000,
+      p_related_transaction_id: 'tx_ph1',
+    }))
+  })
+})
+
+describe('recordPromoPurchaseCancelled', () => {
+  it('devuelve el monto reservado a promo_balance — nunca a available_balance', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_pcx1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordPromoPurchaseCancelled(admin, {
+      orderId: 'order_1', userId: 'buyer_1', amount: 5000, reason: 'order_abandoned_or_reassigned', holdTransactionId: 'tx_ph1',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'promo_purchase_cancelled', p_available_delta: 0, p_promo_delta: 5000, p_reserved_delta: -5000,
+    }))
+  })
+})
+
+describe('recordPromoPurchaseRefund', () => {
+  it('un refund de Crédito B-Dress vuelve como Crédito B-Dress, jamás como saldo transferible', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_pr1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordPromoPurchaseRefund(admin, {
+      orderId: 'order_1', userId: 'buyer_1', amount: 5000, reason: 'admin_refund_after_return', holdTransactionId: 'tx_ph1', createdBy: 'admin_1',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'promo_purchase_refund', p_available_delta: 0, p_promo_delta: 5000, p_reserved_delta: 0,
+    }))
+  })
+})
+
+describe('recordReferralBonus', () => {
+  it('acredita el bono como promo_delta, con idempotency_key por referral', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_ref1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordReferralBonus(admin, { referralId: 'ref_1', referrerId: 'referrer_1', amount: 5000 })
+
+    expect(result).toEqual({ ok: true, skipped: false, transactionId: 'tx_ref1' })
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_user_id: 'referrer_1',
+      p_type: 'referral_bonus',
+      p_available_delta: 0,
+      p_promo_delta: 5000,
+      p_idempotency_key: 'referral_bonus:ref_1',
+    }))
+  })
+
+  it('evento duplicado (ej. cron reprocesa la misma fila) NO acredita el bono dos veces', async () => {
+    // inserted:false — el unique index de idempotency_key ya tenía esta fila
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: null, account_id: 'acc_1', inserted: false }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordReferralBonus(admin, { referralId: 'ref_1', referrerId: 'referrer_1', amount: 5000 })
+
+    expect(result).toEqual({ ok: true, skipped: true, transactionId: undefined })
+  })
+})
+
+describe('recordAdminAdjustment — distingue saldo real de Crédito B-Dress', () => {
+  it('balanceType "real" (default) mueve available_delta, tipo admin_credit', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_a1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordAdminAdjustment(admin, {
+      userId: 'user_1', type: 'admin_credit', amount: 5000, reason: 'Compensación',
+      idempotencyKey: 'key-3', createdBy: 'admin_1',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'admin_credit', p_available_delta: 5000, p_promo_delta: 0,
+    }))
+  })
+
+  it('balanceType "promotional" mueve promo_delta, tipo admin_promo_credit — nunca available_delta', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_a2', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordAdminAdjustment(admin, {
+      userId: 'user_1', type: 'admin_credit', amount: 5000, reason: 'Bono de bienvenida',
+      idempotencyKey: 'key-4', createdBy: 'admin_1', balanceType: 'promotional',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'admin_promo_credit', p_available_delta: 0, p_promo_delta: 5000,
+    }))
+  })
+
+  it('balanceType "promotional" + admin_debit mueve promo_delta negativo, tipo admin_promo_debit', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_a3', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordAdminAdjustment(admin, {
+      userId: 'user_1', type: 'admin_debit', amount: 5000, reason: 'Corrección de un bono mal acreditado',
+      idempotencyKey: 'key-5', createdBy: 'admin_1', balanceType: 'promotional',
+    })
+
+    expect(rpc).toHaveBeenCalledWith('record_wallet_transaction', expect.objectContaining({
+      p_type: 'admin_promo_debit', p_available_delta: 0, p_promo_delta: -5000,
+    }))
+  })
+})
+
+describe('recordWithdrawalHold — nunca puede retirar Crédito B-Dress', () => {
+  it('el hold de retiro solo mueve available_delta, nunca promo_delta — aunque exista saldo promocional', async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: [{ transaction_id: 'tx_w1', account_id: 'acc_1', inserted: true }], error: null })
+    const admin = makeAdmin({ rpc })
+
+    await recordWithdrawalHold(admin, { withdrawalId: 'w_1', userId: 'seller_1', amount: 60000 })
+
+    const call = rpc.mock.calls[0][1] as Record<string, unknown>
+    expect(call.p_available_delta).toBe(-60000)
+    // La garantía real: este RPC nunca manda p_promo_delta con un valor
+    // distinto de 0/undefined — no hay ningún camino de código que mueva
+    // promo_balance desde un retiro.
+    expect(call.p_promo_delta ?? 0).toBe(0)
+  })
+
+  it('si el saldo disponible real no alcanza, el check de la base de datos rechaza el retiro aunque promo_balance sea alto', async () => {
+    // Simula lo que hace wallet_accounts_available_nonneg: el RPC solo mira
+    // available_balance, nunca considera promo_balance como si fuera parte
+    // del mismo pozo — por eso este retiro falla aunque la usuaria tenga
+    // Crédito B-Dress de sobra.
+    const rpc = vi.fn().mockResolvedValue({
+      data: null,
+      error: { message: 'new row for relation "wallet_accounts" violates check constraint "wallet_accounts_available_nonneg"' },
+    })
+    const admin = makeAdmin({ rpc })
+
+    const result = await recordWithdrawalHold(admin, { withdrawalId: 'w_2', userId: 'seller_1', amount: 999999 })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toMatch(/available_nonneg/)
+  })
+})
+
+describe('computeWalletBreakdown', () => {
+  it('separa transferible, promocional, pendiente y reservado — y suma el total disponible para comprar', () => {
+    const breakdown = computeWalletBreakdown({
+      available_balance: 85000, promo_balance: 10000, pending_balance: 20000, reserved_balance: 0,
+    })
+
+    expect(breakdown).toEqual({
+      transferable: 85000, promotional: 10000, pending: 20000, reserved: 0, totalForPurchases: 95000,
+    })
+  })
+})
+
+describe('checkout con crédito promocional + saldo de ventas + Mercado Pago combinados', () => {
+  it('reproduce el ejemplo del encargo: $50.000 de compra, $5.000 de crédito, $10.000 de saldo, $35.000 a Mercado Pago', () => {
+    // El crédito promocional se aplica PRIMERO (es el saldo más
+    // restringido) usando computeWalletApplication con el total completo
+    // como techo; el saldo de ventas se aplica después, con el REMANENTE
+    // después del crédito como nuevo techo — así es como lo hace
+    // payment/create/route.ts.
+    const total = 50000
+    const promoAmountApplied = computeWalletApplication({ totalAmount: total, availableBalance: 5000, requestedAmount: 5000 })
+    const walletAmountApplied = computeWalletApplication({
+      totalAmount: total - promoAmountApplied, availableBalance: 10000, requestedAmount: 10000,
+    })
+    const remaining = total - promoAmountApplied - walletAmountApplied
+
+    expect(promoAmountApplied).toBe(5000)
+    expect(walletAmountApplied).toBe(10000)
+    expect(remaining).toBe(35000)
+
+    // Lo que efectivamente se le cobra a Mercado Pago tiene que cuadrar con
+    // ese remanente — prorateMercadoPagoItems no distingue de qué bucket
+    // vino cada peso ya cubierto, solo cuánto en total.
+    const items = prorateMercadoPagoItems({
+      price: 40000, commission: 5000, shippingCost: 5000, walletAmountApplied: promoAmountApplied + walletAmountApplied,
+    })
+    const mpSum = items.reduce((acc, item) => acc + item.unitPrice, 0)
+    expect(mpSum).toBe(remaining)
   })
 })

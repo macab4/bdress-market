@@ -19,6 +19,29 @@ export type WalletTransactionType =
   | 'marketplace_purchase' | 'marketplace_purchase_hold'
   | 'marketplace_purchase_cancelled' | 'marketplace_purchase_refund'
   | 'giftcard_redemption' | 'admin_credit' | 'admin_debit'
+  | 'referral_bonus'
+  | 'promo_purchase_hold' | 'promo_purchase_completed'
+  | 'promo_purchase_cancelled' | 'promo_purchase_refund'
+  | 'admin_promo_credit' | 'admin_promo_debit'
+
+// Referidos — ver src/lib/referrals.ts. referred_user_id es unique (una
+// referida solo puede tener un referrer). El bono (Crédito B-Dress,
+// promocional — nunca transferible) se acredita vía cron/referral-rewards,
+// no en el momento de calificar.
+export type ReferralStatus = 'registered' | 'qualified' | 'rewarded' | 'rejected'
+export interface Referral {
+  id: string
+  referrer_user_id: string
+  referred_user_id: string
+  referral_code: string
+  status: ReferralStatus
+  qualified_at: string | null
+  rewarded_at: string | null
+  reward_transaction_id: string | null
+  created_at: string
+  referred?: { name: string; email: string; created_at: string }
+  referrer?: { name: string; email: string }
+}
 
 // Retiros — ver src/lib/wallet.ts (recordWithdrawalHold/Completed/Cancelled)
 // y src/lib/bankAccounts.ts.
@@ -46,6 +69,7 @@ export interface Profile {
   phone: string | null
   address: string | null
   comuna: string | null
+  referral_code: string | null
   created_at: string
 }
 
@@ -171,6 +195,10 @@ export interface Order {
   return_label_tracking_number: string | null
   return_label_uploaded_at: string | null
   return_received_at: string | null
+  wallet_amount_applied: number
+  wallet_transaction_id: string | null
+  promo_amount_applied: number
+  promo_transaction_id: string | null
   last_ship_reminder_sent_at: string | null
   paid_at: string | null
   shipped_at: string | null
@@ -195,6 +223,7 @@ export interface WalletAccount {
   available_balance: number
   pending_balance: number
   reserved_balance: number
+  promo_balance: number
   created_at: string
   updated_at: string
 }
@@ -207,6 +236,7 @@ export interface WalletTransaction {
   pending_delta: number
   available_delta: number
   reserved_delta: number
+  promo_delta: number
   order_id: string | null
   listing_id: string | null
   related_transaction_id: string | null

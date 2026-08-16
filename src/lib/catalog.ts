@@ -502,6 +502,16 @@ export function paymentProcessingFee(price: number): number {
 // grande. No bloquea gastar ese saldo en una compra, solo transferirlo.
 export const MIN_WITHDRAWAL_AMOUNT = 5000
 
+// Programa de referidos — ver src/lib/referrals.ts y cron/referral-rewards.
+// Centralizado acá a propósito para no repetir estos números en cada
+// archivo que los usa (backend, emails, UI, admin).
+export const REFERRAL_REWARD_AMOUNT = 5000
+export const REFERRAL_MONTHLY_LIMIT = 5
+// Placeholder para una futura promo de doble incentivo (sección 18/19 del
+// encargo) — hoy no tiene ningún efecto, nadie lo lee todavía. Se deja
+// declarado para no tener que rediseñar el esquema cuando se active.
+export const REFERRAL_REWARD_NEW_USER = false
+
 // Reserva de pago: si una orden queda pending_payment más de este tiempo sin
 // completarse, el cron expire-pending-orders la cancela y libera el listing
 // para que otra compradora pueda intentarlo (ver create_or_reuse_pending_order
@@ -569,6 +579,13 @@ export const ORDER_STATUS_CONFIG: Record<string, { label: string; color: string 
   disputed:        { label: 'En disputa',     color: 'bg-red-50 text-red-600' },
   cancelled:       { label: 'Cancelado',      color: 'bg-gray-100 text-gray-400' },
   return_pending:  { label: 'Devolución en curso', color: 'bg-amber-50 text-amber-600' },
+}
+
+export const REFERRAL_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  registered: { label: 'Registrada', color: 'bg-gray-100 text-gray-500' },
+  qualified:  { label: 'Publicó su primera prenda', color: 'bg-blue-50 text-blue-600' },
+  rewarded:   { label: 'Acreditado', color: 'bg-[#7fab87]/10 text-[#5a7a55]' },
+  rejected:   { label: 'Rechazado', color: 'bg-red-50 text-red-600' },
 }
 
 // Renovar — gratis, mueve la prenda al tope de "Más recientes" actualizando

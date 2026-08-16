@@ -22,6 +22,13 @@ export const WALLET_TRANSACTION_TYPE_LABELS: Record<WalletTransactionType, strin
   giftcard_redemption: 'Gift Card',
   admin_credit: 'Ajuste — crédito',
   admin_debit: 'Ajuste — débito',
+  referral_bonus: 'Bono por invitar a una amiga',
+  promo_purchase_hold: 'Crédito B-Dress reservado para una compra',
+  promo_purchase_completed: 'Compra pagada con Crédito B-Dress',
+  promo_purchase_cancelled: 'Reserva de Crédito B-Dress liberada',
+  promo_purchase_refund: 'Reembolso a Crédito B-Dress',
+  admin_promo_credit: 'Ajuste — Crédito B-Dress',
+  admin_promo_debit: 'Ajuste — Crédito B-Dress (débito)',
 }
 
 // Monto neto que le corresponde a la vendedora por una orden — usa las
@@ -47,20 +54,26 @@ async function callRecordTransaction(admin: AdminClient, args: Record<string, un
   return { ok: true, skipped: !row?.inserted, transactionId: row?.transaction_id ?? undefined }
 }
 
-// Forma común a recordWithdrawalHold y recordPurchaseHold: comprometer
-// saldo de inmediato, disponible → reservado, atómicamente (si el check
-// available_balance >= 0 falla por una carrera, el RPC devuelve error y el
-// llamador nunca llega a persistir el efecto secundario — fila `withdrawals`
-// o `orders.wallet_amount_applied`, según el caso).
-async function moveAvailableToReserved(admin: AdminClient, args: {
-  userId: string; type: WalletTransactionType; amount: number
+// Forma común a recordWithdrawalHold, recordPurchaseHold y
+// recordPromoPurchaseHold: comprometer saldo de inmediato, moviéndolo de un
+// bucket "gastable" (disponible o promocional) a reservado, atómicamente —
+// si el check de no-negativo del bucket de origen falla por una carrera, el
+// RPC devuelve error y el llamador nunca llega a persistir el efecto
+// secundario (fila `withdrawals` u `orders.wallet_amount_applied`/
+// `promo_amount_applied`, según el caso). `bucket` decide si el delta de
+// salida es available_delta o promo_delta — reserved_delta es siempre el
+// mismo bucket compartido (ver comentario de reserved_balance en fase 3),
+// nunca se mezclan disponible y promocional entre sí.
+async function moveToReserved(admin: AdminClient, args: {
+  userId: string; type: WalletTransactionType; amount: number; bucket: 'available' | 'promo'
   orderId?: string; description: string; metadata?: Record<string, unknown>; idempotencyKey?: string
 }): Promise<RecordResult> {
   return callRecordTransaction(admin, {
     p_user_id: args.userId,
     p_type: args.type,
     p_pending_delta: 0,
-    p_available_delta: -args.amount,
+    p_available_delta: args.bucket === 'available' ? -args.amount : 0,
+    p_promo_delta: args.bucket === 'promo' ? -args.amount : 0,
     p_reserved_delta: args.amount,
     p_order_id: args.orderId,
     p_description: args.description,
@@ -69,12 +82,15 @@ async function moveAvailableToReserved(admin: AdminClient, args: {
   })
 }
 
-// Forma común a completar/cancelar tanto un retiro como una compra con
-// saldo: resuelve lo reservado, ya sea gastándolo definitivamente
-// (returnToAvailable: false) o devolviéndolo a disponible
-// (returnToAvailable: true).
-async function releaseReserved(admin: AdminClient, args: {
-  userId: string; type: WalletTransactionType; amount: number; returnToAvailable: boolean
+// Forma común a completar/cancelar un retiro o una compra con saldo
+// (disponible o promocional): resuelve lo reservado, ya sea gastándolo
+// definitivamente (returnTo: null) o devolviéndolo a su bucket de origen
+// (returnTo: 'available' | 'promo') — SIEMPRE al mismo bucket del que salió,
+// nunca al otro (esa es la garantía real de que un reembolso de Crédito
+// B-Dress no puede terminar como saldo transferible por error, ver sección
+// 13 del encargo de referidos).
+async function releaseFromReserved(admin: AdminClient, args: {
+  userId: string; type: WalletTransactionType; amount: number; returnTo: 'available' | 'promo' | null
   orderId?: string; description: string; metadata?: Record<string, unknown>
   idempotencyKey?: string; relatedTransactionId?: string | null; createdBy?: string | null
 }): Promise<RecordResult> {
@@ -82,7 +98,8 @@ async function releaseReserved(admin: AdminClient, args: {
     p_user_id: args.userId,
     p_type: args.type,
     p_pending_delta: 0,
-    p_available_delta: args.returnToAvailable ? args.amount : 0,
+    p_available_delta: args.returnTo === 'available' ? args.amount : 0,
+    p_promo_delta: args.returnTo === 'promo' ? args.amount : 0,
     p_reserved_delta: -args.amount,
     p_order_id: args.orderId,
     p_description: args.description,
@@ -178,17 +195,28 @@ export async function recordSaleReversal(
 // Ajuste manual — únicamente desde /admin/wallet, nunca desde flujos
 // automáticos. idempotencyKey la genera el llamador (server-side, una vez
 // por submit) para que un doble-envío no duplique el ajuste.
+// balanceType decide el bucket: 'real' mueve available_balance (transferible,
+// como siempre), 'promotional' mueve promo_balance (Crédito B-Dress, no
+// transferible) — son dos acciones explícitamente distintas a propósito
+// (sección 16 del encargo de referidos), para que un error de la admin
+// nunca pueda convertir crédito promocional en saldo retirable sin querer.
 export async function recordAdminAdjustment(admin: AdminClient, args: {
   userId: string; type: 'admin_credit' | 'admin_debit'; amount: number; reason: string
-  idempotencyKey: string; createdBy: string
+  idempotencyKey: string; createdBy: string; balanceType?: 'real' | 'promotional'
 }): Promise<RecordResult> {
-  const signedAmount = args.type === 'admin_credit' ? Math.abs(args.amount) : -Math.abs(args.amount)
+  const isCredit = args.type === 'admin_credit'
+  const signedAmount = isCredit ? Math.abs(args.amount) : -Math.abs(args.amount)
+  const isPromotional = args.balanceType === 'promotional'
+  const rpcType: WalletTransactionType = isPromotional
+    ? (isCredit ? 'admin_promo_credit' : 'admin_promo_debit')
+    : args.type
   return callRecordTransaction(admin, {
     p_user_id: args.userId,
-    p_type: args.type,
+    p_type: rpcType,
     p_pending_delta: 0,
-    p_available_delta: signedAmount,
+    p_available_delta: isPromotional ? 0 : signedAmount,
     p_reserved_delta: 0,
+    p_promo_delta: isPromotional ? signedAmount : 0,
     p_description: args.reason,
     p_idempotency_key: args.idempotencyKey,
     p_created_by: args.createdBy,
@@ -204,10 +232,11 @@ export async function recordAdminAdjustment(admin: AdminClient, args: {
 export async function recordWithdrawalHold(admin: AdminClient, args: {
   withdrawalId: string; userId: string; amount: number
 }): Promise<RecordResult> {
-  return moveAvailableToReserved(admin, {
+  return moveToReserved(admin, {
     userId: args.userId,
     type: 'withdrawal_hold' satisfies WalletTransactionType,
     amount: args.amount,
+    bucket: 'available',
     description: 'Retiro solicitado — saldo reservado',
     metadata: { withdrawal_id: args.withdrawalId },
     idempotencyKey: `withdrawal_hold:${args.withdrawalId}`,
@@ -221,11 +250,11 @@ export async function recordWithdrawalHold(admin: AdminClient, args: {
 export async function recordWithdrawalCompleted(admin: AdminClient, args: {
   withdrawalId: string; userId: string; amount: number; createdBy: string
 }): Promise<RecordResult> {
-  return releaseReserved(admin, {
+  return releaseFromReserved(admin, {
     userId: args.userId,
     type: 'withdrawal_completed' satisfies WalletTransactionType,
     amount: args.amount,
-    returnToAvailable: false,
+    returnTo: null,
     description: 'Retiro transferido',
     metadata: { withdrawal_id: args.withdrawalId },
     idempotencyKey: `withdrawal_completed:${args.withdrawalId}`,
@@ -237,11 +266,11 @@ export async function recordWithdrawalCompleted(admin: AdminClient, args: {
 export async function recordWithdrawalCancelled(admin: AdminClient, args: {
   withdrawalId: string; userId: string; amount: number; reason: string; createdBy: string
 }): Promise<RecordResult> {
-  return releaseReserved(admin, {
+  return releaseFromReserved(admin, {
     userId: args.userId,
     type: 'withdrawal_cancelled' satisfies WalletTransactionType,
     amount: args.amount,
-    returnToAvailable: true,
+    returnTo: 'available',
     description: args.reason,
     metadata: { withdrawal_id: args.withdrawalId },
     idempotencyKey: `withdrawal_cancelled:${args.withdrawalId}`,
@@ -297,10 +326,11 @@ export async function sendWalletAlertEmail(args: { orderId: string; reason: stri
 export async function recordPurchaseHold(admin: AdminClient, args: {
   orderId: string; userId: string; amount: number
 }): Promise<RecordResult> {
-  return moveAvailableToReserved(admin, {
+  return moveToReserved(admin, {
     userId: args.userId,
     type: 'marketplace_purchase_hold' satisfies WalletTransactionType,
     amount: args.amount,
+    bucket: 'available',
     orderId: args.orderId,
     description: 'Saldo aplicado a una compra',
   })
@@ -313,11 +343,11 @@ export async function recordPurchaseHold(admin: AdminClient, args: {
 export async function recordPurchaseCompleted(admin: AdminClient, args: {
   orderId: string; userId: string; amount: number; holdTransactionId?: string | null; createdBy?: string | null
 }): Promise<RecordResult> {
-  return releaseReserved(admin, {
+  return releaseFromReserved(admin, {
     userId: args.userId,
     type: 'marketplace_purchase' satisfies WalletTransactionType,
     amount: args.amount,
-    returnToAvailable: false,
+    returnTo: null,
     orderId: args.orderId,
     description: 'Compra pagada con saldo',
     relatedTransactionId: args.holdTransactionId,
@@ -330,11 +360,11 @@ export async function recordPurchaseCompleted(admin: AdminClient, args: {
 export async function recordPurchaseCancelled(admin: AdminClient, args: {
   orderId: string; userId: string; amount: number; reason: string; holdTransactionId?: string | null; createdBy?: string | null
 }): Promise<RecordResult> {
-  return releaseReserved(admin, {
+  return releaseFromReserved(admin, {
     userId: args.userId,
     type: 'marketplace_purchase_cancelled' satisfies WalletTransactionType,
     amount: args.amount,
-    returnToAvailable: true,
+    returnTo: 'available',
     orderId: args.orderId,
     description: args.reason,
     relatedTransactionId: args.holdTransactionId,
@@ -358,6 +388,105 @@ export async function recordPurchaseRefund(admin: AdminClient, args: {
     p_description: args.reason,
     p_related_transaction_id: args.holdTransactionId ?? null,
     p_created_by: args.createdBy ?? null,
+  })
+}
+
+// ==================== Crédito B-Dress (promocional) ====================
+// Mismo patrón hold→reservado→completado/cancelado/reembolsado que el
+// saldo real de arriba, pero moviendo promo_balance en vez de
+// available_balance — nunca se cruzan. `recordPurchaseCancelled`/
+// `recordPurchaseRefund` de saldo real jamás devuelven a promo_balance, y
+// estas jamás devuelven a available_balance: la separación es por
+// construcción (bucket fijo por función), no por una validación que alguien
+// podría olvidar agregar.
+
+// Se crea al confirmar el checkout con Crédito B-Dress aplicado — mismo
+// momento y mismo patrón que recordPurchaseHold, pero moviendo promo_balance.
+export async function recordPromoPurchaseHold(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number
+}): Promise<RecordResult> {
+  return moveToReserved(admin, {
+    userId: args.userId,
+    type: 'promo_purchase_hold' satisfies WalletTransactionType,
+    amount: args.amount,
+    bucket: 'promo',
+    orderId: args.orderId,
+    description: 'Crédito B-Dress aplicado a una compra',
+  })
+}
+
+// La orden quedó 'paid' — el Crédito B-Dress reservado se vuelve gasto
+// definitivo, nunca vuelve a promo_balance ni a available_balance.
+export async function recordPromoPurchaseCompleted(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number; holdTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return releaseFromReserved(admin, {
+    userId: args.userId,
+    type: 'promo_purchase_completed' satisfies WalletTransactionType,
+    amount: args.amount,
+    returnTo: null,
+    orderId: args.orderId,
+    description: 'Compra pagada con Crédito B-Dress',
+    relatedTransactionId: args.holdTransactionId,
+    createdBy: args.createdBy,
+  })
+}
+
+// La orden se abandonó/canceló sin pagar — el Crédito B-Dress reservado
+// vuelve a promo_balance (NUNCA a available_balance).
+export async function recordPromoPurchaseCancelled(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number; reason: string; holdTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return releaseFromReserved(admin, {
+    userId: args.userId,
+    type: 'promo_purchase_cancelled' satisfies WalletTransactionType,
+    amount: args.amount,
+    returnTo: 'promo',
+    orderId: args.orderId,
+    description: args.reason,
+    relatedTransactionId: args.holdTransactionId,
+    createdBy: args.createdBy,
+  })
+}
+
+// Admin reembolsa una orden ya pagada que incluía Crédito B-Dress — el
+// monto vuelve como Crédito B-Dress, nunca como saldo transferible (sección
+// 13 del encargo: un refund jamás puede convertir promocional en real).
+export async function recordPromoPurchaseRefund(admin: AdminClient, args: {
+  orderId: string; userId: string; amount: number; reason: string; holdTransactionId?: string | null; createdBy?: string | null
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.userId,
+    p_type: 'promo_purchase_refund' satisfies WalletTransactionType,
+    p_pending_delta: 0,
+    p_available_delta: 0,
+    p_reserved_delta: 0,
+    p_promo_delta: args.amount,
+    p_order_id: args.orderId,
+    p_description: args.reason,
+    p_related_transaction_id: args.holdTransactionId ?? null,
+    p_created_by: args.createdBy ?? null,
+  })
+}
+
+// Crédito acreditado por un referido calificado (cron/referral-rewards) —
+// idempotency_key por id de referral: si el cron corriera dos veces sobre
+// la misma fila (o se reintentara tras un error parcial), la segunda
+// llamada es un no-op seguro a nivel de base de datos, no solo a nivel de
+// que el cron "no debería" reprocesarla.
+export async function recordReferralBonus(admin: AdminClient, args: {
+  referralId: string; referrerId: string; amount: number
+}): Promise<RecordResult> {
+  return callRecordTransaction(admin, {
+    p_user_id: args.referrerId,
+    p_type: 'referral_bonus' satisfies WalletTransactionType,
+    p_pending_delta: 0,
+    p_available_delta: 0,
+    p_reserved_delta: 0,
+    p_promo_delta: args.amount,
+    p_description: 'Bono por invitar a una amiga',
+    p_metadata: { referral_id: args.referralId },
+    p_idempotency_key: `referral_bonus:${args.referralId}`,
   })
 }
 
@@ -395,8 +524,26 @@ export function prorateMercadoPagoItems(args: {
 export async function getWalletSummary(admin: AdminClient, userId: string) {
   const { data } = await admin
     .from('wallet_accounts')
-    .select('available_balance, pending_balance, reserved_balance')
+    .select('available_balance, pending_balance, reserved_balance, promo_balance')
     .eq('user_id', userId)
     .maybeSingle()
-  return data ?? { available_balance: 0, pending_balance: 0, reserved_balance: 0 }
+  return data ?? { available_balance: 0, pending_balance: 0, reserved_balance: 0, promo_balance: 0 }
+}
+
+// Desglose explícito del saldo para mostrar en UI (dashboard/wallet,
+// admin/wallet) — nunca un único "balance": transferible (lo único que se
+// puede retirar) vs promocional (Crédito B-Dress, solo para comprar) vs
+// reservado (comprometido en un retiro o compra en curso, de cualquiera de
+// los dos buckets) vs total disponible para gastar en una compra (los dos
+// juntos, ver sección 12 del encargo de referidos).
+export function computeWalletBreakdown(account: {
+  available_balance: number; pending_balance: number; reserved_balance: number; promo_balance: number
+}): { transferable: number; promotional: number; pending: number; reserved: number; totalForPurchases: number } {
+  return {
+    transferable: account.available_balance,
+    promotional: account.promo_balance,
+    pending: account.pending_balance,
+    reserved: account.reserved_balance,
+    totalForPurchases: account.available_balance + account.promo_balance,
+  }
 }

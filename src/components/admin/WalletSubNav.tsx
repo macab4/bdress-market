@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-export default function WalletSubNav({ active }: { active: 'movimientos' | 'retiros' }) {
+export default function WalletSubNav({ active }: { active: 'movimientos' | 'retiros' | 'referidos' }) {
   return (
     <div className="flex gap-4 mb-6">
       <Link
@@ -14,6 +14,12 @@ export default function WalletSubNav({ active }: { active: 'movimientos' | 'reti
         className={`text-[10px] tracking-widest uppercase pb-1 ${active === 'retiros' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
       >
         Retiros
+      </Link>
+      <Link
+        href="/admin/referrals"
+        className={`text-[10px] tracking-widest uppercase pb-1 ${active === 'referidos' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-black'}`}
+      >
+        Referidos
       </Link>
     </div>
   )
