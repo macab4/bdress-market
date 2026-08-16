@@ -2,8 +2,13 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getWalletSummary, computeWalletBreakdown } from '@/lib/wallet'
 import AdminNav from '@/components/admin/AdminNav'
 import SuspendUserButton from '@/components/admin/SuspendUserButton'
+
+function formatCLP(n: number) {
+  return `$${n.toLocaleString('es-CL')}`
+}
 
 type OrderSummary = { id: string; amount: number; status: string; listing: { title: string } | null }
 
@@ -16,15 +21,18 @@ export default async function AdminUserDetailPage({
   const { id } = await params
   const admin = createAdminClient()
 
-  const [{ data: authUser }, { data: profile }, { data: listings }, { data: purchases }, { data: sales }] = await Promise.all([
+  const [{ data: authUser }, { data: profile }, { data: listings }, { data: purchases }, { data: sales }, walletAccount] = await Promise.all([
     admin.auth.admin.getUserById(id),
     admin.from('profiles').select('*').eq('id', id).single(),
     admin.from('listings').select('id, title, status, price').eq('seller_id', id),
     admin.from('orders').select('id, amount, status, listing:listings(title)').eq('buyer_id', id) as unknown as Promise<{ data: OrderSummary[] | null }>,
     admin.from('orders').select('id, amount, status, listing:listings(title)').eq('seller_id', id) as unknown as Promise<{ data: OrderSummary[] | null }>,
+    getWalletSummary(admin, id),
   ])
 
   if (!authUser?.user || !profile) notFound()
+
+  const wallet = computeWalletBreakdown(walletAccount)
 
   const banned = !!authUser.user.banned_until && new Date(authUser.user.banned_until) > new Date()
 
@@ -50,6 +58,35 @@ export default async function AdminUserDetailPage({
           </div>
           <SuspendUserButton userId={id} banned={banned} />
         </div>
+
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[10px] tracking-widest uppercase text-gray-400">Saldo B-Dress</h3>
+            <Link href="/admin/wallet" className="text-[10px] tracking-widest uppercase text-gray-400 hover:text-black">
+              Ver movimientos
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-white p-4">
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Saldo de ventas</p>
+              <p className="text-lg font-light">{formatCLP(wallet.transferable)}</p>
+              <p className="text-[9px] text-gray-400 mt-0.5">Transferible</p>
+            </div>
+            <div className="bg-white p-4">
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Crédito B-Dress</p>
+              <p className="text-lg font-light text-[#7fab87]">{formatCLP(wallet.promotional)}</p>
+              <p className="text-[9px] text-gray-400 mt-0.5">No transferible</p>
+            </div>
+            <div className="bg-white p-4">
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Pendiente de liberar</p>
+              <p className="text-lg font-light">{formatCLP(wallet.pending)}</p>
+            </div>
+            <div className="bg-white p-4">
+              <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-1">Reservado</p>
+              <p className="text-lg font-light">{formatCLP(wallet.reserved)}</p>
+            </div>
+          </div>
+        </section>
 
         <section className="mb-8">
           <h3 className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">
