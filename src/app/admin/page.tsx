@@ -24,7 +24,7 @@ export default async function AdminPage() {
   const admin = createAdminClient()
   const overdueCutoff = daysAgoISOString(OVERDUE_SHIP_DAYS)
 
-  const [{ count: userCount }, { data: listings }, { data: orders }, { data: overdueOrders }] = await Promise.all([
+  const [{ count: userCount }, { data: listings }, { data: orders }, { data: overdueOrders }, { data: labelsPending }] = await Promise.all([
     admin.from('profiles').select('*', { count: 'exact', head: true }),
     admin.from('listings').select('status'),
     admin
@@ -38,11 +38,18 @@ export default async function AdminPage() {
       .eq('status', 'paid')
       .lt('paid_at', overdueCutoff)
       .order('paid_at', { ascending: true }) as unknown as Promise<{ data: AdminOrder[] | null }>,
+    admin
+      .from('orders')
+      .select('*, listing:listings(title), seller:profiles!orders_seller_id_fkey(name)')
+      .not('label_requested_at', 'is', null)
+      .is('label_url', null)
+      .order('label_requested_at', { ascending: true }) as unknown as Promise<{ data: AdminOrder[] | null }>,
   ])
 
   const allListings = listings ?? []
   const allOrders = orders ?? []
   const overdue = overdueOrders ?? []
+  const pendingLabels = labelsPending ?? []
 
   const activeListings = allListings.filter(l => l.status === 'active').length
   const soldListings = allListings.filter(l => l.status === 'sold').length
@@ -91,6 +98,30 @@ export default async function AdminPage() {
             )
           })}
         </div>
+
+        {/* Etiquetas pendientes de generar (modo manual) */}
+        {pendingLabels.length > 0 && (
+          <section>
+            <h2 className="text-[10px] tracking-widest uppercase text-red-500 mb-4">
+              Etiquetas pendientes de generar ({pendingLabels.length})
+            </h2>
+            <div className="space-y-3">
+              {pendingLabels.map(order => (
+                <Link
+                  key={order.id}
+                  href={`/admin/orders/${order.id}`}
+                  className="block bg-white p-4 hover:bg-gray-50 transition"
+                >
+                  <p className="text-sm font-medium truncate">{order.listing?.title ?? 'Prenda eliminada'}</p>
+                  <p className="text-xs text-gray-400">
+                    Vendedora: {order.seller?.name ?? '—'} · Pedida el{' '}
+                    {order.label_requested_at && new Date(order.label_requested_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Envíos atrasados */}
         {overdue.length > 0 && (

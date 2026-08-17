@@ -56,6 +56,8 @@ export async function POST(
   // courier, avisamos a la admin para que genere la etiqueta a mano y se la
   // mande a la vendedora, quien luego ingresa el seguimiento con AddTrackingForm.
   if (MANUAL_LABEL_MODE) {
+    await supabase.from('orders').update({ label_requested_at: new Date().toISOString() }).eq('id', order.id)
+
     if (process.env.ADMIN_EMAIL) {
       await sendEmail({
         to: process.env.ADMIN_EMAIL,
@@ -68,7 +70,7 @@ export async function POST(
           </p>
           <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
             <strong>Retiro (origen)</strong><br/>
-            ${seller.name} · ${seller.phone}<br/>
+            ${seller.name} · ${seller.phone}${seller.email ? ` · ${seller.email}` : ''}<br/>
             ${seller.address}, ${seller.comuna}
           </p>
           <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
@@ -83,6 +85,20 @@ export async function POST(
           </p>
         `),
       })
+    }
+
+    // Recordatorio en la campanita — el correo solo no bastaba (se puede
+    // perder en el inbox). Solo aplica al camino nacional normal: en el
+    // camino internacional quien pide la etiqueta ya es la propia admin
+    // (ver canManage arriba), así que no tiene sentido notificarla de algo
+    // que ella misma acaba de hacer.
+    if (!isInternational && process.env.ADMIN_EMAIL) {
+      const { data: adminProfile } = await supabase.from('profiles').select('id').eq('email', process.env.ADMIN_EMAIL).maybeSingle()
+      if (adminProfile) {
+        await supabase.from('notifications').insert({
+          user_id: adminProfile.id, type: 'label_requested', actor_id: order.seller_id, listing_id: order.listing_id,
+        })
+      }
     }
 
     if (seller.email) {

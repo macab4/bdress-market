@@ -17,6 +17,8 @@ const ACTION_TEXT: Record<Notification['type'], string> = {
   offer_rejected: 'rechazó tu oferta por',
   offer_countered: 'te hizo una contraoferta por',
   referral_bonus: `publicó su primera prenda — ganaste $${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress 💚`,
+  sale_paid: 'te compró',
+  label_requested: 'pidió la etiqueta de envío de',
 }
 
 export default async function NotificationsPage() {
@@ -49,7 +51,12 @@ export default async function NotificationsPage() {
             {list.map(n => (
               <Link
                 key={n.id}
-                href={n.type === 'referral_bonus' ? '/dashboard/wallet' : n.listing_id ? `/listings/${n.listing_id}` : '#'}
+                href={
+                  n.type === 'referral_bonus' ? '/dashboard/wallet'
+                    : n.type === 'sale_paid' ? '/dashboard/sales'
+                    : n.type === 'label_requested' ? '/admin'
+                    : n.listing_id ? `/listings/${n.listing_id}` : '#'
+                }
                 className="flex items-center gap-3 bg-white p-4 hover:bg-gray-50 transition"
               >
                 <div className="w-12 h-16 bg-gray-100 flex-shrink-0 overflow-hidden relative">

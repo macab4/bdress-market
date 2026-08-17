@@ -36,6 +36,14 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
     admin.from('profiles').select('email, name').eq('id', order.sellerId).single(),
   ])
 
+  // Alerta en la campanita para la vendedora — hasta ahora solo se enteraba
+  // por correo, y si ese correo no llegaba (bug intermitente de Supabase
+  // Auth visto en otros casos) no había ninguna otra señal dentro del sitio
+  // de que tenía una venta nueva.
+  await admin.from('notifications').insert({
+    user_id: order.sellerId, type: 'sale_paid', actor_id: order.buyerId, listing_id: order.listingId,
+  })
+
   const listingTitle = listing?.title ?? 'tu prenda'
   // "amount" (prenda + Protección Bdress) es la base de la comisión y del
   // pago a la vendedora — no incluye el envío a propósito, porque ese

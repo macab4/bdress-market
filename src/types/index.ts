@@ -184,6 +184,7 @@ export interface Order {
   courier_service_code: string | null
   courier_tracking_number: string | null
   courier_barcode: string | null
+  label_requested_at: string | null
   label_url: string | null
   label_downloaded_at: string | null
   label_courier: string | null
@@ -370,7 +371,7 @@ export interface SavedSearch {
   created_at: string
 }
 
-export type NotificationType = 'new_listing' | 'offer_received' | 'offer_accepted' | 'offer_rejected' | 'offer_countered' | 'referral_bonus'
+export type NotificationType = 'new_listing' | 'offer_received' | 'offer_accepted' | 'offer_rejected' | 'offer_countered' | 'referral_bonus' | 'sale_paid' | 'label_requested'
 
 export interface Notification {
   id: string
