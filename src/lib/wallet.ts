@@ -282,6 +282,66 @@ export async function recordWithdrawalCancelled(admin: AdminClient, args: {
 // pero el INSERT de la fila `withdrawals` falló después — requiere
 // corrección manual (buscar la wallet_transaction por
 // metadata.withdrawal_id).
+// Aviso a la admin cuando una usuaria pide un retiro real (camino feliz —
+// no confundir con sendWithdrawalAlertEmail, que es solo para el caso de
+// error). Sin esto, la única forma de enterarse era entrando a revisar el
+// panel — la plata queda "reservada" pero nadie sabe que hay que
+// transferirla hasta que alguien mire.
+export async function sendNewWithdrawalRequestEmail(args: {
+  withdrawalId: string; userName: string | null; userEmail: string | null; amount: number
+  bank: string; accountType: string; accountNumber: string; holderRut: string; holderName: string
+}) {
+  if (!process.env.ADMIN_EMAIL) return
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to: process.env.ADMIN_EMAIL,
+    subject: `Nuevo retiro solicitado — $${args.amount.toLocaleString('es-CL')}`,
+    html: emailLayout('Retiro pendiente', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        <strong>${args.userName ?? args.userEmail ?? 'Una usuaria'}</strong> pidió retirar
+        <strong>$${args.amount.toLocaleString('es-CL')}</strong> de su Saldo B-Dress.
+      </p>
+      <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
+        <strong>Datos bancarios</strong><br/>
+        ${args.holderName} · RUT ${args.holderRut}<br/>
+        ${args.bank} · ${args.accountType} · ${args.accountNumber}
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/admin/wallet/withdrawals" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver retiros pendientes
+        </a>
+      </p>
+    `),
+  })
+}
+
+// Aviso a la usuaria de que su retiro ya se transfirió — antes no le llegaba
+// absolutamente nada cuando la admin marcaba "completado", ni siquiera el
+// comprobante que la admin recién subió a mano.
+export async function sendWithdrawalCompletedEmail(args: {
+  to: string; name: string | null; amount: number; operationNumber: string | null; receiptUrl: string | null
+}) {
+  await sendEmail({
+    to: args.to,
+    subject: `Tu retiro de $${args.amount.toLocaleString('es-CL')} ya se transfirió`,
+    html: emailLayout('Retiro transferido', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${args.name ?? ''}, ya transferimos <strong>$${args.amount.toLocaleString('es-CL')}</strong> a tu cuenta bancaria.
+      </p>
+      ${args.operationNumber ? `
+      <p style="font-size: 13px; color: #888; line-height: 1.6;">
+        N.º de operación: <strong style="font-family: monospace;">${args.operationNumber}</strong>
+      </p>` : ''}
+      ${args.receiptUrl ? `
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${args.receiptUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver comprobante
+        </a>
+      </p>` : ''}
+    `),
+  })
+}
+
 export async function sendWithdrawalAlertEmail(args: { withdrawalId: string; reason: string }) {
   if (!process.env.ADMIN_EMAIL) return
   await sendEmail({

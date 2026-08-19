@@ -4,6 +4,7 @@ import {
   sellerPayout, paymentProcessingFee, buyerProtectionFee,
   PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT,
   OFFER_MIN_PCT, OFFER_MAX_ROUNDS, OFFER_EXPIRY_HOURS, OFFER_ACCEPTED_HOLD_HOURS,
+  REFERRAL_REWARD_AMOUNT, REFERRAL_MONTHLY_LIMIT,
 } from '@/lib/catalog'
 import {
   INTERNATIONAL_MODE_NAME, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
@@ -21,6 +22,7 @@ const SECTIONS = [
   { id: 'envios', label: 'Envíos' },
   { id: 'internacional', label: 'Envío internacional' },
   { id: 'pagos', label: 'Pagos y comisión' },
+  { id: 'referidos', label: 'Invita a una amiga' },
   { id: 'mensajes', label: 'Mensajería' },
   { id: 'seguridad', label: 'Seguridad y estafas' },
   { id: 'disputas', label: 'Devoluciones y disputas' },
@@ -200,6 +202,27 @@ export default function TerminosPage() {
             <p className="text-[10px] text-gray-400">
               Todo se paga junto en un solo pago con Mercado Pago (tarjetas de crédito, débito y otros medios), y
               siempre mostramos el desglose completo antes de que confirmes tu compra.
+            </p>
+          </section>
+
+          <section id="referidos" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Invita a una amiga</h2>
+            <p className="mb-2">
+              Desde «Invita a una amiga» (en tu perfil) puedes compartir tu link personal de invitación. Cuando una
+              amiga se registra con tu link <strong>y publica su primera prenda</strong>, tú recibes{' '}
+              <strong>${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress</strong>. Solo con
+              registrarse no se activa el bono — tiene que llegar a publicar.
+            </p>
+            <p className="mb-2">
+              El bono es para quien invita, no para la persona invitada. Puedes ganarlo con hasta{' '}
+              <strong>{REFERRAL_MONTHLY_LIMIT} amigas por mes</strong>; si superas ese número, las invitaciones
+              siguientes quedan calificadas y se acreditan apenas haya cupo el mes siguiente.
+            </p>
+            <p>
+              El Crédito B-Dress es un saldo <strong>promocional</strong>: se aplica automáticamente como medio de
+              pago la próxima vez que compres en la plataforma, pero no es dinero real — no se puede retirar ni
+              transferir. Si una compra pagada con este crédito se reembolsa, el crédito vuelve a tu cuenta como
+              Crédito B-Dress, nunca como saldo retirable.
             </p>
           </section>
 

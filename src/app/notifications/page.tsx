@@ -19,6 +19,7 @@ const ACTION_TEXT: Record<Notification['type'], string> = {
   referral_bonus: `publicó su primera prenda — ganaste $${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress 💚`,
   sale_paid: 'te compró',
   label_requested: 'pidió la etiqueta de envío de',
+  withdrawal_requested: 'pidió un retiro de su Saldo B-Dress 🏦',
 }
 
 export default async function NotificationsPage() {
@@ -55,6 +56,7 @@ export default async function NotificationsPage() {
                   n.type === 'referral_bonus' ? '/dashboard/wallet'
                     : n.type === 'sale_paid' ? '/dashboard/sales'
                     : n.type === 'label_requested' ? '/admin'
+                    : n.type === 'withdrawal_requested' ? '/admin/wallet/withdrawals'
                     : n.listing_id ? `/listings/${n.listing_id}` : '#'
                 }
                 className="flex items-center gap-3 bg-white p-4 hover:bg-gray-50 transition"
@@ -62,6 +64,8 @@ export default async function NotificationsPage() {
                 <div className="w-12 h-16 bg-gray-100 flex-shrink-0 overflow-hidden relative">
                   {n.type === 'referral_bonus' ? (
                     <div className="w-full h-full flex items-center justify-center bg-[#7fab87]/10 text-lg">💚</div>
+                  ) : n.type === 'withdrawal_requested' ? (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100 text-lg">🏦</div>
                   ) : n.listing?.photos?.[0] ? (
                     <Image src={n.listing.photos[0]} alt={n.listing.title} fill className="object-cover" />
                   ) : (

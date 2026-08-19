@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { recordWithdrawalHold, sendWithdrawalAlertEmail } from '@/lib/wallet'
+import { recordWithdrawalHold, sendWithdrawalAlertEmail, sendNewWithdrawalRequestEmail } from '@/lib/wallet'
 import { MIN_WITHDRAWAL_AMOUNT } from '@/lib/catalog'
 
 // Crea una solicitud de retiro. Secuencia pensada para no dejar filas
@@ -76,6 +76,25 @@ export async function POST(request: Request) {
   if (insertError) {
     await sendWithdrawalAlertEmail({ withdrawalId, reason: insertError.message })
     return Response.json({ error: 'El retiro se reservó pero hubo un error al registrarlo. Contacta soporte.' }, { status: 500 })
+  }
+
+  const { data: requester } = await supabase.from('profiles').select('name, email').eq('id', user.id).maybeSingle()
+  await sendNewWithdrawalRequestEmail({
+    withdrawalId, userName: requester?.name ?? null, userEmail: requester?.email ?? null, amount,
+    bank: bankAccount.bank, accountType: bankAccount.account_type, accountNumber: bankAccount.account_number,
+    holderRut: bankAccount.holder_rut, holderName: bankAccount.holder_name,
+  })
+
+  // Recordatorio en la campanita — mismo motivo que label_requested: el
+  // correo solo se puede perder en el inbox, y esto es plata que hay que
+  // transferir manualmente, no algo que se pueda dejar pendiente sin verlo.
+  if (process.env.ADMIN_EMAIL) {
+    const { data: adminProfile } = await supabase.from('profiles').select('id').eq('email', process.env.ADMIN_EMAIL).maybeSingle()
+    if (adminProfile) {
+      await supabase.from('notifications').insert({
+        user_id: adminProfile.id, type: 'withdrawal_requested', actor_id: user.id,
+      })
+    }
   }
 
   return Response.json({ ok: true, withdrawalId })

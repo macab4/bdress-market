@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 export default function AdminWithdrawalActions({ withdrawalId, status }: { withdrawalId: string; status: 'pending' | 'processing' }) {
   const router = useRouter()
   const [operationNumber, setOperationNumber] = useState('')
-  const [receiptUrl, setReceiptUrl] = useState('')
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [internalNote, setInternalNote] = useState('')
   const [sending, setSending] = useState<'processing' | 'completed' | 'rejected' | null>(null)
   const [error, setError] = useState('')
@@ -15,10 +15,15 @@ export default function AdminWithdrawalActions({ withdrawalId, status }: { withd
     setSending(action)
     setError('')
 
+    const formData = new FormData()
+    formData.set('action', action)
+    if (operationNumber.trim()) formData.set('operationNumber', operationNumber.trim())
+    if (internalNote.trim()) formData.set('internalNote', internalNote.trim())
+    if (receiptFile) formData.set('receiptFile', receiptFile)
+
     const res = await fetch(`/api/admin/withdrawals/${withdrawalId}/status`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, operationNumber: operationNumber.trim() || undefined, receiptUrl: receiptUrl.trim() || undefined, internalNote: internalNote.trim() || undefined }),
+      body: formData,
     })
     const data = await res.json().catch(() => ({}))
 
@@ -43,12 +48,15 @@ export default function AdminWithdrawalActions({ withdrawalId, status }: { withd
           placeholder="N.º de operación (opcional)"
           className="w-full border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-gray-400"
         />
-        <input
-          value={receiptUrl}
-          onChange={e => setReceiptUrl(e.target.value)}
-          placeholder="Link a comprobante (opcional)"
-          className="w-full border border-gray-200 px-2 py-1.5 text-xs focus:outline-none focus:border-gray-400"
-        />
+        <div>
+          <label className="block text-[10px] text-gray-400 mb-1">Comprobante de transferencia (opcional) — se le manda por correo a la usuaria</label>
+          <input
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg"
+            onChange={e => setReceiptFile(e.target.files?.[0] ?? null)}
+            className="w-full text-xs file:mr-2 file:border-0 file:bg-gray-100 file:px-2 file:py-1.5 file:text-[10px] file:tracking-widest file:uppercase"
+          />
+        </div>
         <textarea
           value={internalNote}
           onChange={e => setInternalNote(e.target.value)}
