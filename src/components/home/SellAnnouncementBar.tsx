@@ -11,7 +11,7 @@ export default function SellAnnouncementBar({ isLoggedIn }: { isLoggedIn: boolea
       eventName="click_home_sell_banner"
       className="block bg-[#7fab87] text-white text-center py-2 px-4 text-[11px] sm:text-xs tracking-wide hover:bg-[#6f9678] transition"
     >
-      ¿Tienes vestidos que ya no usas? Véndelos en B-Dress Market — 0% comisión* →
+      ¿Tienes ropa o accesorios que ya no usas? Véndelos en B-Dress Market — 0% comisión* →
     </TrackedSellLink>
   )
 }

@@ -236,7 +236,7 @@ export default async function HomePage({
           <Image src="/logo-white.png" alt="Bdress Market" width={280} height={93} priority className="mx-auto h-auto w-[220px] sm:w-[280px]" />
         </h1>
         <p className="text-sm text-gray-300 max-w-sm mx-auto">
-          Compra y vende vestidos y prendas entre personas.
+          Compra y vende ropa y accesorios entre personas.
         </p>
         <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">
           ¿Tienes algo que ya no usas? Publícalo y empieza a vender.
