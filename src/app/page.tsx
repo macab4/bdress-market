@@ -12,6 +12,9 @@ import SaveSearchButton from '@/components/listings/SaveSearchButton'
 import RatingBadge from '@/components/reviews/RatingBadge'
 import { getSellerRatings } from '@/lib/reviews'
 import { getFavoriteCounts } from '@/lib/favorites'
+import SellAnnouncementBar from '@/components/home/SellAnnouncementBar'
+import SellPromoBlock from '@/components/home/SellPromoBlock'
+import TrackedSellLink from '@/components/home/TrackedSellLink'
 
 const PAGE_SIZE = 48
 
@@ -222,17 +225,43 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
+      {/* Barra de venta — refuerza "también puedes vender" antes de que la
+          persona tenga que leer nada más (ver sección 3 del encargo). */}
+      <SellAnnouncementBar isLoggedIn={user !== null} />
+
       {/* Hero */}
       <div className="bg-black text-white text-center py-10 px-4">
         <p className="text-xs tracking-[6px] text-[#7fab87] uppercase mb-3">Comunidad · Bdress</p>
         <h1 className="mb-2">
           <Image src="/logo-white.png" alt="Bdress Market" width={280} height={93} priority className="mx-auto h-auto w-[220px] sm:w-[280px]" />
         </h1>
-        <p className="text-sm text-gray-400">Compra y vende prendas de la comunidad Bdress</p>
+        <p className="text-sm text-gray-300 max-w-sm mx-auto">
+          Compra y vende vestidos y prendas entre personas.
+        </p>
+        <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">
+          ¿Tienes algo que ya no usas? Publícalo y empieza a vender.
+        </p>
+        <div className="flex items-center justify-center gap-3 mt-6">
+          <a
+            href="#catalogo"
+            className="border border-white/30 text-white text-xs tracking-widest uppercase px-5 py-3 hover:bg-white/10 transition"
+          >
+            Ver prendas
+          </a>
+          <TrackedSellLink
+            isLoggedIn={user !== null}
+            eventName="click_home_sell_hero"
+            className="bg-[#7fab87] text-white text-xs tracking-widest uppercase px-5 py-3 hover:bg-[#6f9678] transition"
+          >
+            Vender mi prenda
+          </TrackedSellLink>
+        </div>
       </div>
 
       {/* Filtros */}
-      <CatalogFilters />
+      <div id="catalogo">
+        <CatalogFilters />
+      </div>
 
       {/* Destacadas */}
       {featuredListings && featuredListings.length > 0 && (
@@ -407,6 +436,8 @@ export default async function HomePage({
           </div>
         )}
       </div>
+
+      {isDefaultView && <SellPromoBlock isLoggedIn={user !== null} />}
     </div>
   )
 }

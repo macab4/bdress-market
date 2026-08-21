@@ -9,7 +9,7 @@ const NOVIAS_HREF = `/?occasion=${encodeURIComponent(BRIDAL_EVENT_OCCASIONS.join
 
 type Step = 'root' | 'category' | 'type'
 
-export default function MobileNavDrawer({ onClose }: { onClose: () => void }) {
+export default function MobileNavDrawer({ isLoggedIn, onClose }: { isLoggedIn: boolean; onClose: () => void }) {
   const router = useRouter()
   const [step, setStep] = useState<Step>('root')
   const [dept, setDept] = useState<TaxonomyDepartment | null>(null)
@@ -68,6 +68,13 @@ export default function MobileNavDrawer({ onClose }: { onClose: () => void }) {
       <div className="flex-1 overflow-y-auto">
         {step === 'root' && (
           <>
+            <button
+              type="button"
+              onClick={() => goTo(isLoggedIn ? '/listings/new' : '/auth/login?next=/listings/new')}
+              className="w-full text-left px-4 min-h-11 py-3 text-sm font-medium text-[#5a7a55] border-b border-gray-50"
+            >
+              Vender una prenda
+            </button>
             {TAXONOMY.map((d: TaxonomyDepartment) => (
               <button key={d.value} type="button" onClick={() => pickDept(d)}
                 className="w-full text-left px-4 min-h-11 py-3 text-sm border-b border-gray-50">
@@ -86,6 +93,18 @@ export default function MobileNavDrawer({ onClose }: { onClose: () => void }) {
               className="w-full text-left px-4 min-h-11 py-3 text-sm border-b border-gray-50">
               Recién publicados
             </button>
+            {!isLoggedIn && (
+              <div className="mt-2">
+                <button type="button" onClick={() => goTo('/auth/login')}
+                  className="w-full text-left px-4 min-h-11 py-3 text-sm text-gray-500 border-b border-gray-50">
+                  Ingresar
+                </button>
+                <button type="button" onClick={() => goTo('/auth/register')}
+                  className="w-full text-left px-4 min-h-11 py-3 text-sm text-gray-500 border-b border-gray-50">
+                  Crear cuenta
+                </button>
+              </div>
+            )}
           </>
         )}
 

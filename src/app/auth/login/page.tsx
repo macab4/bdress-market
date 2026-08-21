@@ -1,12 +1,25 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const router = useRouter()
+  // ?next — a dónde volver después de ingresar (ej. /listings/new cuando el
+  // CTA "Vender mi prenda" mandó para acá a una usuaria no logueada). Sin
+  // esto, siempre caía al home y tenía que volver a buscar dónde publicar.
+  const searchParams = useSearchParams()
+  const next = searchParams.get('next')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -33,7 +46,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/')
+    router.push(next || '/')
     router.refresh()
   }
 
@@ -112,7 +125,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           ¿No tienes cuenta?{' '}
-          <Link href="/auth/register" className="text-[#7fab87] hover:underline">
+          <Link href={`/auth/register${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="text-[#7fab87] hover:underline">
             Regístrate
           </Link>
         </p>

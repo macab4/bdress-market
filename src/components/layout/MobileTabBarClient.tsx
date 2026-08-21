@@ -42,10 +42,15 @@ export default function MobileTabBarClient({ isLoggedIn, userId }: Props) {
         </Link>
       )}
 
-      <Link href="/listings/new" aria-label="Vender" className="flex-1 flex items-center justify-center">
+      <Link
+        href={isLoggedIn ? '/listings/new' : '/auth/login?next=/listings/new'}
+        aria-label="Vender"
+        className="flex-1 flex flex-col items-center justify-center gap-0.5"
+      >
         <span className="w-11 h-11 -mt-4 rounded-full bg-[#7fab87] text-white flex items-center justify-center shadow-lg shadow-black/25">
           <Plus size={22} />
         </span>
+        <span className="text-[9px] tracking-widest uppercase text-gray-400">Vender</span>
       </Link>
 
       {isLoggedIn && (

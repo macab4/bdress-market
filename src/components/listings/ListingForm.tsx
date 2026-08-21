@@ -255,7 +255,9 @@ export default function ListingForm({ listing, priceLocked, prefill, originalPri
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/auth/login'); return }
+    // ?next=/listings/new — para que login/registro la traiga de vuelta acá
+    // en vez de dejarla en el home a buscar de nuevo dónde publicar.
+    if (!user) { router.push('/auth/login?next=/listings/new'); return }
 
     // Subir fotos nuevas a Supabase Storage, respetando el orden elegido
     const orderedUrls: string[] = []

@@ -27,6 +27,12 @@ function RegisterForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const referralCode = searchParams.get('ref')
+  // Mismo propósito que en login/page.tsx — a dónde volver después de
+  // registrarse (ej. /listings/new). Como acá casi siempre hace falta
+  // confirmar el correo antes de tener sesión, además viaja como
+  // emailRedirectTo: el link de confirmación va a traer de vuelta a esta
+  // misma URL con la sesión ya en el hash (ver AuthHashHandler).
+  const next = searchParams.get('next')
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', city: '', comuna: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -51,6 +57,7 @@ function RegisterForm() {
           name: form.name, phone: form.phone, city: form.city, comuna: form.comuna,
           ...(referralCode ? { referral_code: referralCode } : {}),
         },
+        emailRedirectTo: `${window.location.origin}${next || '/'}`,
       },
     })
 
@@ -67,7 +74,7 @@ function RegisterForm() {
       return
     }
 
-    router.push('/')
+    router.push(next || '/')
     router.refresh()
   }
 
@@ -98,7 +105,7 @@ function RegisterForm() {
             </button>
           )}
 
-          <Link href="/auth/login" className="text-[#7fab87] text-xs underline">
+          <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="text-[#7fab87] text-xs underline">
             Ya confirmé mi correo, ir a ingresar
           </Link>
         </div>
@@ -191,7 +198,7 @@ function RegisterForm() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           ¿Ya tienes cuenta?{' '}
-          <Link href="/auth/login" className="text-[#7fab87] hover:underline">
+          <Link href={`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="text-[#7fab87] hover:underline">
             Ingresar
           </Link>
         </p>
