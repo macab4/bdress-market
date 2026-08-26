@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# claude code local config
+/.claude/
+
+# documentos de trabajo con datos personales / planillas de contactos —
+# nunca deben quedar en el historial del repo
+/*.xlsx
+/*.docx
+/logo*.png
