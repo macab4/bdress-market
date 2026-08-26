@@ -79,6 +79,16 @@ async function handleNotification(request: Request) {
       .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
       .maybeSingle()
 
+    // Solo si este webhook hizo la transición (evita duplicar el histórico
+    // en un reintento del mismo webhook de Mercado Pago).
+    if (updatedOrder) {
+      await supabase.from('order_status_history').insert({
+        order_id: orderId,
+        previous_status: 'pending_payment',
+        new_status: 'paid',
+      })
+    }
+
     // El saldo pendiente se intenta acreditar SIEMPRE que la orden esté
     // 'paid', sin depender de si este webhook hizo la transición — Mercado
     // Pago reintenta webhooks, y si un intento anterior cambió el status
@@ -149,6 +159,18 @@ async function handleNotification(request: Request) {
       .maybeSingle()
 
     if (order) {
+      // Registramos el evento de rechazo aunque orders.status no cambie
+      // todavía en este momento (sin hold de saldo aplicado, queda en
+      // pending_payment hasta que el cron expire-pending-orders lo cancele)
+      // — es el equivalente al "Pendiente → Rechazado" que muestra Mercado
+      // Pago, para el panel de carritos abandonados.
+      await supabase.from('order_status_history').insert({
+        order_id: orderId,
+        previous_status: 'pending_payment',
+        new_status: 'payment_rejected',
+        public_note: 'Mercado Pago rechazó el pago',
+      })
+
       // Si la compradora había aplicado saldo B-Dress y/o Crédito B-Dress a
       // esta orden, el rechazo de la tarjeta no debe dejarlos atrapados
       // hasta la próxima corrida del cron (una vez al día) — se liberan de

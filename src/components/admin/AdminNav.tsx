@@ -7,6 +7,7 @@ const TABS = [
   { href: '/admin/marcas', label: 'Marcas' },
   { href: '/admin/users', label: 'Usuarias' },
   { href: '/admin/disputes', label: 'Disputas' },
+  { href: '/admin/orders/abandoned', label: 'Carritos abandonados' },
   { href: '/admin/wallet', label: 'Saldos' },
   { href: '/admin/messages', label: 'Mensajes' },
   { href: '/admin/shipments', label: 'Envíos' },

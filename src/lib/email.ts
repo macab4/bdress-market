@@ -105,6 +105,47 @@ export async function sendCommissionFreeCampaignEmail({
   })
 }
 
+// Correo de recuperación de carrito abandonado — orden que quedó en
+// pending_payment sin completar el pago, o que Mercado Pago rechazó/expiró
+// sin llegar a 'paid' (paid_at null). Se dispara desde el cron
+// abandoned-cart-recovery y desde el botón manual del panel admin
+// (/admin/orders/abandoned) — ver PENDING_ORDER_EXPIRY_MINUTES en catalog.ts.
+export async function sendAbandonedCartRecoveryEmail({
+  to,
+  name,
+  listingTitle,
+  listingId,
+  amount,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  listingId: string
+  amount: number
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  await sendEmail({
+    to,
+    subject: `¿Se te quedó algo pendiente? — ${listingTitle}`,
+    html: emailLayout('Tu prenda sigue esperándote', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, notamos que no alcanzaste a completar tu compra de
+        <strong>${listingTitle}</strong> (${'$'}${amount.toLocaleString('es-CL')}). No te
+        preocupes, no te cobramos nada — la prenda sigue disponible.
+      </p>
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Si quieres retomarla, puedes terminar tu compra en un par de clics.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/listings/${listingId}/checkout" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Terminar mi compra
+        </a>
+      </p>
+    `),
+  })
+}
+
 // Correo de lanzamiento para vendedoras del marketplace antiguo (Shopify) que
 // nunca se han logueado en la plataforma nueva — su email ya está confirmado
 // desde la migración, pero no tienen contraseña conocida, así que el primer

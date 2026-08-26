@@ -207,6 +207,7 @@ export interface Order {
   completed_at: string | null
   buyer_review_reminded_at: string | null
   seller_review_reminded_at: string | null
+  abandoned_recovery_sent_at: string | null
   international_status: InternationalStatus | null
   international_terms_accepted_at: string | null
   international_terms_version: string | null

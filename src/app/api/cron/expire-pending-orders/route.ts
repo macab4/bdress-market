@@ -38,6 +38,20 @@ export async function GET(request: Request) {
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
+  // Histórico para el panel de carritos abandonados — mismo evento que el
+  // "Pendiente → Rechazado" de payment/confirm, pero por expiración en vez
+  // de rechazo explícito de Mercado Pago.
+  if (data && data.length > 0) {
+    await admin.from('order_status_history').insert(
+      data.map(o => ({
+        order_id: o.id,
+        previous_status: 'pending_payment',
+        new_status: 'cancelled',
+        public_note: 'Checkout abandonado — expiró sin completar el pago',
+      }))
+    )
+  }
+
   // Holds de saldo huérfanos: cualquier orden con saldo aplicado que no está
   // 'paid' (ya se resolvió en payment/confirm o payment/create) y que ya no
   // sigue activa como pending_payment reciente — cubre tanto las que este

@@ -502,6 +502,12 @@ export function paymentProcessingFee(price: number): number {
 // grande. No bloquea gastar ese saldo en una compra, solo transferirlo.
 export const MIN_WITHDRAWAL_AMOUNT = 5000
 
+// Si en vez de retirar su Saldo B-Dress al banco, la vendedora prefiere
+// canjearlo como Gift Card para gastarlo dentro del marketplace, se le
+// acredita este % extra (vía admin_credit) — hoy el canje se procesa a mano
+// a pedido de la vendedora, no hay flujo automatizado en la app todavía.
+export const GIFTCARD_REDEMPTION_BONUS_PCT = 0.15
+
 // Programa de referidos — ver src/lib/referrals.ts y cron/referral-rewards.
 // Centralizado acá a propósito para no repetir estos números en cada
 // archivo que los usa (backend, emails, UI, admin).

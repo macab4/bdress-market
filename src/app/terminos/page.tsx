@@ -4,7 +4,7 @@ import {
   sellerPayout, paymentProcessingFee, buyerProtectionFee,
   PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT,
   OFFER_MIN_PCT, OFFER_MAX_ROUNDS, OFFER_EXPIRY_HOURS, OFFER_ACCEPTED_HOLD_HOURS,
-  REFERRAL_REWARD_AMOUNT, REFERRAL_MONTHLY_LIMIT,
+  REFERRAL_REWARD_AMOUNT, REFERRAL_MONTHLY_LIMIT, GIFTCARD_REDEMPTION_BONUS_PCT,
 } from '@/lib/catalog'
 import {
   INTERNATIONAL_MODE_NAME, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
@@ -202,6 +202,15 @@ export default function TerminosPage() {
             <p className="text-[10px] text-gray-400">
               Todo se paga junto en un solo pago con Mercado Pago (tarjetas de crédito, débito y otros medios), y
               siempre mostramos el desglose completo antes de que confirmes tu compra.
+            </p>
+
+            <p className="font-medium text-gray-800 mb-1 mt-4">Retira tu saldo o canjéalo por Gift Card</p>
+            <p>
+              El Saldo B-Dress que acumulas por tus ventas lo puedes transferir a tu cuenta bancaria cuando quieras
+              (sobre el mínimo de retiro). Si en cambio prefieres canjearlo como <strong>Gift Card</strong> para
+              gastarlo dentro de Bdress Market, te acreditamos un{' '}
+              <strong>{Math.round(GIFTCARD_REDEMPTION_BONUS_PCT * 100)}% extra</strong> sobre ese saldo. Hoy este
+              canje lo procesamos manualmente a pedido tuyo — escríbenos y lo coordinamos.
             </p>
           </section>
 
