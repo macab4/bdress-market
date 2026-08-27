@@ -16,7 +16,7 @@ interface AdminListingFormProps {
   sellerName: string
 }
 
-const MAX_PHOTOS = 5
+const MAX_PHOTOS = 8
 
 // Publica una prenda a nombre de OTRA usuaria — para cuando alguien no puede
 // o no logra publicar sola (ver /admin/users/[id]). Calcado de

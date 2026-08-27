@@ -12,6 +12,8 @@ type PhotoItem =
   | { id: string; kind: 'existing'; url: string }
   | { id: string; kind: 'new'; file: File; preview: string }
 
+const MAX_PHOTOS = 8
+
 export default function AdminPhotoEditor({ listingId, initialPhotos }: { listingId: string; initialPhotos: string[] }) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -26,7 +28,7 @@ export default function AdminPhotoEditor({ listingId, initialPhotos }: { listing
   )
 
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const availableSlots = 5 - photos.length
+    const availableSlots = MAX_PHOTOS - photos.length
     const files = Array.from(e.target.files || []).slice(0, availableSlots)
     const newItems: PhotoItem[] = files.map(file => ({
       id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -102,7 +104,7 @@ export default function AdminPhotoEditor({ listingId, initialPhotos }: { listing
             {photos.map((item, i) => (
               <SortableAdminPhoto key={item.id} item={item} isCover={i === 0} onRemove={() => removePhoto(item.id)} />
             ))}
-            {photos.length < 5 && (
+            {photos.length < MAX_PHOTOS && (
               <button type="button" onClick={() => fileRef.current?.click()}
                 className="aspect-square bg-gray-100 flex items-center justify-center text-gray-400 text-2xl hover:bg-gray-200 transition">
                 +
