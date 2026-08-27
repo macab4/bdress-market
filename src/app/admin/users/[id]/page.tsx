@@ -89,9 +89,14 @@ export default async function AdminUserDetailPage({
         </section>
 
         <section className="mb-8">
-          <h3 className="text-[10px] tracking-widest uppercase text-gray-400 mb-3">
-            Prendas publicadas ({listings?.length ?? 0})
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[10px] tracking-widest uppercase text-gray-400">
+              Prendas publicadas ({listings?.length ?? 0})
+            </h3>
+            <Link href={`/admin/listings/new?seller_id=${id}`} className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">
+              Publicar prenda para esta usuaria
+            </Link>
+          </div>
           {listings && listings.length > 0 ? (
             <div className="space-y-1">
               {listings.map(l => (
