@@ -114,6 +114,17 @@ export default async function ListingPage({
     isFavorited = favorite !== null
   }
 
+  // "Reservado" visible para la compradora — el hold interno de
+  // create_or_reuse_pending_order (supabase-schema.sql) ya evita que dos
+  // personas paguen la misma prenda, pero hasta ahora nadie lo veía hasta
+  // toparse con el error al intentar comprarla. Ver
+  // listing_reservation_minutes_left (migración 20260828000000).
+  let reservedMinutesLeft: number | null = null
+  if (listing.status === 'active') {
+    const { data } = await supabase.rpc('listing_reservation_minutes_left', { p_listing_id: id })
+    reservedMinutesLeft = data ?? null
+  }
+
   const commission = buyerProtectionFee(listing.price)
   const totalPrice = listing.price + commission
 
@@ -223,6 +234,12 @@ export default async function ListingPage({
               {listing.status === 'sold' && (
                 <div className="bg-gray-900 text-white text-center text-xs tracking-widest uppercase py-2">
                   Prenda vendida
+                </div>
+              )}
+
+              {reservedMinutesLeft !== null && (
+                <div className="bg-amber-600 text-white text-center text-xs tracking-widest uppercase py-2">
+                  Reservada — otra compradora está pagando · disponible en {reservedMinutesLeft} min si no completa
                 </div>
               )}
 
