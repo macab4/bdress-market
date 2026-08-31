@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { leadTimeRange, internationalDelayMessage, INTERNATIONAL_AVAILABILITY_WARNING } from '@/lib/international/content'
-import { SHIP_DEADLINE_BUSINESS_DAYS, CONFIRMED_HOLD_DAYS, REFERRAL_REWARD_AMOUNT } from '@/lib/catalog'
+import { SHIP_DEADLINE_BUSINESS_DAYS, CONFIRMED_HOLD_DAYS, REFERRAL_REWARD_AMOUNT, BOOST_PRICE, BOOST_DURATION_DAYS } from '@/lib/catalog'
 
 let client: Resend | null = null
 
@@ -1229,6 +1229,108 @@ export async function sendActivateAccountWithReferralEmail({
         Ah, y una vez adentro: puedes invitar a una amiga a vender en Bdress Market y ganar
         <strong>$${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress</strong> cuando ella publique
         su primera prenda — lo encuentras en "Invita y gana" dentro de tu cuenta.
+      </p>
+    `),
+  })
+}
+
+// Confirmación a la vendedora de que su pago del boost se aprobó — hasta
+// ahora payment/confirm/route.ts (rama "boost:") no avisaba a nadie, solo
+// actualizaba listing_boosts y featured_until en silencio.
+export async function sendBoostConfirmedEmail({
+  to,
+  name,
+  listingTitle,
+  listingId,
+  featuredUntil,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  listingId: string
+  featuredUntil: Date
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const untilFmt = featuredUntil.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })
+
+  await sendEmail({
+    to,
+    subject: `Tu prenda ya está destacada — ${listingTitle}`,
+    html: emailLayout('¡Ya está destacada!', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, recibimos tu pago de <strong>$${BOOST_PRICE.toLocaleString('es-CL')}</strong> por destacar
+        <strong>${listingTitle}</strong>. Va a aparecer en la fila "Destacadas" arriba del catálogo hasta el
+        <strong>${untilFmt}</strong> (${BOOST_DURATION_DAYS} días), sin importar cómo la gente ordene o filtre.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/listings/${listingId}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver mi prenda
+        </a>
+      </p>
+    `),
+  })
+}
+
+// Aviso a ADMIN_EMAIL de cada boost pagado — mismo patrón que
+// sendWalletAlertEmail (src/lib/wallet.ts), pero informativo, no de error.
+export async function sendAdminBoostPaidEmail({
+  listingTitle,
+  listingId,
+  sellerName,
+  amount,
+}: {
+  listingTitle: string
+  listingId: string
+  sellerName: string | null
+  amount: number
+}) {
+  if (!process.env.ADMIN_EMAIL) return
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to: process.env.ADMIN_EMAIL,
+    subject: `Destacado pagado — ${listingTitle} ($${amount.toLocaleString('es-CL')})`,
+    html: emailLayout('Nuevo destacado pagado', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        <strong>${sellerName ?? 'Una vendedora'}</strong> pagó <strong>$${amount.toLocaleString('es-CL')}</strong>
+        por destacar <strong>${listingTitle}</strong>.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/listings/${listingId}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver la prenda
+        </a>
+      </p>
+    `),
+  })
+}
+
+// Recordatorio único (cron boost-reminder) a vendedoras con una prenda
+// activa hace rato que nunca destacaron — ver
+// listings.boost_reminder_sent_at (migración 20260831000000).
+export async function sendBoostReminderEmail({
+  to,
+  name,
+  listingTitle,
+  listingId,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  listingId: string
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  await sendEmail({
+    to,
+    subject: `Dale más visibilidad a "${listingTitle}"`,
+    html: emailLayout('Hazla más visible', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, tu prenda <strong>${listingTitle}</strong> lleva un tiempo publicada. Por
+        <strong>$${BOOST_PRICE.toLocaleString('es-CL')}</strong> puedes destacarla ${BOOST_DURATION_DAYS} días en la fila
+        "Destacadas" arriba del catálogo, sin importar cómo la gente ordene o filtre — más ojos, más chances de vender.
+      </p>
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}/listings/${listingId}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Destacar mi prenda
+        </a>
       </p>
     `),
   })

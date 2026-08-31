@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendEmail, emailLayout } from '@/lib/email'
+import { sendEmail, emailLayout, sendBoostConfirmedEmail, sendAdminBoostPaidEmail } from '@/lib/email'
 import { BOOST_DURATION_DAYS } from '@/lib/catalog'
 import {
   recordSalePending, recordPurchaseCompleted, recordPurchaseCancelled,
@@ -53,7 +53,7 @@ async function handleNotification(request: Request) {
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', boostId)
       .eq('status', 'pending_payment')
-      .select('listing_id')
+      .select('listing_id, seller_id, amount')
       .maybeSingle()
 
     if (updatedBoost) {
@@ -62,6 +62,23 @@ async function handleNotification(request: Request) {
         .from('listings')
         .update({ featured_until: featuredUntil.toISOString() })
         .eq('id', updatedBoost.listing_id)
+
+      const [{ data: listing }, { data: seller }] = await Promise.all([
+        supabase.from('listings').select('title').eq('id', updatedBoost.listing_id).single(),
+        supabase.from('profiles').select('name, email').eq('id', updatedBoost.seller_id).single(),
+      ])
+      const listingTitle = listing?.title ?? 'tu prenda'
+
+      if (seller?.email) {
+        await sendBoostConfirmedEmail({
+          to: seller.email, name: seller.name, listingTitle,
+          listingId: updatedBoost.listing_id, featuredUntil,
+        })
+      }
+      await sendAdminBoostPaidEmail({
+        listingTitle, listingId: updatedBoost.listing_id,
+        sellerName: seller?.name ?? null, amount: updatedBoost.amount,
+      })
     }
 
     return Response.json({ status: 'ok' })

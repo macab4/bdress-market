@@ -97,6 +97,7 @@ export interface Listing {
   created_at: string
   bumped_at: string
   featured_until: string | null
+  boost_reminder_sent_at: string | null
   product_category: string | null
   product_type: string | null
   length: string | null

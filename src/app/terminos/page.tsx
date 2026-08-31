@@ -5,6 +5,7 @@ import {
   PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT,
   OFFER_MIN_PCT, OFFER_MAX_ROUNDS, OFFER_EXPIRY_HOURS, OFFER_ACCEPTED_HOLD_HOURS,
   REFERRAL_REWARD_AMOUNT, REFERRAL_MONTHLY_LIMIT, GIFTCARD_REDEMPTION_BONUS_PCT,
+  BOOST_PRICE, BOOST_DURATION_DAYS,
 } from '@/lib/catalog'
 import {
   INTERNATIONAL_MODE_NAME, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
@@ -128,6 +129,14 @@ export default function TerminosPage() {
               ventas» — pausa todas tus prendas de una sola vez, sin tener que hacerlo una por una. Mientras esté
               activo, tus prendas no aparecen en el catálogo ni se pueden comprar. Las ventas que ya tengas en curso
               siguen su proceso normal, y al desactivarlo tus prendas vuelven a verse exactamente como estaban antes.
+            </p>
+
+            <p className="font-medium text-gray-800 mb-1 mt-4">Destacar tu prenda</p>
+            <p>
+              Desde tu prenda puedes pagar <strong>${BOOST_PRICE.toLocaleString('es-CL')}</strong> para que aparezca en
+              la fila &quot;Destacadas&quot; arriba del catálogo durante <strong>{BOOST_DURATION_DAYS} días</strong>, sin
+              importar cómo la gente ordene o filtre. Es opcional y no afecta el 0% de comisión — es un pago aparte,
+              vía Mercado Pago, para más visibilidad.
             </p>
 
             <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-5 mb-2">Calcula cuánto vas a recibir</p>
