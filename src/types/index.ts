@@ -70,6 +70,7 @@ export interface Profile {
   address: string | null
   comuna: string | null
   referral_code: string | null
+  vacation_mode: boolean
   created_at: string
 }
 

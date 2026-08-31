@@ -122,6 +122,14 @@ export default function TerminosPage() {
               </li>
             </ol>
 
+            <p className="font-medium text-gray-800 mb-1 mt-4">Modo vacaciones</p>
+            <p>
+              Si te vas de viaje o necesitas pausar tu tienda, activa el <strong>Modo vacaciones</strong> desde «Mis
+              ventas» — pausa todas tus prendas de una sola vez, sin tener que hacerlo una por una. Mientras esté
+              activo, tus prendas no aparecen en el catálogo ni se pueden comprar. Las ventas que ya tengas en curso
+              siguen su proceso normal, y al desactivarlo tus prendas vuelven a verse exactamente como estaban antes.
+            </p>
+
             <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-5 mb-2">Calcula cuánto vas a recibir</p>
             <SellerPriceCalculator />
           </section>

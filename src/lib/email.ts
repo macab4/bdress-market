@@ -894,6 +894,56 @@ export async function sendWalletBalanceChangedEmail({
 // vendedora nunca volvió a ingresar el seguimiento, o la compradora nunca
 // confirmó recepción aunque el courier ya la haya entregado. Solo se manda
 // si hay al menos una orden en alguna de las dos listas.
+// Digest diario de "nuevas prendas de quienes sigues" — cron
+// follow-digest. La notificación in-app (tabla notifications, tipo
+// 'new_listing') ya existía vía el trigger notify_followers_new_listing;
+// esto agrega el aviso por correo que faltaba, agrupando todas las
+// prendas nuevas del día en un solo email por compradora.
+export async function sendNewListingsDigestEmail({
+  to,
+  name,
+  items,
+}: {
+  to: string
+  name: string | null
+  items: { listingId: string; listingTitle: string; sellerName: string | null; price: number; photo: string | null }[]
+}) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const shown = items.slice(0, 6)
+  const extra = items.length - shown.length
+
+  const rows = shown.map(item => `
+    <tr>
+      <td style="padding: 8px 0; border-bottom: 1px solid #eee;">
+        <a href="${siteUrl}/listings/${item.listingId}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 12px;">
+          ${item.photo ? `<img src="${item.photo}" width="56" height="70" style="object-fit: cover; flex-shrink: 0;" />` : ''}
+          <span>
+            <span style="display: block; font-size: 13px; color: #111;">${item.listingTitle}</span>
+            <span style="display: block; font-size: 11px; color: #999; margin-top: 2px;">${item.sellerName ?? 'Vendedora'} · $${item.price.toLocaleString('es-CL')}</span>
+          </span>
+        </a>
+      </td>
+    </tr>
+  `).join('')
+
+  await sendEmail({
+    to,
+    subject: `${items.length} ${items.length === 1 ? 'prenda nueva' : 'prendas nuevas'} de quienes sigues`,
+    html: emailLayout('Nuevas prendas de tus vendedoras favoritas', `
+      <p style="font-size: 14px; color: #444; line-height: 1.6;">
+        Hola ${name ?? ''}, ${items.length === 1 ? 'una vendedora que sigues publicó una prenda nueva' : `${items.length} vendedoras que sigues publicaron prendas nuevas`}:
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">${rows}</table>
+      ${extra > 0 ? `<p style="font-size: 12px; color: #999; text-align: center;">+ ${extra} más</p>` : ''}
+      <p style="text-align: center; margin-top: 24px;">
+        <a href="${siteUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+          Ver en Bdress Market
+        </a>
+      </p>
+    `),
+  })
+}
+
 export async function sendAdminShippingDigestEmail({
   to, awaitingDispatch, awaitingDeliveryConfirmation, awaitingReturn,
 }: {

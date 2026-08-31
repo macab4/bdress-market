@@ -269,16 +269,21 @@ export default async function HomePage({
           <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">Destacadas</p>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {featuredListings.map((listing) => (
-              <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white flex-shrink-0 w-36">
+              <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white flex-shrink-0 w-40">
                 <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
                   {listing.photos[0] ? (
                     <Image src={listing.photos[0]} alt={listing.title} fill className="object-cover group-hover:scale-105 transition duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
                   )}
-                  <span className="absolute top-2 left-2 bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
-                    Destacada
-                  </span>
+                  <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+                    <span className="bg-white text-[9px] tracking-widest uppercase px-2 py-1">
+                      {conditionGroupLabel(listing.condition)}
+                    </span>
+                    <span className="bg-[#7fab87] text-white text-[9px] tracking-widest uppercase px-2 py-1">
+                      Destacada
+                    </span>
+                  </div>
                   {listing.source_type === 'international_on_demand' && (
                     <span className="absolute top-2 right-2 bg-black/80 text-white text-[9px] tracking-widest uppercase px-2 py-1">
                       {INTERNATIONAL_BADGE_LABEL}
@@ -288,7 +293,18 @@ export default async function HomePage({
                 <div className="p-2">
                   <p className="text-[10px] tracking-widest text-gray-400 uppercase truncate">{listing.brand_ref?.display_name || listing.brand || 'Sin marca'}</p>
                   <p className="text-xs font-medium truncate">{listing.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">${listing.price.toLocaleString('es-CL')}</p>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <p className="text-xs text-gray-500">${listing.price.toLocaleString('es-CL')}</p>
+                    <p className="text-[10px] text-gray-400">{listing.size}</p>
+                  </div>
+                  {(listing.seller?.name || sellerRatings[listing.seller_id]) && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      {listing.seller?.name && <p className="text-[10px] text-gray-400 truncate">{listing.seller.name}</p>}
+                      {sellerRatings[listing.seller_id] && (
+                        <RatingBadge rating={sellerRatings[listing.seller_id].avg} count={sellerRatings[listing.seller_id].count} />
+                      )}
+                    </div>
+                  )}
                 </div>
               </Link>
             ))}

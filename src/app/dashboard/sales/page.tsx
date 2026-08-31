@@ -6,6 +6,7 @@ import GenerateLabelButton from '@/components/dashboard/GenerateLabelButton'
 import AddTrackingForm from '@/components/dashboard/AddTrackingForm'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { daysUntilRelease } from '@/lib/catalog'
+import VacationModeToggle from '@/components/dashboard/VacationModeToggle'
 
 type OrderWithRelations = Order & {
   listing: { title: string; photos: string[] } | null
@@ -17,11 +18,14 @@ export default async function SalesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: ordersData } = await supabase
-    .from('orders')
-    .select('*, listing:listings(title, photos), buyer:profiles!orders_buyer_id_fkey(name)')
-    .eq('seller_id', user.id)
-    .order('created_at', { ascending: false })
+  const [{ data: ordersData }, { data: profile }] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('*, listing:listings(title, photos), buyer:profiles!orders_buyer_id_fkey(name)')
+      .eq('seller_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase.from('profiles').select('vacation_mode').eq('id', user.id).single(),
+  ])
 
   const orders = (ordersData ?? []) as OrderWithRelations[]
 
@@ -45,6 +49,8 @@ export default async function SalesPage() {
     <div className="min-h-screen bg-[#EBEBEB]">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-10">
         <h1 className="text-xl font-light tracking-widest uppercase">Mis ventas</h1>
+
+        <VacationModeToggle initialVacationMode={profile?.vacation_mode ?? false} />
 
         {/* Resumen */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

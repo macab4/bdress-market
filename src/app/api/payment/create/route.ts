@@ -180,6 +180,9 @@ export async function POST(request: Request) {
     if (reservationErr.message.includes('cannot_buy_own_listing')) {
       return Response.json({ error: 'No puedes comprar tu propia prenda' }, { status: 403 })
     }
+    if (reservationErr.message.includes('seller_on_vacation')) {
+      return Response.json({ error: 'Esta vendedora está en modo vacaciones y no está recibiendo ventas por ahora' }, { status: 409 })
+    }
     return Response.json({ error: 'Error creando la orden' }, { status: 500 })
   }
 
