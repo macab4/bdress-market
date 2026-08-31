@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ShieldCheck } from 'lucide-react'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
@@ -182,6 +183,55 @@ export default async function ListingPage({
     conditionDetail.label,
     listing.colors && listing.colors.length > 0 ? listing.colors.map(colorLabel).join(', ') : null,
   ].filter(Boolean).join(' · ')
+
+  // "Prendas similares" — misma talla primero (lo que más importa para
+  // decidir si comprar); si no alcanzan 4, completa con el mismo tipo de
+  // producto. Excluye siempre la prenda actual.
+  type SimilarListing = { id: string; title: string; price: number; photos: string[]; brand: string | null; brand_ref: { display_name: string } | null }
+  let similarListings: SimilarListing[] = []
+  if (listing.size) {
+    const { data } = await supabase
+      .from('listings')
+      .select('id, title, price, photos, brand, brand_ref:brands(display_name)')
+      .eq('status', 'active')
+      .eq('size', listing.size)
+      .neq('id', listing.id)
+      .limit(4) as unknown as { data: SimilarListing[] | null }
+    similarListings = data ?? []
+  }
+  if (similarListings.length < 4 && listing.product_type) {
+    const excludeIds = [listing.id, ...similarListings.map(l => l.id)]
+    const { data } = await supabase
+      .from('listings')
+      .select('id, title, price, photos, brand, brand_ref:brands(display_name)')
+      .eq('status', 'active')
+      .eq('product_type', listing.product_type)
+      .not('id', 'in', `(${excludeIds.join(',')})`)
+      .limit(4 - similarListings.length) as unknown as { data: SimilarListing[] | null }
+    similarListings = [...similarListings, ...(data ?? [])]
+  }
+
+  // "Descubre otras vendedoras" — perfiles distintos al de esta prenda con
+  // al menos una prenda activa, sacados de las publicaciones más recientes.
+  type DiscoverSeller = { id: string; name: string; city: string | null; avatar_url: string | null }
+  let discoverSellers: DiscoverSeller[] = []
+  {
+    const { data: recentListings } = await supabase
+      .from('listings')
+      .select('seller_id, seller:profiles(id, name, city, avatar_url)')
+      .eq('status', 'active')
+      .neq('seller_id', listing.seller_id)
+      .order('created_at', { ascending: false })
+      .limit(30) as unknown as { data: { seller_id: string; seller: DiscoverSeller }[] | null }
+
+    const seen = new Set<string>()
+    for (const l of recentListings ?? []) {
+      if (!l.seller || seen.has(l.seller_id)) continue
+      seen.add(l.seller_id)
+      discoverSellers.push(l.seller)
+      if (discoverSellers.length >= 4) break
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -571,6 +621,60 @@ export default async function ListingPage({
             </div>
           </div>
         </div>
+
+        {/* Prendas similares — misma talla, para no perder a alguien que
+            decidió que esta prenda no calzaba pero sigue buscando. */}
+        {similarListings.length > 0 && (
+          <div className="mt-14">
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">
+              Prendas similares{listing.size ? ` · Talla ${listing.size}` : ''}
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {similarListings.map(l => (
+                <Link key={l.id} href={`/listings/${l.id}`} className="group bg-white">
+                  <div className="aspect-[3/4] bg-gray-100 overflow-hidden relative">
+                    {l.photos[0] ? (
+                      <Image src={l.photos[0]} alt={l.title} fill className="object-cover group-hover:scale-105 transition duration-300" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
+                    )}
+                  </div>
+                  <div className="p-2.5">
+                    <p className="text-[10px] tracking-widest text-gray-400 uppercase truncate">{l.brand_ref?.display_name || l.brand || 'Sin marca'}</p>
+                    <p className="text-xs font-medium truncate mt-0.5">{l.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">${l.price.toLocaleString('es-CL')}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Descubre otras vendedoras — empuja a explorar más allá de esta
+            prenda puntual, mismo objetivo que "closets por descubrir". */}
+        {discoverSellers.length > 0 && (
+          <div className="mt-14 mb-4">
+            <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-4">Descubre otras vendedoras</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {discoverSellers.map(s => (
+                <Link key={s.id} href={`/profile/${s.id}`} className="bg-white p-4 flex items-center gap-3 hover:bg-gray-50 transition">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600 overflow-hidden flex-shrink-0">
+                    {s.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={s.avatar_url} alt={s.name} className="w-full h-full object-cover" />
+                    ) : (
+                      s.name?.[0]?.toUpperCase() ?? '?'
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{s.name}</p>
+                    {s.city && <p className="text-xs text-gray-400 truncate">{s.city}</p>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
