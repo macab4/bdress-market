@@ -80,6 +80,17 @@ const FAQS: { question: string; answer: React.ReactNode }[] = [
     ),
   },
   {
+    question: '¿Puedo probarme la prenda antes de comprar?',
+    answer: (
+      <p>
+        No — las prendas de Bdress Market las tiene cada vendedora, no Bdress, así que no están disponibles para
+        probarse en nuestro showroom (eso es solo para prendas de arriendo). Antes de comprar, revisa bien la
+        talla, la descripción y las fotos de la ficha, y si te queda alguna duda sobre cómo calza, puedes
+        escribirle directo a la vendedora desde el botón &quot;Enviar mensaje&quot; en la prenda.
+      </p>
+    ),
+  },
+  {
     question: '¿Qué es el Saldo B-Dress?',
     answer: (
       <p>
