@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendDeliveryConfirmedEmail } from '@/lib/email'
+import { sendSystemMessage } from '@/lib/orderNotifications'
 
 export async function POST(
   _request: Request,
@@ -59,6 +61,11 @@ export async function POST(
   if (seller?.email) {
     await sendDeliveryConfirmedEmail({ to: seller.email, name: seller.name, listingTitle, role: 'seller' })
   }
+
+  await sendSystemMessage(createAdminClient(), {
+    listingId: order.listing_id, buyerId: order.buyer_id, sellerId: order.seller_id,
+    content: 'Recepción confirmada ✅ El pago queda a favor de la vendedora.',
+  })
 
   return Response.json({ ok: true })
 }

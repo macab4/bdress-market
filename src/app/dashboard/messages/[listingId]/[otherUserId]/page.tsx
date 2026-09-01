@@ -14,6 +14,7 @@ type MessageRow = {
   receiver_id: string
   content: string
   created_at: string
+  is_system: boolean
 }
 
 type OfferRow = {
@@ -56,7 +57,7 @@ export default async function MessageThreadPage({
     supabase.from('profiles').select('id, name, avatar_url').eq('id', otherUserId).single(),
     supabase
       .from('messages')
-      .select('id, sender_id, receiver_id, content, created_at')
+      .select('id, sender_id, receiver_id, content, created_at, is_system')
       .eq('listing_id', listingId)
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true }) as unknown as Promise<{ data: MessageRow[] | null }>,
@@ -119,6 +120,21 @@ export default async function MessageThreadPage({
               timeline.map(item => {
                 if (item.type === 'message') {
                   const m = item.data
+
+                  // Mensaje de sistema (cambio de estado de la orden) — banner
+                  // centrado, no burbuja de una persona (ver sendSystemMessage
+                  // en src/lib/orderNotifications.ts).
+                  if (m.is_system) {
+                    return (
+                      <div key={`m-${m.id}`} className="flex justify-center py-1">
+                        <div className="max-w-[85%] bg-[#7fab87]/10 text-[#5a7a55] text-xs px-3 py-2 text-center">
+                          <p>{m.content}</p>
+                          <p className="text-[9px] text-[#5a7a55]/60 mt-0.5">{formatTime(m.created_at)}</p>
+                        </div>
+                      </div>
+                    )
+                  }
+
                   const fromMe = m.sender_id === user.id
                   return (
                     <div key={`m-${m.id}`} className={`flex ${fromMe ? 'justify-end' : 'justify-start'}`}>

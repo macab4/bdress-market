@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendOrderShippedEmail, sendInternationalNationallyShippedEmail } from '@/lib/email'
 import { isAdminEmail } from '@/lib/admin-auth'
+import { sendSystemMessage } from '@/lib/orderNotifications'
 
 export async function PATCH(
   request: Request,
@@ -76,6 +78,11 @@ export async function PATCH(
       await sendOrderShippedEmail({ to: buyer.email, name: buyer.name, listingTitle: listing?.title ?? '', trackingNumber: tracking_number })
     }
   }
+
+  await sendSystemMessage(createAdminClient(), {
+    listingId: order.listing_id, buyerId: order.buyer_id, sellerId: order.seller_id,
+    content: `Tu prenda fue despachada 📦 Número de seguimiento: ${tracking_number}`,
+  })
 
   return Response.json({ ok: true })
 }

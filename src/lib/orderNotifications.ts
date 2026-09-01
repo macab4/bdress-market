@@ -3,7 +3,7 @@ import {
   sendEmail, emailLayout, sendInternationalOrderReceivedEmail, sendInternationalAdminActionNeededEmail,
   sendOrderRefundedEmail,
 } from '@/lib/email'
-import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED } from '@/lib/catalog'
+import { PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, shipDeadline } from '@/lib/catalog'
 import { recordSaleReversal, recordPurchaseRefund, recordPromoPurchaseRefund, sendWalletAlertEmail } from '@/lib/wallet'
 
 const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
@@ -11,6 +11,26 @@ const MP_ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN!
 type AdminClient = ReturnType<typeof createAdminClient>
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
+
+// Mensaje automático dentro del chat compradora-vendedora de esta prenda —
+// mete el historial de la orden (comprado, plazo de envío, despachado,
+// recibido) directo en la conversación en vez de vivir aparte en "mis
+// compras"/"mis ventas" (inspirado en cómo lo hace Vinted). is_system=true
+// (migración 20260901000000) hace que el chat lo renderice como banner
+// centrado, no como burbuja de una persona — por eso da lo mismo bastante
+// arbitrariamente cuál de las dos es sender/receiver acá, ninguna se
+// muestra como remitente real.
+export async function sendSystemMessage(admin: AdminClient, args: {
+  listingId: string; buyerId: string; sellerId: string; content: string
+}): Promise<void> {
+  await admin.from('messages').insert({
+    listing_id: args.listingId,
+    sender_id: args.sellerId,
+    receiver_id: args.buyerId,
+    content: args.content,
+    is_system: true,
+  })
+}
 
 // Todo lo que pasa la PRIMERA vez que una orden queda pagada — marcar la
 // prenda vendida, arrancar el carril internacional si corresponde, y
@@ -153,6 +173,12 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
         `),
       })
     }
+
+    const deadlineFmt = shipDeadline(new Date().toISOString()).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })
+    await sendSystemMessage(admin, {
+      listingId: order.listingId, buyerId: order.buyerId, sellerId: order.sellerId,
+      content: `¡Compra confirmada! 🎉 ${seller?.name ?? 'La vendedora'} tiene hasta el ${deadlineFmt} para despachar tu pedido.`,
+    })
   }
 }
 
