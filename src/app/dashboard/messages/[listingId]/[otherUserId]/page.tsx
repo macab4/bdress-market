@@ -6,6 +6,7 @@ import MessageComposer from '@/components/messages/MessageComposer'
 import ThreadRefresher from '@/components/messages/ThreadRefresher'
 import SecurityTipsModal from '@/components/messages/SecurityTipsModal'
 import OfferResponseActions from '@/components/dashboard/OfferResponseActions'
+import MakeOfferModal from '@/components/listings/MakeOfferModal'
 import { OFFER_STATUS_CONFIG, OFFER_MAX_ROUNDS, minOfferPrice } from '@/lib/catalog'
 
 type MessageRow = {
@@ -49,11 +50,11 @@ export default async function MessageThreadPage({
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
+  if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/dashboard/messages/${listingId}/${otherUserId}`)}`)
   if (otherUserId === user.id) notFound()
 
   const [{ data: listing }, { data: otherUser }, { data: messages }, { data: offers }] = await Promise.all([
-    supabase.from('listings').select('id, title, photos, seller_id, status').eq('id', listingId).single(),
+    supabase.from('listings').select('id, title, photos, seller_id, price, status').eq('id', listingId).single(),
     supabase.from('profiles').select('id, name, avatar_url').eq('id', otherUserId).single(),
     supabase
       .from('messages')
@@ -82,6 +83,21 @@ export default async function MessageThreadPage({
     ...messageList.map((m): TimelineItem => ({ type: 'message', createdAt: m.created_at, data: m })),
     ...offerList.map((o): TimelineItem => ({ type: 'offer', createdAt: o.created_at, data: o })),
   ].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+
+  // "Hacer nueva oferta" desde el chat — hoy MakeOfferModal solo vivía en la
+  // ficha de la prenda, así que si rechazaban tu oferta tenías que volver
+  // ahí para intentar de nuevo. Solo aplica a quien puede ofertar (la
+  // compradora, nunca la vendedora de su propia prenda) y solo si no tiene
+  // ya una oferta pendiente/aceptada en curso — misma condición que usa
+  // /listings/[id] para mostrar el botón.
+  const isBuyerRole = user.id !== listing.seller_id
+  const myActiveOffer = isBuyerRole
+    ? offerList.find(o =>
+        o.buyer_id === user.id &&
+        (o.status === 'pending' || (o.status === 'accepted' && o.accepted_expires_at && new Date(o.accepted_expires_at) > new Date()))
+      )
+    : null
+  const canMakeNewOffer = isBuyerRole && listing.status === 'active' && !myActiveOffer
 
   return (
     <div className="min-h-screen bg-[#EBEBEB]">
@@ -202,6 +218,23 @@ export default async function MessageThreadPage({
               })
             )}
           </div>
+
+          {/* Hacer nueva oferta — solo la compradora, solo si la prenda sigue
+              disponible y no tiene ya una oferta en curso. Nunca reflota una
+              oferta rechazada como si siguiera pendiente: siempre arranca
+              una nueva a través de la misma lógica de /api/listings/[id]/offers. */}
+          {isBuyerRole && listing.status !== 'active' && (
+            <div className="px-4 pt-4">
+              <p className="bg-gray-50 text-gray-500 text-xs text-center p-3">
+                Esta publicación ya no está disponible.
+              </p>
+            </div>
+          )}
+          {canMakeNewOffer && (
+            <div className="px-4 pt-4">
+              <MakeOfferModal listingId={listingId} sellerId={listing.seller_id} price={listing.price} minPrice={minOfferPrice(listing.price)} />
+            </div>
+          )}
 
           {/* Responder */}
           <div className="p-4">

@@ -16,11 +16,17 @@ const ACTION_TEXT: Record<Notification['type'], string> = {
   offer_accepted: 'aceptó tu oferta por',
   offer_rejected: 'rechazó tu oferta por',
   offer_countered: 'te hizo una contraoferta por',
+  new_message: 'te escribió por',
   referral_bonus: `publicó su primera prenda — ganaste $${REFERRAL_REWARD_AMOUNT.toLocaleString('es-CL')} de Crédito B-Dress 💚`,
   sale_paid: 'te compró',
   label_requested: 'pidió la etiqueta de envío de',
   withdrawal_requested: 'pidió un retiro de su Saldo B-Dress 🏦',
 }
+
+// Tipos que deben llevar a la conversación real (listing + la contraparte,
+// que en estos casos siempre es actor_id) en vez de a la ficha del
+// producto — ver auditoría de deep links.
+const CONVERSATION_TYPES: Notification['type'][] = ['offer_received', 'offer_accepted', 'offer_rejected', 'offer_countered', 'new_message']
 
 export default async function NotificationsPage() {
   const supabase = await createClient()
@@ -57,6 +63,10 @@ export default async function NotificationsPage() {
                     : n.type === 'sale_paid' ? '/dashboard/sales'
                     : n.type === 'label_requested' ? '/admin'
                     : n.type === 'withdrawal_requested' ? '/admin/wallet/withdrawals'
+                    // Ofertas y mensajes van a la conversación real, no a la
+                    // ficha — actor_id es siempre la contraparte correcta
+                    // desde la perspectiva de quien recibe la notificación.
+                    : CONVERSATION_TYPES.includes(n.type) && n.listing_id ? `/dashboard/messages/${n.listing_id}/${n.actor_id}`
                     : n.listing_id ? `/listings/${n.listing_id}` : '#'
                 }
                 className="flex items-center gap-3 bg-white p-4 hover:bg-gray-50 transition"
@@ -92,7 +102,10 @@ export default async function NotificationsPage() {
           <div className="text-center py-20 bg-white">
             <p className="text-gray-400 text-sm mb-2">Todavía no tienes notificaciones.</p>
             <p className="text-gray-400 text-xs">
-              Sigue a tus vendedoras favoritas para enterarte cuando publiquen algo nuevo.
+              Cuando tengas actividad en tus compras, ventas, ofertas o mensajes, aparecerá aquí.
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              También puedes seguir vendedoras para enterarte cuando publiquen algo nuevo.
             </p>
           </div>
         )}

@@ -76,6 +76,13 @@ export async function POST(
 
     const proposer = offer.proposed_by === 'buyer' ? buyer : seller
     if (proposer?.email) {
+      // Deep link directo a la conversación real (no existe conversation_id
+      // en el sistema — la "conversación" es la propia ruta, identificada
+      // por listing + la contraparte de quien recibe el correo). Ver
+      // src/app/dashboard/messages/[listingId]/[otherUserId]/page.tsx.
+      const otherUserId = offer.proposed_by === 'buyer' ? offer.seller_id : offer.buyer_id
+      const conversationUrl = `${SITE_URL}/dashboard/messages/${offer.listing_id}/${otherUserId}`
+
       await sendEmail({
         to: proposer.email,
         subject: `Rechazaron tu oferta — ${listingTitle}`,
@@ -83,6 +90,15 @@ export async function POST(
           <p style="font-size: 14px; color: #444; line-height: 1.6;">
             Hola ${proposer.name ?? ''}, tu oferta de $${offer.offered_price.toLocaleString('es-CL')} por
             <strong>${listingTitle}</strong> fue rechazada.
+          </p>
+          <p style="font-size: 14px; color: #444; line-height: 1.6;">
+            Puedes volver a la conversación para seguir negociando o hacer una nueva oferta si la publicación
+            sigue disponible.
+          </p>
+          <p style="text-align: center; margin-top: 24px;">
+            <a href="${conversationUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+              Seguir negociando
+            </a>
           </p>
         `),
       })

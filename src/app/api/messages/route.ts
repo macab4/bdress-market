@@ -114,6 +114,16 @@ export async function POST(request: Request) {
 
   if (error || !message) return Response.json({ error: error?.message ?? 'Error al enviar el mensaje' }, { status: 500 })
 
+  // Antes solo se avisaba por correo — nunca creaba notificación in-app
+  // (a diferencia de ofertas, que sí lo intentaban aunque venían fallando
+  // por falta de policy de insert, ver migración 20260902000000).
+  await supabase.from('notifications').insert({
+    user_id: receiverId,
+    type: 'new_message',
+    actor_id: user.id,
+    listing_id: listingId,
+  })
+
   const [{ data: sender }, { data: receiver }] = await Promise.all([
     supabase.from('profiles').select('name').eq('id', user.id).single(),
     supabase.from('profiles').select('email, name').eq('id', receiverId).single(),
