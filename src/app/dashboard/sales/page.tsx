@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Order } from '@/types'
 import GenerateLabelButton from '@/components/dashboard/GenerateLabelButton'
 import AddTrackingForm from '@/components/dashboard/AddTrackingForm'
+import CancelOrderButton from '@/components/dashboard/CancelOrderButton'
 import ReviewForm from '@/components/reviews/ReviewForm'
 import { daysUntilRelease } from '@/lib/catalog'
 import VacationModeToggle from '@/components/dashboard/VacationModeToggle'
@@ -116,6 +117,7 @@ export default async function SalesPage() {
                           ¿Ya tienes el número de seguimiento?
                         </p>
                         <AddTrackingForm orderId={order.id} />
+                        <CancelOrderButton orderId={order.id} />
                       </div>
                     </div>
                   </div>
