@@ -1,53 +1,161 @@
 // Tarjeta de compartir de una sola prenda (a diferencia de la grilla 2x3 de
-// instagramStory/layout.ts) — mismo lienzo 1080x1920 (funciona como story),
-// pero un único bloque vertical: logo, foto grande, datos, pie de página. El
-// pie usa marginTop: 'auto' así que no hace falta calcular alturas hacia
-// atrás como en la grilla: nada puede superponerse porque es una sola
-// columna de flujo normal.
+// instagramStory/layout.ts) — un único bloque vertical: logo, foto grande,
+// datos, pie de página. El pie usa marginTop: 'auto' así que no hace falta
+// calcular alturas hacia atrás: nada puede superponerse porque es una sola
+// columna de flujo normal. Dos variantes comparten esta misma estructura:
+// "story" (9:16, para historias / share sheet nativo) y "post" (4:5, el
+// ratio máximo que Instagram acepta en feed/carrusel — un 9:16 ahí se
+// recorta feo). PHOTO_HEIGHT en ambas está calculado a mano para dejar
+// margen de sobra incluso con un título de 2 líneas (el máximo posible, por
+// el line-clamp del template) — ver brand.md del proyecto si se ajusta.
+export type ShareCardVariant = 'story' | 'post'
 
-export const CANVAS_WIDTH = 1080
-export const CANVAS_HEIGHT = 1920
-export const BG_COLOR = '#FFFFFF'
+export interface ShareCardLayout {
+  CANVAS_WIDTH: number
+  CANVAS_HEIGHT: number
+  BG_COLOR: string
 
-export const MARGIN_X = 72
-export const MARGIN_TOP = 90
-export const MARGIN_BOTTOM = 80
-export const CONTENT_WIDTH = CANVAS_WIDTH - MARGIN_X * 2 // 936
+  MARGIN_X: number
+  MARGIN_TOP: number
+  MARGIN_BOTTOM: number
+  CONTENT_WIDTH: number
 
-export const LOGO_WIDTH = 240
+  LOGO_WIDTH: number
+  LOGO_HEIGHT: number
+  GAP_AFTER_LOGO: number
+
+  PHOTO_HEIGHT: number
+  PHOTO_BG: string
+  GAP_AFTER_PHOTO: number
+
+  BRAND_FONT_SIZE: number
+  BRAND_COLOR: string
+  BRAND_LETTER_SPACING: string
+
+  TITLE_FONT_SIZE: number
+  TITLE_COLOR: string
+  TITLE_LINE_HEIGHT: number
+  TITLE_MARGIN_TOP: number
+
+  PRICE_FONT_SIZE: number
+  PRICE_COLOR: string
+  PRICE_MARGIN_TOP: number
+
+  SIZE_FONT_SIZE: number
+  SIZE_COLOR: string
+  SIZE_MARGIN_TOP: number
+
+  BADGE_FONT_SIZE: number
+  BADGE_COLOR: string
+  BADGE_BG: string
+  BADGE_MARGIN_TOP: number
+
+  FOOTER_FONT_SIZE: number
+  FOOTER_COLOR: string
+  FOOTER_LETTER_SPACING: string
+}
+
 const LOGO_ASPECT = 2172 / 724 // aspecto real de /logo.png
-export const LOGO_HEIGHT = Math.round(LOGO_WIDTH / LOGO_ASPECT)
-export const GAP_AFTER_LOGO = 56
 
-// Constante (no calculada hacia atrás): con un único pie de página al final
-// empujado por marginTop: 'auto', no hay riesgo de superposición sin
-// importar cuánto texto haya arriba — ver comentario del encabezado.
-export const PHOTO_HEIGHT = 1120
-export const PHOTO_BG = '#F4F2ED' // mismo tono que CONTAIN_BG en instagramStory
-export const GAP_AFTER_PHOTO = 44
+function logoHeight(width: number): number {
+  return Math.round(width / LOGO_ASPECT)
+}
 
-export const BRAND_FONT_SIZE = 30
-export const BRAND_COLOR = '#7fab87'
-export const BRAND_LETTER_SPACING = '3px'
+export const storyLayout: ShareCardLayout = {
+  CANVAS_WIDTH: 1080,
+  CANVAS_HEIGHT: 1920,
+  BG_COLOR: '#FFFFFF',
 
-export const TITLE_FONT_SIZE = 52
-export const TITLE_COLOR = '#1A1A1A'
-export const TITLE_LINE_HEIGHT = 1.15
-export const TITLE_MARGIN_TOP = 10
+  MARGIN_X: 72,
+  MARGIN_TOP: 90,
+  MARGIN_BOTTOM: 80,
+  CONTENT_WIDTH: 1080 - 72 * 2,
 
-export const PRICE_FONT_SIZE = 58
-export const PRICE_COLOR = '#1A1A1A'
-export const PRICE_MARGIN_TOP = 24
+  LOGO_WIDTH: 240,
+  LOGO_HEIGHT: logoHeight(240),
+  GAP_AFTER_LOGO: 56,
 
-export const SIZE_FONT_SIZE = 32
-export const SIZE_COLOR = '#6B7280'
-export const SIZE_MARGIN_TOP = 14
+  PHOTO_HEIGHT: 1120,
+  PHOTO_BG: '#F4F2ED',
+  GAP_AFTER_PHOTO: 44,
 
-export const BADGE_FONT_SIZE = 26
-export const BADGE_COLOR = '#5a7a55'
-export const BADGE_BG = 'rgba(127,171,135,0.14)'
-export const BADGE_MARGIN_TOP = 28
+  BRAND_FONT_SIZE: 30,
+  BRAND_COLOR: '#7fab87',
+  BRAND_LETTER_SPACING: '3px',
 
-export const FOOTER_FONT_SIZE = 32
-export const FOOTER_COLOR = '#9CA3AF'
-export const FOOTER_LETTER_SPACING = '3px'
+  TITLE_FONT_SIZE: 52,
+  TITLE_COLOR: '#1A1A1A',
+  TITLE_LINE_HEIGHT: 1.15,
+  TITLE_MARGIN_TOP: 10,
+
+  PRICE_FONT_SIZE: 58,
+  PRICE_COLOR: '#1A1A1A',
+  PRICE_MARGIN_TOP: 24,
+
+  SIZE_FONT_SIZE: 32,
+  SIZE_COLOR: '#6B7280',
+  SIZE_MARGIN_TOP: 14,
+
+  BADGE_FONT_SIZE: 26,
+  BADGE_COLOR: '#5a7a55',
+  BADGE_BG: 'rgba(127,171,135,0.14)',
+  BADGE_MARGIN_TOP: 28,
+
+  FOOTER_FONT_SIZE: 32,
+  FOOTER_COLOR: '#9CA3AF',
+  FOOTER_LETTER_SPACING: '3px',
+}
+
+// 1080x1350 (4:5) — el ratio más alto que Instagram permite en feed/carrusel
+// sin recortar. Mismos tokens visuales que storyLayout, tamaños de texto y
+// PHOTO_HEIGHT recalculados para el lienzo más bajo (presupuesto verificado
+// a mano con título de 2 líneas: suma ~1239px + pie ~82px, deja ~29px de
+// margen — ver comentario de cabecera).
+export const postLayout: ShareCardLayout = {
+  CANVAS_WIDTH: 1080,
+  CANVAS_HEIGHT: 1350,
+  BG_COLOR: '#FFFFFF',
+
+  MARGIN_X: 64,
+  MARGIN_TOP: 64,
+  MARGIN_BOTTOM: 56,
+  CONTENT_WIDTH: 1080 - 64 * 2,
+
+  LOGO_WIDTH: 200,
+  LOGO_HEIGHT: logoHeight(200),
+  GAP_AFTER_LOGO: 40,
+
+  PHOTO_HEIGHT: 800,
+  PHOTO_BG: '#F4F2ED',
+  GAP_AFTER_PHOTO: 32,
+
+  BRAND_FONT_SIZE: 24,
+  BRAND_COLOR: '#7fab87',
+  BRAND_LETTER_SPACING: '2.5px',
+
+  TITLE_FONT_SIZE: 38,
+  TITLE_COLOR: '#1A1A1A',
+  TITLE_LINE_HEIGHT: 1.15,
+  TITLE_MARGIN_TOP: 8,
+
+  PRICE_FONT_SIZE: 44,
+  PRICE_COLOR: '#1A1A1A',
+  PRICE_MARGIN_TOP: 18,
+
+  SIZE_FONT_SIZE: 24,
+  SIZE_COLOR: '#6B7280',
+  SIZE_MARGIN_TOP: 10,
+
+  BADGE_FONT_SIZE: 20,
+  BADGE_COLOR: '#5a7a55',
+  BADGE_BG: 'rgba(127,171,135,0.14)',
+  BADGE_MARGIN_TOP: 20,
+
+  FOOTER_FONT_SIZE: 22,
+  FOOTER_COLOR: '#9CA3AF',
+  FOOTER_LETTER_SPACING: '2.5px',
+}
+
+export function getShareCardLayout(variant: ShareCardVariant): ShareCardLayout {
+  return variant === 'post' ? postLayout : storyLayout
+}

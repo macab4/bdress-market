@@ -1,14 +1,5 @@
 import type { ImageDisplayMode } from '../instagramStory/imageValidation'
-import {
-  CANVAS_WIDTH, CANVAS_HEIGHT, BG_COLOR, MARGIN_X, MARGIN_TOP, MARGIN_BOTTOM, CONTENT_WIDTH,
-  LOGO_WIDTH, LOGO_HEIGHT, GAP_AFTER_LOGO, PHOTO_HEIGHT, PHOTO_BG, GAP_AFTER_PHOTO,
-  BRAND_FONT_SIZE, BRAND_COLOR, BRAND_LETTER_SPACING,
-  TITLE_FONT_SIZE, TITLE_COLOR, TITLE_LINE_HEIGHT, TITLE_MARGIN_TOP,
-  PRICE_FONT_SIZE, PRICE_COLOR, PRICE_MARGIN_TOP,
-  SIZE_FONT_SIZE, SIZE_COLOR, SIZE_MARGIN_TOP,
-  BADGE_FONT_SIZE, BADGE_COLOR, BADGE_BG, BADGE_MARGIN_TOP,
-  FOOTER_FONT_SIZE, FOOTER_COLOR, FOOTER_LETTER_SPACING,
-} from './layout'
+import type { ShareCardLayout } from './layout'
 
 export interface ShareCardProps {
   title: string
@@ -19,12 +10,26 @@ export interface ShareCardProps {
   logoDataUri: string
   badgeLabel: string | null // null = no es envío internacional, no se muestra
   siteLabel: string
+  layout: ShareCardLayout
 }
 
 // Misma filosofía que instagramStory/template.tsx: 100% flexbox, un solo
 // flujo en columna, el pie de página se ancla al fondo con marginTop: 'auto'
-// en vez de calcular posiciones — así nada puede quedar superpuesto.
-export function buildShareCardElement({ title, brand, priceLabel, size, photo, logoDataUri, badgeLabel, siteLabel }: ShareCardProps) {
+// en vez de calcular posiciones — así nada puede quedar superpuesto. Los
+// tamaños vienen de `layout` (story o post, ver layout.ts) en vez de
+// constantes fijas, para poder generar ambos formatos con un solo template.
+export function buildShareCardElement({ title, brand, priceLabel, size, photo, logoDataUri, badgeLabel, siteLabel, layout }: ShareCardProps) {
+  const {
+    CANVAS_WIDTH, CANVAS_HEIGHT, BG_COLOR, MARGIN_X, MARGIN_TOP, MARGIN_BOTTOM, CONTENT_WIDTH,
+    LOGO_WIDTH, LOGO_HEIGHT, GAP_AFTER_LOGO, PHOTO_HEIGHT, PHOTO_BG, GAP_AFTER_PHOTO,
+    BRAND_FONT_SIZE, BRAND_COLOR, BRAND_LETTER_SPACING,
+    TITLE_FONT_SIZE, TITLE_COLOR, TITLE_LINE_HEIGHT, TITLE_MARGIN_TOP,
+    PRICE_FONT_SIZE, PRICE_COLOR, PRICE_MARGIN_TOP,
+    SIZE_FONT_SIZE, SIZE_COLOR, SIZE_MARGIN_TOP,
+    BADGE_FONT_SIZE, BADGE_COLOR, BADGE_BG, BADGE_MARGIN_TOP,
+    FOOTER_FONT_SIZE, FOOTER_COLOR, FOOTER_LETTER_SPACING,
+  } = layout
+
   return (
     <div
       style={{

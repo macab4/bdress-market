@@ -5,7 +5,7 @@ import { loadStoryFonts } from '../instagramStory/fonts'
 import { pickValidImage } from '../instagramStory/imageValidation'
 import { formatStoryPrice } from '../instagramStory/priceFormat'
 import { buildShareCardElement } from './template'
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from './layout'
+import { getShareCardLayout, type ShareCardVariant } from './layout'
 
 export interface ShareCardListing {
   title: string
@@ -22,7 +22,12 @@ export interface ShareCardListing {
 // solo la redecodifica/reencoda para que Satori pueda dibujarla (mismo
 // motivo que en la historia semanal: .webp y JPEGs pesados rompen resvg),
 // nunca la reemplaza ni la genera con IA.
-export async function generateShareCardPng(listing: ShareCardListing, siteLabel = 'bdressmarket.cl'): Promise<Buffer> {
+export async function generateShareCardPng(
+  listing: ShareCardListing,
+  siteLabel = 'bdressmarket.cl',
+  variant: ShareCardVariant = 'story'
+): Promise<Buffer> {
+  const layout = getShareCardLayout(variant)
   const [fonts, logoBuffer, photo] = await Promise.all([
     loadStoryFonts(),
     readFile(join(process.cwd(), 'public/logo.png')),
@@ -39,8 +44,9 @@ export async function generateShareCardPng(listing: ShareCardListing, siteLabel 
     logoDataUri,
     badgeLabel: listing.badgeLabel,
     siteLabel,
+    layout,
   })
 
-  const image = new ImageResponse(element, { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, fonts })
+  const image = new ImageResponse(element, { width: layout.CANVAS_WIDTH, height: layout.CANVAS_HEIGHT, fonts })
   return Buffer.from(await image.arrayBuffer())
 }

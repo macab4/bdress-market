@@ -6,6 +6,8 @@ import { CONDITION_GROUPS, conditionGroupLabel, departmentEntry, productCategory
 import { bareKey } from '@/lib/brands'
 import { INTERNATIONAL_BADGE_LABEL } from '@/lib/international/content'
 import FavoriteButton from '@/components/listings/FavoriteButton'
+import SelectionProvider from '@/components/listings/SelectionProvider'
+import SelectToggle from '@/components/listings/SelectToggle'
 import ProtectedPrice from '@/components/listings/ProtectedPrice'
 import CatalogFilters from '@/components/listings/CatalogFilters'
 import SaveSearchButton from '@/components/listings/SaveSearchButton'
@@ -333,6 +335,7 @@ export default async function HomePage({
             <p className="text-xs text-gray-400 mb-6">
               {totalCount} {totalCount === 1 ? 'prenda disponible' : 'prendas disponibles'}
             </p>
+            <SelectionProvider>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {listings.map((listing) => (
                 <Link key={listing.id} href={`/listings/${listing.id}`} className="group bg-white">
@@ -376,6 +379,9 @@ export default async function HomePage({
                         </span>
                       )}
                     </div>
+                    <div className="absolute top-2 right-2">
+                      <SelectToggle listingId={listing.id} />
+                    </div>
                     <div className="absolute bottom-2 right-2">
                       <FavoriteButton
                         listingId={listing.id}
@@ -403,6 +409,7 @@ export default async function HomePage({
                 </Link>
               ))}
             </div>
+            </SelectionProvider>
 
             {totalPages > 1 && (
               <div className="flex items-center justify-center flex-wrap gap-1.5 mt-10">

@@ -17,6 +17,12 @@ export async function GET(
   const { id } = await params
   const supabase = await createClient()
 
+  // ?format=post pide el recorte 4:5 para feed/carrusel de Instagram en vez
+  // del 9:16 pensado para historias y el share sheet nativo (ver
+  // CarouselShareBar.tsx) — mismo endpoint, mismo cacheo por URL completa.
+  const format = new URL(request.url).searchParams.get('format')
+  const variant = format === 'post' ? 'post' : 'story'
+
   const { data: listing } = await supabase
     .from('listings')
     .select('title, brand, price, photos, source_type, size')
@@ -33,7 +39,7 @@ export async function GET(
       photos: listing.photos,
       size: listing.size || null,
       badgeLabel: listing.source_type === 'international_on_demand' ? INTERNATIONAL_BADGE_LABEL : null,
-    })
+    }, 'bdressmarket.cl', variant)
 
     return new Response(new Uint8Array(buffer), {
       headers: {
