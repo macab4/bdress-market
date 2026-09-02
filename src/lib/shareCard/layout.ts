@@ -39,6 +39,10 @@ export const PRICE_FONT_SIZE = 58
 export const PRICE_COLOR = '#1A1A1A'
 export const PRICE_MARGIN_TOP = 24
 
+export const SIZE_FONT_SIZE = 32
+export const SIZE_COLOR = '#6B7280'
+export const SIZE_MARGIN_TOP = 14
+
 export const BADGE_FONT_SIZE = 26
 export const BADGE_COLOR = '#5a7a55'
 export const BADGE_BG = 'rgba(127,171,135,0.14)'

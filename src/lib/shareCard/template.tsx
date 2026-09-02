@@ -5,6 +5,7 @@ import {
   BRAND_FONT_SIZE, BRAND_COLOR, BRAND_LETTER_SPACING,
   TITLE_FONT_SIZE, TITLE_COLOR, TITLE_LINE_HEIGHT, TITLE_MARGIN_TOP,
   PRICE_FONT_SIZE, PRICE_COLOR, PRICE_MARGIN_TOP,
+  SIZE_FONT_SIZE, SIZE_COLOR, SIZE_MARGIN_TOP,
   BADGE_FONT_SIZE, BADGE_COLOR, BADGE_BG, BADGE_MARGIN_TOP,
   FOOTER_FONT_SIZE, FOOTER_COLOR, FOOTER_LETTER_SPACING,
 } from './layout'
@@ -13,6 +14,7 @@ export interface ShareCardProps {
   title: string
   brand: string | null
   priceLabel: string
+  size: string | null // null = no aplica (ej. accesorios), no se muestra
   photo: { dataUri: string; mode: ImageDisplayMode } | null
   logoDataUri: string
   badgeLabel: string | null // null = no es envío internacional, no se muestra
@@ -22,7 +24,7 @@ export interface ShareCardProps {
 // Misma filosofía que instagramStory/template.tsx: 100% flexbox, un solo
 // flujo en columna, el pie de página se ancla al fondo con marginTop: 'auto'
 // en vez de calcular posiciones — así nada puede quedar superpuesto.
-export function buildShareCardElement({ title, brand, priceLabel, photo, logoDataUri, badgeLabel, siteLabel }: ShareCardProps) {
+export function buildShareCardElement({ title, brand, priceLabel, size, photo, logoDataUri, badgeLabel, siteLabel }: ShareCardProps) {
   return (
     <div
       style={{
@@ -111,6 +113,20 @@ export function buildShareCardElement({ title, brand, priceLabel, photo, logoDat
         >
           {priceLabel}
         </div>
+
+        {size && (
+          <div
+            style={{
+              display: 'flex',
+              marginTop: SIZE_MARGIN_TOP,
+              fontSize: SIZE_FONT_SIZE,
+              fontWeight: 500,
+              color: SIZE_COLOR,
+            }}
+          >
+            {`Talla ${size}`}
+          </div>
+        )}
 
         {badgeLabel && (
           <div

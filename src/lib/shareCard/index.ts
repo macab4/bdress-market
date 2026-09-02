@@ -12,6 +12,7 @@ export interface ShareCardListing {
   brand: string | null
   price: number
   photos: string[] | null
+  size: string | null
   badgeLabel: string | null // p.ej. "Envío internacional", o null si no aplica
 }
 
@@ -33,6 +34,7 @@ export async function generateShareCardPng(listing: ShareCardListing, siteLabel 
     title: listing.title,
     brand: listing.brand,
     priceLabel: formatStoryPrice(listing.price),
+    size: listing.size,
     photo,
     logoDataUri,
     badgeLabel: listing.badgeLabel,

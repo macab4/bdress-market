@@ -19,7 +19,7 @@ export async function GET(
 
   const { data: listing } = await supabase
     .from('listings')
-    .select('title, brand, price, photos, source_type')
+    .select('title, brand, price, photos, source_type, size')
     .eq('id', id)
     .single()
 
@@ -31,6 +31,7 @@ export async function GET(
       brand: listing.brand,
       price: listing.price,
       photos: listing.photos,
+      size: listing.size || null,
       badgeLabel: listing.source_type === 'international_on_demand' ? INTERNATIONAL_BADGE_LABEL : null,
     })
 
