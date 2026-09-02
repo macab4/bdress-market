@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Order } from '@/types'
@@ -10,7 +11,7 @@ import { daysUntilRelease } from '@/lib/catalog'
 import VacationModeToggle from '@/components/dashboard/VacationModeToggle'
 
 type OrderWithRelations = Order & {
-  listing: { title: string; photos: string[] } | null
+  listing: { title: string; photos: string[]; size: string } | null
   buyer: { name: string } | null
 }
 
@@ -22,7 +23,7 @@ export default async function SalesPage() {
   const [{ data: ordersData }, { data: profile }] = await Promise.all([
     supabase
       .from('orders')
-      .select('*, listing:listings(title, photos), buyer:profiles!orders_buyer_id_fkey(name)')
+      .select('*, listing:listings(title, photos, size), buyer:profiles!orders_buyer_id_fkey(name)')
       .eq('seller_id', user.id)
       .order('created_at', { ascending: false }),
     supabase.from('profiles').select('vacation_mode').eq('id', user.id).single(),
@@ -79,16 +80,20 @@ export default async function SalesPage() {
                 return (
                   <div key={order.id} className="bg-white p-5">
                     <div className="flex gap-4">
-                      <div className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
+                      <Link href={`/listings/${order.listing_id}`} className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
                         {photo ? (
                           <Image src={photo} alt={order.listing?.title ?? ''} fill className="object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
                         )}
-                      </div>
+                      </Link>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{order.listing?.title}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Compradora: {order.buyer?.name ?? '—'}</p>
+                        <Link href={`/listings/${order.listing_id}`} className="text-sm font-medium truncate block hover:underline">
+                          {order.listing?.title}
+                        </Link>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {order.listing?.size && `Talla: ${order.listing.size} · `}Compradora: {order.buyer?.name ?? '—'}
+                        </p>
                         <p className="text-sm font-semibold mt-1">
                           ${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}
                           <span className="text-xs font-normal text-gray-400 ml-1">(neto)</span>
@@ -139,21 +144,25 @@ export default async function SalesPage() {
                 return (
                   <div key={order.id} className="bg-white p-5">
                     <div className="flex gap-4">
-                      <div className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
+                      <Link href={`/listings/${order.listing_id}`} className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
                         {photo ? (
                           <Image src={photo} alt={order.listing?.title ?? ''} fill className="object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
                         )}
-                      </div>
+                      </Link>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium truncate">{order.listing?.title}</p>
+                          <Link href={`/listings/${order.listing_id}`} className="text-sm font-medium truncate hover:underline">
+                            {order.listing?.title}
+                          </Link>
                           <span className="text-[9px] tracking-widest uppercase px-2 py-0.5 bg-amber-50 text-amber-600 whitespace-nowrap flex-shrink-0">
                             En camino
                           </span>
                         </div>
-                        <p className="text-xs text-gray-400 mt-0.5">Compradora: {order.buyer?.name ?? '—'}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {order.listing?.size && `Talla: ${order.listing.size} · `}Compradora: {order.buyer?.name ?? '—'}
+                        </p>
                         {order.courier_tracking_number && (
                           <p className="text-xs text-gray-400 mt-0.5">
                             Seguimiento: <span className="font-mono">{order.courier_tracking_number}</span>
@@ -190,16 +199,20 @@ export default async function SalesPage() {
                 return (
                   <div key={order.id} className="bg-white p-5">
                     <div className="flex gap-4">
-                      <div className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
+                      <Link href={`/listings/${order.listing_id}`} className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
                         {photo ? (
                           <Image src={photo} alt={order.listing?.title ?? ''} fill className="object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
                         )}
-                      </div>
+                      </Link>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{order.listing?.title}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Compradora: {order.buyer?.name ?? '—'}</p>
+                        <Link href={`/listings/${order.listing_id}`} className="text-sm font-medium truncate block hover:underline">
+                          {order.listing?.title}
+                        </Link>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {order.listing?.size && `Talla: ${order.listing.size} · `}Compradora: {order.buyer?.name ?? '—'}
+                        </p>
                         <p className="text-sm font-semibold mt-1">
                           ${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}
                           <span className="text-xs font-normal text-gray-400 ml-1">(neto)</span>
@@ -227,8 +240,16 @@ export default async function SalesPage() {
               {completedOrders.map(order => (
                 <div key={order.id} className="bg-white p-4 flex items-center justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-sm truncate">{order.listing?.title ?? 'Prenda eliminada'}</p>
-                    <p className="text-xs text-gray-400">{order.buyer?.name ?? '—'}</p>
+                    {order.listing ? (
+                      <Link href={`/listings/${order.listing_id}`} className="text-sm truncate block hover:underline">
+                        {order.listing.title}
+                      </Link>
+                    ) : (
+                      <p className="text-sm truncate">Prenda eliminada</p>
+                    )}
+                    <p className="text-xs text-gray-400">
+                      {order.listing?.size && `Talla: ${order.listing.size} · `}{order.buyer?.name ?? '—'}
+                    </p>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="text-sm font-semibold">${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}</p>
