@@ -180,6 +180,8 @@ export default async function HomePage({
       : Promise.resolve({ data: null }),
   ])
 
+  const isAdmin = user?.email === process.env.ADMIN_EMAIL
+
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   function pageUrl(targetPage: number) {
@@ -379,9 +381,11 @@ export default async function HomePage({
                         </span>
                       )}
                     </div>
-                    <div className="absolute top-2 right-2">
-                      <SelectToggle listingId={listing.id} />
-                    </div>
+                    {isAdmin && (
+                      <div className="absolute top-2 right-2">
+                        <SelectToggle listingId={listing.id} />
+                      </div>
+                    )}
                     <div className="absolute bottom-2 right-2">
                       <FavoriteButton
                         listingId={listing.id}
