@@ -10,7 +10,7 @@ export default async function Navbar() {
   let unreadCount = 0
   let unreadNotifications = 0
   if (user) {
-    const [{ count: messagesCount }, { count: notifCount }] = await Promise.all([
+    const [{ count: messagesCount, error: messagesError }, { count: notifCount, error: notifError }] = await Promise.all([
       supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
@@ -22,6 +22,8 @@ export default async function Navbar() {
         .eq('user_id', user.id)
         .is('read_at', null),
     ])
+    if (messagesError) console.error('Error al contar mensajes no leídos:', messagesError.message)
+    if (notifError) console.error('Error al contar notificaciones no leídas:', notifError.message)
     unreadCount = messagesCount ?? 0
     unreadNotifications = notifCount ?? 0
   }

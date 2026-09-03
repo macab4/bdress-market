@@ -33,11 +33,13 @@ export default async function NotificationsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: notifications } = await supabase
+  const { data: notifications, error } = await supabase
     .from('notifications')
     .select('*, actor:profiles!notifications_actor_id_fkey(name), listing:listings(title, photos)')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false }) as unknown as { data: NotificationWithRelations[] | null }
+    .order('created_at', { ascending: false }) as unknown as { data: NotificationWithRelations[] | null, error: { message: string } | null }
+
+  if (error) console.error('Error al cargar notificaciones:', error.message)
 
   const list = notifications ?? []
   const unreadIds = list.filter(n => !n.read_at).map(n => n.id)
