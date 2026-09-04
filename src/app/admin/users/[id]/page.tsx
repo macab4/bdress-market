@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getWalletSummary, computeWalletBreakdown } from '@/lib/wallet'
 import AdminNav from '@/components/admin/AdminNav'
 import SuspendUserButton from '@/components/admin/SuspendUserButton'
+import DeprioritizeUserButton from '@/components/admin/DeprioritizeUserButton'
 
 function formatCLP(n: number) {
   return `$${n.toLocaleString('es-CL')}`
@@ -56,7 +57,10 @@ export default async function AdminUserDetailPage({
               Ver perfil público
             </Link>
           </div>
-          <SuspendUserButton userId={id} banned={banned} />
+          <div className="flex flex-col gap-2 flex-shrink-0">
+            <SuspendUserButton userId={id} banned={banned} />
+            <DeprioritizeUserButton userId={id} deprioritized={!!profile.deprioritized} />
+          </div>
         </div>
 
         <section className="mb-8">

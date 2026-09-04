@@ -14,20 +14,28 @@ export async function PATCH(
   if (!(await checkAdmin())) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   const { id } = await params
 
-  let banned: boolean
+  let body: { banned?: unknown; deprioritized?: unknown }
   try {
-    const body = await request.json()
-    banned = body.banned
-    if (typeof banned !== 'boolean') throw new Error()
+    body = await request.json()
   } catch {
-    return Response.json({ error: 'banned inválido' }, { status: 400 })
+    return Response.json({ error: 'Body inválido' }, { status: 400 })
   }
 
   const admin = createAdminClient()
-  const { error } = await admin.auth.admin.updateUserById(id, {
-    ban_duration: banned ? '87600h' : 'none',
-  })
 
-  if (error) return Response.json({ error: error.message }, { status: 500 })
+  if ('banned' in body) {
+    if (typeof body.banned !== 'boolean') return Response.json({ error: 'banned inválido' }, { status: 400 })
+    const { error } = await admin.auth.admin.updateUserById(id, {
+      ban_duration: body.banned ? '87600h' : 'none',
+    })
+    if (error) return Response.json({ error: error.message }, { status: 500 })
+  }
+
+  if ('deprioritized' in body) {
+    if (typeof body.deprioritized !== 'boolean') return Response.json({ error: 'deprioritized inválido' }, { status: 400 })
+    const { error } = await admin.from('profiles').update({ deprioritized: body.deprioritized }).eq('id', id)
+    if (error) return Response.json({ error: error.message }, { status: 500 })
+  }
+
   return Response.json({ ok: true })
 }

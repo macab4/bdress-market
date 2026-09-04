@@ -122,14 +122,20 @@ export default async function HomePage({
   let totalCount = 0
 
   if (params.sort === 'guardados') {
-    const { data: matchIds } = await query.select('id')
-    const ids = (matchIds ?? []).map(r => r.id)
+    const { data: matchRows } = await query.select('id, seller_deprioritized')
+    const rows = matchRows ?? []
+    const ids = rows.map(r => r.id)
     totalCount = ids.length
 
     let orderedIds = ids
     if (ids.length > 0) {
+      const deprioritized = new Set(rows.filter(r => r.seller_deprioritized).map(r => r.id))
       const counts = await getFavoriteCounts(ids)
-      orderedIds = [...ids].sort((a, b) => (counts[b] ?? 0) - (counts[a] ?? 0))
+      orderedIds = [...ids].sort((a, b) => {
+        const demoted = Number(deprioritized.has(a)) - Number(deprioritized.has(b))
+        if (demoted !== 0) return demoted
+        return (counts[b] ?? 0) - (counts[a] ?? 0)
+      })
     }
     const from = (page - 1) * PAGE_SIZE
     const pageIds = orderedIds.slice(from, from + PAGE_SIZE)
@@ -144,6 +150,10 @@ export default async function HomePage({
       listings = []
     }
   } else {
+    // seller_deprioritized siempre manda primero: una vendedora marcada así
+    // (ver /admin/users/[id]) queda al final del catálogo sin importar el
+    // orden elegido, y sin que "Renovar" (bumped_at) se lo salte.
+    query = query.order('seller_deprioritized', { ascending: true })
     switch (params.sort) {
       case 'antiguas':
         query = query.order('created_at', { ascending: true })

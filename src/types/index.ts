@@ -71,6 +71,7 @@ export interface Profile {
   comuna: string | null
   referral_code: string | null
   vacation_mode: boolean
+  deprioritized: boolean
   created_at: string
 }
 
@@ -96,6 +97,7 @@ export interface Listing {
   status: ListingStatus
   created_at: string
   bumped_at: string
+  seller_deprioritized: boolean
   featured_until: string | null
   boost_reminder_sent_at: string | null
   product_category: string | null
