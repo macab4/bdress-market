@@ -6,6 +6,7 @@ import { getWalletSummary, computeWalletBreakdown } from '@/lib/wallet'
 import AdminNav from '@/components/admin/AdminNav'
 import SuspendUserButton from '@/components/admin/SuspendUserButton'
 import DeprioritizeUserButton from '@/components/admin/DeprioritizeUserButton'
+import AdminListingActions from '@/components/admin/AdminListingActions'
 
 function formatCLP(n: number) {
   return `$${n.toLocaleString('es-CL')}`
@@ -25,7 +26,7 @@ export default async function AdminUserDetailPage({
   const [{ data: authUser }, { data: profile }, { data: listings }, { data: purchases }, { data: sales }, walletAccount] = await Promise.all([
     admin.auth.admin.getUserById(id),
     admin.from('profiles').select('*').eq('id', id).single(),
-    admin.from('listings').select('id, title, status, price').eq('seller_id', id),
+    admin.from('listings').select('id, title, status, price, seller_deprioritized').eq('seller_id', id),
     admin.from('orders').select('id, amount, status, listing:listings(title)').eq('buyer_id', id) as unknown as Promise<{ data: OrderSummary[] | null }>,
     admin.from('orders').select('id, amount, status, listing:listings(title)').eq('seller_id', id) as unknown as Promise<{ data: OrderSummary[] | null }>,
     getWalletSummary(admin, id),
@@ -104,9 +105,12 @@ export default async function AdminUserDetailPage({
           {listings && listings.length > 0 ? (
             <div className="space-y-1">
               {listings.map(l => (
-                <div key={l.id} className="bg-white p-3 flex items-center justify-between text-sm">
+                <div key={l.id} className="bg-white p-3 flex items-center justify-between gap-3 text-sm">
                   <span className="truncate">{l.title}</span>
-                  <span className="text-gray-400 text-xs whitespace-nowrap ml-2">{l.status} · ${l.price.toLocaleString('es-CL')}</span>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="text-gray-400 text-xs whitespace-nowrap">{l.status} · ${l.price.toLocaleString('es-CL')}</span>
+                    <AdminListingActions listingId={l.id} status={l.status} sellerDeprioritized={l.seller_deprioritized} />
+                  </div>
                 </div>
               ))}
             </div>
