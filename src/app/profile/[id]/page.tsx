@@ -109,7 +109,7 @@ export default async function ProfilePage({
     ? reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length
     : 0
 
-  const memberSince = new Date(profile.created_at).toLocaleDateString('es-CL', {
+  const memberSince = new Date(profile.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', 
     month: 'long',
     year: 'numeric',
   })
@@ -408,7 +408,7 @@ export default async function ProfilePage({
                         <p className="text-sm text-gray-600 mt-1">{review.comment}</p>
                       )}
                       <p className="text-[10px] text-gray-300 mt-2">
-                        {new Date(review.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {new Date(review.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long', year: 'numeric' })}
                       </p>
                     </div>
                   ))}

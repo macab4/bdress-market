@@ -33,7 +33,7 @@ export default function FeatureListingButton({ listingId, featuredUntil }: Props
   }
 
   if (isFeatured) {
-    const until = new Date(featuredUntil!).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })
+    const until = new Date(featuredUntil!).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long' })
     return (
       <span className="text-[9px] tracking-widest uppercase px-2 py-0.5 bg-[#7fab87]/10 text-[#5a7a55]">
         Destacada hasta {until}

@@ -174,7 +174,7 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
       })
     }
 
-    const deadlineFmt = shipDeadline(new Date().toISOString()).toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })
+    const deadlineFmt = shipDeadline(new Date().toISOString()).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long' })
     await sendSystemMessage(admin, {
       listingId: order.listingId, buyerId: order.buyerId, sellerId: order.sellerId,
       content: `¡Compra confirmada! 🎉 ${seller?.name ?? 'La vendedora'} tiene hasta el ${deadlineFmt} para despachar tu pedido.`,

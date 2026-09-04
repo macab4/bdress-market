@@ -161,7 +161,7 @@ export default async function AdminUsersPage({
                     </td>
                   )}
                   <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                    {new Date(u.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(u.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="px-4 py-3">
                     <Link href={`/admin/users/${u.id}`} className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black">

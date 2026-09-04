@@ -38,7 +38,7 @@ type TimelineItem =
   | { type: 'offer'; createdAt: string; data: OfferRow }
 
 function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 export default async function MessageThreadPage({

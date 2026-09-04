@@ -254,7 +254,7 @@ export default async function SalesPage() {
                   <div className="text-right flex-shrink-0">
                     <p className="text-sm font-semibold">${(order.amount - order.commission - order.processing_fee).toLocaleString('es-CL')}</p>
                     <p className="text-[10px] text-gray-300">
-                      {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                      {new Date(order.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
                     </p>
                   </div>
                 </div>

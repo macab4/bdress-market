@@ -121,7 +121,7 @@ export default async function AdminWalletPage() {
                       <td className="px-4 py-3 text-right text-xs tabular-nums">{formatCLP(order.wallet_amount_applied)}</td>
                       <td className="px-4 py-3 text-xs text-gray-500">{order.status}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                        {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(order.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                     </tr>
                   ))}
@@ -161,7 +161,7 @@ export default async function AdminWalletPage() {
                       <td className="px-4 py-3 text-right text-xs tabular-nums">{formatCLP(order.promo_amount_applied)}</td>
                       <td className="px-4 py-3 text-xs text-gray-500">{order.status}</td>
                       <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                        {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(order.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                     </tr>
                   ))}
@@ -207,7 +207,7 @@ export default async function AdminWalletPage() {
                     {tx.promo_delta !== 0 ? `${tx.promo_delta > 0 ? '+' : ''}${formatCLP(tx.promo_delta)}` : '—'}
                   </td>
                   <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                    {new Date(tx.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(tx.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                 </tr>
               ))}

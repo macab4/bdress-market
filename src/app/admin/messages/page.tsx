@@ -132,7 +132,7 @@ export default async function AdminMessagesPage() {
         <p className="text-sm text-gray-700 bg-gray-50 p-2.5 mb-2">&quot;{f.content}&quot;</p>
         <div className="flex items-center justify-between gap-2">
           <p className="text-[10px] text-gray-300">
-            {new Date(f.created_at).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            {new Date(f.created_at).toLocaleString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
           </p>
           <div className="flex items-center gap-3 flex-shrink-0">
             {sellerId && (
@@ -203,7 +203,7 @@ export default async function AdminMessagesPage() {
                       <td className="p-3 whitespace-nowrap">{c.sellerName}</td>
                       <td className="p-3 text-gray-400 truncate max-w-[220px]">{c.lastContent}</td>
                       <td className="p-3 text-gray-400 whitespace-nowrap">
-                        {new Date(c.lastCreatedAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                        {new Date(c.lastCreatedAt).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
                       </td>
                       <td className="p-3 text-right">
                         <Link href={`/admin/messages/${c.listingId}/${c.buyerId}`} className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline whitespace-nowrap">

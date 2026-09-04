@@ -69,7 +69,7 @@ export default async function AdminInternationalPage() {
                     <p className="text-sm font-medium truncate">{listing.title}</p>
                     <p className="text-xs text-gray-400">
                       {listing.sourcing?.source_platform ?? 'manual'} · {listing.status === 'sold' ? 'Vendida' : 'Publicada'}
-                      {listing.sourcing?.source_last_verified_at && ` · Verificado ${new Date(listing.sourcing.source_last_verified_at).toLocaleDateString('es-CL')}`}
+                      {listing.sourcing?.source_last_verified_at && ` · Verificado ${new Date(listing.sourcing.source_last_verified_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago' })}`}
                     </p>
                     <p className="text-sm font-semibold mt-0.5">${listing.price.toLocaleString('es-CL')}</p>
                   </div>

@@ -27,7 +27,7 @@ export default function InternationalOrderTimeline({ currentStatus, history, pai
     <div className="mt-3 space-y-2">
       <p className="text-[10px] text-gray-400">
         Entrega estimada: {min}–{max} días corridos
-        {lastUpdate && ` · Última actualización: ${new Date(lastUpdate.created_at).toLocaleDateString('es-CL')}`}
+        {lastUpdate && ` · Última actualización: ${new Date(lastUpdate.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago' })}`}
       </p>
 
       <ol className="space-y-1.5">

@@ -174,7 +174,7 @@ export default async function PurchasesPage() {
 
                   {/* Fecha */}
                   <p className="text-[10px] text-gray-300 mt-3 text-right">
-                    {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(order.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
               )

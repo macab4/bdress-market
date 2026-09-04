@@ -22,7 +22,7 @@ type AdminOrderDetail = Order & {
 
 function formatDate(iso: string | null) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function isPast(date: Date) {
@@ -130,7 +130,7 @@ export default async function AdminOrderDetailPage({
 
             {deadline && (
               <p className={`text-xs ${deadlinePassed && order.status === 'paid' ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
-                Plazo de despacho: {deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                Plazo de despacho: {deadline.toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
                 {deadlinePassed && order.status === 'paid' ? ' — vencido' : ''}
               </p>
             )}

@@ -91,7 +91,7 @@ export default async function NotificationsPage() {
                     {n.listing?.title && <>: <span className="font-medium">{n.listing.title}</span></>}
                   </p>
                   <p className="text-[10px] text-gray-400 mt-1">
-                    {new Date(n.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(n.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
                 {!n.read_at && (

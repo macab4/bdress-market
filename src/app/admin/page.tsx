@@ -115,7 +115,7 @@ export default async function AdminPage() {
                   <p className="text-sm font-medium truncate">{order.listing?.title ?? 'Prenda eliminada'}</p>
                   <p className="text-xs text-gray-400">
                     Vendedora: {order.seller?.name ?? '—'} · Pedida el{' '}
-                    {order.label_requested_at && new Date(order.label_requested_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {order.label_requested_at && new Date(order.label_requested_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </Link>
               ))}
@@ -136,7 +136,7 @@ export default async function AdminPage() {
                     <p className="text-sm font-medium truncate">{order.listing?.title ?? 'Prenda eliminada'}</p>
                     <p className="text-xs text-gray-400">
                       Vendedora: {order.seller?.name ?? '—'} · Pagado el{' '}
-                      {order.paid_at && new Date(order.paid_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                      {order.paid_at && new Date(order.paid_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
                     </p>
                     <p className="text-sm font-semibold mt-0.5">${(order.amount + order.shipping_cost).toLocaleString('es-CL')}</p>
                   </div>
@@ -188,7 +188,7 @@ export default async function AdminPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                          {new Date(order.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                          {new Date(order.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
                         </td>
                         <td className="px-4 py-3 text-right whitespace-nowrap">
                           <Link href={`/admin/orders/${order.id}`} className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">

@@ -29,7 +29,7 @@ export default async function SavedSearchesPage() {
                 <Link href={`/?${search.params}`} className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{search.label || 'Todas las prendas'}</p>
                   <p className="text-[10px] text-gray-400 mt-0.5">
-                    {new Date(search.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {new Date(search.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </Link>
                 <Link href={`/?${search.params}`}

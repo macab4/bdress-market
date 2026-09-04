@@ -421,7 +421,7 @@ export async function sendLabelReadyEmail({
   deadline?: Date | null
 }) {
   const downloadUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/orders/${orderId}/label/download`
-  const deadlineFmt = deadline ? deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' }) : null
+  const deadlineFmt = deadline ? deadline.toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long' }) : null
   await sendEmail({
     to,
     subject: `Tu etiqueta de envío está lista — ${listingTitle}`,
@@ -470,7 +470,7 @@ export async function sendLabelSentToBuyerEmail({
   trackingNumber?: string | null
   deadline?: Date | null
 }) {
-  const deadlineFmt = deadline ? deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' }) : null
+  const deadlineFmt = deadline ? deadline.toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long' }) : null
   await sendEmail({
     to,
     subject: `Tu compra ya está en preparación — ${listingTitle}`,
@@ -1251,7 +1251,7 @@ export async function sendBoostConfirmedEmail({
   featuredUntil: Date
 }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  const untilFmt = featuredUntil.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })
+  const untilFmt = featuredUntil.toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long' })
 
   await sendEmail({
     to,

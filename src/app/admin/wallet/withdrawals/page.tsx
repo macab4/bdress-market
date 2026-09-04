@@ -84,7 +84,7 @@ export default async function AdminWithdrawalsPage({
                   <td className="px-4 py-3 text-xs text-gray-500">{w.bank}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">{accountTypeLabel(w.account_type)} {maskAccountNumber(w.account_number)}</td>
                   <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                    {new Date(w.requested_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {new Date(w.requested_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 ${STATUS_COLORS[w.status]}`}>{STATUS_LABELS[w.status]}</span>

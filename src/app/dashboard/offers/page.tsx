@@ -13,7 +13,7 @@ type OfferWithRelations = Offer & {
 }
 
 function formatExpiry(iso: string) {
-  return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 }
 
 export default async function OffersPage() {

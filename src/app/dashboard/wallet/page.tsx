@@ -163,7 +163,7 @@ export default async function WalletPage() {
                         <p className="text-sm font-medium truncate">{tx.description || TYPE_LABELS[tx.type]}</p>
                       )}
                       <p className="text-[10px] tracking-widest uppercase text-gray-400 mt-0.5">
-                        {TYPE_LABELS[tx.type]} · {new Date(tx.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {TYPE_LABELS[tx.type]} · {new Date(tx.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
                     <p className={`text-sm font-medium whitespace-nowrap ${amount >= 0 ? 'text-[#5a7a55]' : 'text-gray-500'}`}>

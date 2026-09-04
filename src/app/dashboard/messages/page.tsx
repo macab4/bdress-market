@@ -170,7 +170,7 @@ export default async function MessagesInboxPage() {
                   <div className="flex items-center justify-between gap-2">
                     <p className={`text-sm truncate ${c.unreadCount > 0 ? 'font-semibold' : 'font-medium'}`}>{c.otherName}</p>
                     <span className="text-[10px] text-gray-300 flex-shrink-0">
-                      {new Date(c.lastCreatedAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                      {new Date(c.lastCreatedAt).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 truncate">{c.listingTitle}</p>

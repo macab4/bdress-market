@@ -52,7 +52,7 @@ export default async function AdminUserDetailPage({
             <p className="text-xs text-gray-400">{authUser.user.email}</p>
             {profile.city && <p className="text-xs text-gray-400">{profile.city}</p>}
             <p className="text-[10px] text-gray-400 mt-2">
-              Miembro desde {new Date(profile.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
+              Miembro desde {new Date(profile.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long', year: 'numeric' })}
             </p>
             <Link href={`/profile/${id}`} className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline mt-1 inline-block">
               Ver perfil público

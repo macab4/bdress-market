@@ -24,7 +24,7 @@ export async function PATCH(
   const nextEligibleAt = new Date(new Date(listing.bumped_at).getTime() + BUMP_COOLDOWN_DAYS * 24 * 60 * 60 * 1000)
   if (nextEligibleAt > new Date()) {
     return Response.json({
-      error: `Ya renovaste esta prenda hace poco. Podrás renovarla de nuevo el ${nextEligibleAt.toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}.`,
+      error: `Ya renovaste esta prenda hace poco. Podrás renovarla de nuevo el ${nextEligibleAt.toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long' })}.`,
       nextEligibleAt: nextEligibleAt.toISOString(),
     }, { status: 409 })
   }

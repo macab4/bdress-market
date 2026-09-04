@@ -21,7 +21,7 @@ const FILTERS: { value: ReferralStatus | 'all'; label: string }[] = [
 
 function formatDate(iso: string | null) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export default async function AdminReferralsPage({

@@ -88,7 +88,7 @@ export default async function AdminShipmentsPage() {
                       </div>
                       <p className="text-[10px] text-gray-300 mt-2">
                         {order.shipped_at
-                          ? new Date(order.shipped_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                          ? new Date(order.shipped_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                           : ''}
                       </p>
                     </div>
