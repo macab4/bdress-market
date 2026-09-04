@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { getConversations } from '@/lib/messages'
-import { getSignedAttachmentUrls } from '@/lib/chatAttachments'
+import { getSignedAttachmentUrls, isVideoMime } from '@/lib/chatAttachments'
 import ConversationList from '@/components/messages/ConversationList'
 import MessageComposer from '@/components/messages/MessageComposer'
 import ThreadRefresher from '@/components/messages/ThreadRefresher'
@@ -12,7 +12,7 @@ import OfferResponseActions from '@/components/dashboard/OfferResponseActions'
 import MakeOfferModal from '@/components/listings/MakeOfferModal'
 import { OFFER_STATUS_CONFIG, OFFER_MAX_ROUNDS, minOfferPrice } from '@/lib/catalog'
 
-type Attachment = { id: string; url: string; width: number | null; height: number | null }
+type Attachment = { id: string; url: string; mimeType: string; width: number | null; height: number | null }
 
 type MessageRow = {
   id: string
@@ -95,7 +95,7 @@ export default async function MessageThreadPage({
   if (messageList.length > 0) {
     const { data: attachmentRows, error: attachmentsError } = await supabase
       .from('message_attachments')
-      .select('id, message_id, storage_path, width, height')
+      .select('id, message_id, storage_path, mime_type, width, height')
       .in('message_id', messageList.map(m => m.id))
     if (attachmentsError) {
       console.error('Error al cargar adjuntos de la conversación:', attachmentsError.message)
@@ -105,7 +105,7 @@ export default async function MessageThreadPage({
         const url = signedUrls[row.storage_path]
         if (!url) continue
         const list = attachmentsByMessage.get(row.message_id) ?? []
-        list.push({ id: row.id, url, width: row.width, height: row.height })
+        list.push({ id: row.id, url, mimeType: row.mime_type, width: row.width, height: row.height })
         attachmentsByMessage.set(row.message_id, list)
       }
     }
@@ -196,9 +196,13 @@ export default async function MessageThreadPage({
                           {attachments.length > 0 && (
                             <div className={`grid gap-1 mb-1.5 ${attachments.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                               {attachments.map(a => (
-                                <a key={a.id} href={a.url} target="_blank" rel="noreferrer" className="block w-32 h-32 relative overflow-hidden bg-black/10">
-                                  <Image src={a.url} alt="Foto enviada en el chat" fill className="object-cover" unoptimized />
-                                </a>
+                                isVideoMime(a.mimeType) ? (
+                                  <video key={a.id} src={a.url} controls className="block w-40 h-40 object-cover bg-black" />
+                                ) : (
+                                  <a key={a.id} href={a.url} target="_blank" rel="noreferrer" className="block w-32 h-32 relative overflow-hidden bg-black/10">
+                                    <Image src={a.url} alt="Foto enviada en el chat" fill className="object-cover" unoptimized />
+                                  </a>
+                                )
                               ))}
                             </div>
                           )}

@@ -2,12 +2,23 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout } from '@/lib/email'
 import { moderateMessage, MODERATION_MESSAGE, REPEAT_OFFENDER_THRESHOLD, repeatOffenderMessage } from '@/lib/messageModeration'
-import { ALLOWED_ATTACHMENT_MIME_TYPES, MAX_ATTACHMENTS_PER_MESSAGE, MAX_ATTACHMENT_BYTES } from '@/lib/chatAttachments'
+import {
+  ALLOWED_ATTACHMENT_MIME_TYPES, MAX_ATTACHMENTS_PER_MESSAGE, MAX_ATTACHMENT_BYTES,
+  MAX_VIDEO_BYTES, MAX_VIDEOS_PER_MESSAGE, isVideoMime,
+} from '@/lib/chatAttachments'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 const MAX_LENGTH = 2000
 
 type IncomingAttachment = { storage_path: string; mime_type: string; size_bytes: number }
+
+function describeAttachments(attachments: IncomingAttachment[]): string {
+  const videos = attachments.filter(a => isVideoMime(a.mime_type)).length
+  const photos = attachments.length - videos
+  if (videos > 0 && photos > 0) return `Te mandó ${photos} ${photos === 1 ? 'foto' : 'fotos'} y un video`
+  if (videos > 0) return 'Te mandó un video'
+  return photos === 1 ? 'Te mandó una foto' : `Te mandó ${photos} fotos`
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -30,13 +41,18 @@ export async function POST(request: Request) {
       return Response.json({ error: `El mensaje no puede superar los ${MAX_LENGTH} caracteres` }, { status: 400 })
     }
     if (attachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
-      return Response.json({ error: `Puedes adjuntar hasta ${MAX_ATTACHMENTS_PER_MESSAGE} fotos por mensaje` }, { status: 400 })
+      return Response.json({ error: `Puedes adjuntar hasta ${MAX_ATTACHMENTS_PER_MESSAGE} archivos por mensaje` }, { status: 400 })
+    }
+    const videoCount = attachments.filter(a => isVideoMime(a.mime_type)).length
+    if (videoCount > MAX_VIDEOS_PER_MESSAGE) {
+      return Response.json({ error: `Puedes adjuntar hasta ${MAX_VIDEOS_PER_MESSAGE} video por mensaje` }, { status: 400 })
     }
     for (const a of attachments) {
       if (
         typeof a.storage_path !== 'string' || !a.storage_path ||
         !(ALLOWED_ATTACHMENT_MIME_TYPES as readonly string[]).includes(a.mime_type) ||
-        typeof a.size_bytes !== 'number' || a.size_bytes <= 0 || a.size_bytes > MAX_ATTACHMENT_BYTES
+        typeof a.size_bytes !== 'number' || a.size_bytes <= 0 ||
+        a.size_bytes > (isVideoMime(a.mime_type) ? MAX_VIDEO_BYTES : MAX_ATTACHMENT_BYTES)
       ) {
         throw new Error()
       }
@@ -174,7 +190,7 @@ export async function POST(request: Request) {
         <p style="font-size: 14px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px; border-radius: 4px;">
           ${content
             ? `“${content.length > 200 ? content.slice(0, 200) + '…' : content}”`
-            : `📷 ${attachments.length === 1 ? 'Te mandó una foto' : `Te mandó ${attachments.length} fotos`}`
+            : `📷 ${describeAttachments(attachments)}`
           }
         </p>
         <p style="text-align: center; margin-top: 24px;">

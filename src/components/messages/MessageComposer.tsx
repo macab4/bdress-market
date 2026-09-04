@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { moderateMessage, MODERATION_MESSAGE } from '@/lib/messageModeration'
 import { createClient } from '@/lib/supabase/client'
-import { CHAT_ATTACHMENTS_BUCKET, buildAttachmentPath, sniffImageMime } from '@/lib/chatAttachments'
+import { CHAT_ATTACHMENTS_BUCKET, buildAttachmentPath, sniffAttachmentMime, isVideoMime } from '@/lib/chatAttachments'
 import ChatImageUpload from './ChatImageUpload'
 
 interface Props {
@@ -79,13 +79,17 @@ export default function MessageComposer({ listingId, receiverId }: Props) {
       {previews.length > 0 && (
         <div className="flex gap-2 mb-2 flex-wrap">
           {previews.map((url, i) => (
-            <div key={url} className="relative w-14 h-14 flex-shrink-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="w-full h-full object-cover" />
+            <div key={url} className="relative w-14 h-14 flex-shrink-0 bg-black">
+              {isVideoMime(files[i].type) ? (
+                <video src={url} muted preload="metadata" className="w-full h-full object-cover" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={url} alt="" className="w-full h-full object-cover" />
+              )}
               <button
                 type="button"
                 onClick={() => removeFileAt(i)}
-                aria-label="Quitar foto"
+                aria-label="Quitar archivo"
                 className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-black text-white flex items-center justify-center"
               >
                 <X size={10} />
@@ -123,12 +127,12 @@ async function uploadAttachments(listingId: string, files: File[]) {
 
   return Promise.all(files.map(async (file) => {
     const bytes = new Uint8Array(await file.arrayBuffer())
-    const mime = sniffImageMime(bytes)
-    if (!mime) throw new Error('Uno de los archivos no es una imagen válida (JPG, PNG o WEBP).')
+    const mime = sniffAttachmentMime(bytes, file.type)
+    if (!mime) throw new Error('Uno de los archivos no es una foto o video válido (JPG, PNG, WEBP, MP4 o MOV).')
 
     const path = buildAttachmentPath(listingId, user.id, mime)
     const { error } = await supabase.storage.from(CHAT_ATTACHMENTS_BUCKET).upload(path, file, { contentType: mime })
-    if (error) throw new Error(`No se pudo subir una foto: ${error.message}`)
+    if (error) throw new Error(`No se pudo subir un archivo: ${error.message}`)
 
     return { storage_path: path, mime_type: mime, size_bytes: file.size }
   }))
