@@ -47,7 +47,7 @@ export default async function MessagesInboxPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: messages }, { data: offers }] = await Promise.all([
+  const [{ data: messages, error: messagesError }, { data: offers, error: offersError }] = await Promise.all([
     supabase
       .from('messages')
       .select(`
@@ -57,7 +57,7 @@ export default async function MessagesInboxPage() {
         receiver:profiles!messages_receiver_id_fkey(name)
       `)
       .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-      .order('created_at', { ascending: false }) as unknown as { data: MessageRow[] | null },
+      .order('created_at', { ascending: false }) as unknown as { data: MessageRow[] | null; error: { message: string } | null },
     supabase
       .from('offers')
       .select(`
@@ -67,8 +67,11 @@ export default async function MessagesInboxPage() {
         seller:profiles!offers_seller_id_fkey(name)
       `)
       .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-      .order('created_at', { ascending: false }) as unknown as { data: OfferRow[] | null },
+      .order('created_at', { ascending: false }) as unknown as { data: OfferRow[] | null; error: { message: string } | null },
   ])
+
+  if (messagesError) console.error('Error al cargar mensajes del inbox:', messagesError.message)
+  if (offersError) console.error('Error al cargar ofertas del inbox:', offersError.message)
 
   // Un hilo puede tener solo ofertas y ningún mensaje de texto todavía —
   // por eso se combinan ambas fuentes para armar la lista de conversaciones,

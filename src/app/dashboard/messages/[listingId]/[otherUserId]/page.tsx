@@ -53,7 +53,7 @@ export default async function MessageThreadPage({
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/dashboard/messages/${listingId}/${otherUserId}`)}`)
   if (otherUserId === user.id) notFound()
 
-  const [{ data: listing }, { data: otherUser }, { data: messages }, { data: offers }] = await Promise.all([
+  const [{ data: listing }, { data: otherUser }, { data: messages, error: messagesError }, { data: offers, error: offersError }] = await Promise.all([
     supabase.from('listings').select('id, title, photos, seller_id, price, status').eq('id', listingId).single(),
     supabase.from('profiles').select('id, name, avatar_url').eq('id', otherUserId).single(),
     supabase
@@ -61,14 +61,17 @@ export default async function MessageThreadPage({
       .select('id, sender_id, receiver_id, content, created_at, is_system')
       .eq('listing_id', listingId)
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
-      .order('created_at', { ascending: true }) as unknown as Promise<{ data: MessageRow[] | null }>,
+      .order('created_at', { ascending: true }) as unknown as Promise<{ data: MessageRow[] | null; error: { message: string } | null }>,
     supabase
       .from('offers')
       .select('id, buyer_id, seller_id, original_price, offered_price, proposed_by, status, round, parent_offer_id, expires_at, accepted_expires_at, created_at')
       .eq('listing_id', listingId)
       .or(`and(buyer_id.eq.${user.id},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${user.id})`)
-      .order('created_at', { ascending: true }) as unknown as Promise<{ data: OfferRow[] | null }>,
+      .order('created_at', { ascending: true }) as unknown as Promise<{ data: OfferRow[] | null; error: { message: string } | null }>,
   ])
+
+  if (messagesError) console.error('Error al cargar mensajes de la conversación:', messagesError.message)
+  if (offersError) console.error('Error al cargar ofertas de la conversación:', offersError.message)
 
   if (!listing) notFound()
   if (!otherUser) notFound()

@@ -23,13 +23,14 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 export async function sendSystemMessage(admin: AdminClient, args: {
   listingId: string; buyerId: string; sellerId: string; content: string
 }): Promise<void> {
-  await admin.from('messages').insert({
+  const { error } = await admin.from('messages').insert({
     listing_id: args.listingId,
     sender_id: args.sellerId,
     receiver_id: args.buyerId,
     content: args.content,
     is_system: true,
   })
+  if (error) console.error('Error al enviar mensaje de sistema:', error.message)
 }
 
 // Todo lo que pasa la PRIMERA vez que una orden queda pagada — marcar la
