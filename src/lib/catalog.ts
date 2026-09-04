@@ -549,7 +549,7 @@ export function shipDeadline(paidAt: string): Date {
 export const OFFER_MIN_PCT = 0.5
 // Rondas máximas por hilo (oferta inicial cuenta como ronda 1) antes de que
 // solo queden aceptar/rechazar como opciones, para evitar loops infinitos.
-export const OFFER_MAX_ROUNDS = 3
+export const OFFER_MAX_ROUNDS = 5
 // Tiempo que tiene la otra parte para responder antes de que la oferta expire.
 export const OFFER_EXPIRY_HOURS = 48
 // Tiempo que tiene la compradora para pagar al precio pactado antes de que
