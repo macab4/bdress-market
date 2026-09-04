@@ -2,12 +2,17 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
+import { getConversations } from '@/lib/messages'
+import { getSignedAttachmentUrls } from '@/lib/chatAttachments'
+import ConversationList from '@/components/messages/ConversationList'
 import MessageComposer from '@/components/messages/MessageComposer'
 import ThreadRefresher from '@/components/messages/ThreadRefresher'
 import SecurityTipsModal from '@/components/messages/SecurityTipsModal'
 import OfferResponseActions from '@/components/dashboard/OfferResponseActions'
 import MakeOfferModal from '@/components/listings/MakeOfferModal'
 import { OFFER_STATUS_CONFIG, OFFER_MAX_ROUNDS, minOfferPrice } from '@/lib/catalog'
+
+type Attachment = { id: string; url: string; width: number | null; height: number | null }
 
 type MessageRow = {
   id: string
@@ -53,7 +58,7 @@ export default async function MessageThreadPage({
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`/dashboard/messages/${listingId}/${otherUserId}`)}`)
   if (otherUserId === user.id) notFound()
 
-  const [{ data: listing }, { data: otherUser }, { data: messages, error: messagesError }, { data: offers, error: offersError }] = await Promise.all([
+  const [{ data: listing }, { data: otherUser }, { data: messages, error: messagesError }, { data: offers, error: offersError }, conversations] = await Promise.all([
     supabase.from('listings').select('id, title, photos, seller_id, price, status').eq('id', listingId).single(),
     supabase.from('profiles').select('id, name, avatar_url').eq('id', otherUserId).single(),
     supabase
@@ -68,6 +73,7 @@ export default async function MessageThreadPage({
       .eq('listing_id', listingId)
       .or(`and(buyer_id.eq.${user.id},seller_id.eq.${otherUserId}),and(buyer_id.eq.${otherUserId},seller_id.eq.${user.id})`)
       .order('created_at', { ascending: true }) as unknown as Promise<{ data: OfferRow[] | null; error: { message: string } | null }>,
+    getConversations(supabase, user.id),
   ])
 
   if (messagesError) console.error('Error al cargar mensajes de la conversación:', messagesError.message)
@@ -81,6 +87,29 @@ export default async function MessageThreadPage({
 
   const messageList = messages ?? []
   const offerList = offers ?? []
+
+  // Fotos del chat — consulta aparte y tolerante a que la tabla/bucket
+  // todavía no existan en prod (ver migración 20260905000000): si falla, el
+  // chat se muestra igual, solo sin fotos, en vez de romper la página.
+  const attachmentsByMessage = new Map<string, Attachment[]>()
+  if (messageList.length > 0) {
+    const { data: attachmentRows, error: attachmentsError } = await supabase
+      .from('message_attachments')
+      .select('id, message_id, storage_path, width, height')
+      .in('message_id', messageList.map(m => m.id))
+    if (attachmentsError) {
+      console.error('Error al cargar adjuntos de la conversación:', attachmentsError.message)
+    } else if (attachmentRows) {
+      const signedUrls = await getSignedAttachmentUrls(supabase, attachmentRows.map(a => a.storage_path))
+      for (const row of attachmentRows) {
+        const url = signedUrls[row.storage_path]
+        if (!url) continue
+        const list = attachmentsByMessage.get(row.message_id) ?? []
+        list.push({ id: row.id, url, width: row.width, height: row.height })
+        attachmentsByMessage.set(row.message_id, list)
+      }
+    }
+  }
 
   const timeline: TimelineItem[] = [
     ...messageList.map((m): TimelineItem => ({ type: 'message', createdAt: m.created_at, data: m })),
@@ -106,67 +135,80 @@ export default async function MessageThreadPage({
     <div className="min-h-screen bg-[#EBEBEB]">
       <ThreadRefresher listingId={listingId} otherUserId={otherUserId} />
       <SecurityTipsModal autoShow />
-      <div className="max-w-2xl mx-auto px-4 py-10">
-        <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-6">
-          <Link href="/dashboard/messages" className="hover:text-black">Mensajes</Link>
-          {' · '}
-          <span>{otherUser.name}</span>
-        </p>
+      <div className="md:max-w-5xl md:mx-auto md:flex md:gap-4 md:px-4 md:py-10">
+        <ConversationList conversations={conversations} selectedKey={`${listingId}:${otherUserId}`} hiddenOnMobile />
 
-        <div className="bg-white flex flex-col" style={{ minHeight: '60vh' }}>
-          {/* Encabezado con la prenda */}
-          <Link href={`/listings/${listingId}`} className="flex items-center gap-3 p-4 border-b border-gray-100 hover:bg-gray-50 transition">
-            <div className="w-10 h-12 bg-gray-100 relative flex-shrink-0 overflow-hidden">
-              {listing.photos?.[0] ? (
-                <Image src={listing.photos[0]} alt={listing.title} fill className="object-cover" />
+        <div className="flex-1 flex flex-col h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)]">
+          <p className="text-[10px] tracking-widest uppercase text-gray-400 px-4 pt-4 md:px-0 md:pt-0 mb-3 md:mb-3 flex-shrink-0">
+            <Link href="/dashboard/messages" className="hover:text-black">← Mensajes</Link>
+            {' · '}
+            <span>{otherUser.name}</span>
+          </p>
+
+          <div className="bg-white flex flex-col flex-1 min-h-0">
+            {/* Encabezado con la prenda */}
+            <Link href={`/listings/${listingId}`} className="flex items-center gap-3 p-4 border-b border-gray-100 hover:bg-gray-50 transition flex-shrink-0">
+              <div className="w-10 h-12 bg-gray-100 relative flex-shrink-0 overflow-hidden">
+                {listing.photos?.[0] ? (
+                  <Image src={listing.photos[0]} alt={listing.title} fill className="object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-[9px]">Sin foto</div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{listing.title}</p>
+                <p className="text-xs text-gray-400">Conversación con {otherUser.name}</p>
+              </div>
+            </Link>
+
+            {/* Línea de tiempo: mensajes y ofertas mezclados por fecha */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
+              {timeline.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-10">
+                  Todavía no hay mensajes — escribe el primero o hacé una oferta desde la prenda.
+                </p>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-300 text-[9px]">Sin foto</div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{listing.title}</p>
-              <p className="text-xs text-gray-400">Conversación con {otherUser.name}</p>
-            </div>
-          </Link>
+                timeline.map(item => {
+                  if (item.type === 'message') {
+                    const m = item.data
+                    const attachments = attachmentsByMessage.get(m.id) ?? []
 
-          {/* Línea de tiempo: mensajes y ofertas mezclados por fecha */}
-          <div className="flex-1 p-4 space-y-3">
-            {timeline.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-10">
-                Todavía no hay mensajes — escribe el primero o hacé una oferta desde la prenda.
-              </p>
-            ) : (
-              timeline.map(item => {
-                if (item.type === 'message') {
-                  const m = item.data
+                    // Mensaje de sistema (cambio de estado de la orden) — banner
+                    // centrado, no burbuja de una persona (ver sendSystemMessage
+                    // en src/lib/orderNotifications.ts).
+                    if (m.is_system) {
+                      return (
+                        <div key={`m-${m.id}`} className="flex justify-center py-1">
+                          <div className="max-w-[85%] bg-[#7fab87]/10 text-[#5a7a55] text-xs px-3 py-2 text-center">
+                            <p>{m.content}</p>
+                            <p className="text-[9px] text-[#5a7a55]/60 mt-0.5">{formatTime(m.created_at)}</p>
+                          </div>
+                        </div>
+                      )
+                    }
 
-                  // Mensaje de sistema (cambio de estado de la orden) — banner
-                  // centrado, no burbuja de una persona (ver sendSystemMessage
-                  // en src/lib/orderNotifications.ts).
-                  if (m.is_system) {
+                    const fromMe = m.sender_id === user.id
                     return (
-                      <div key={`m-${m.id}`} className="flex justify-center py-1">
-                        <div className="max-w-[85%] bg-[#7fab87]/10 text-[#5a7a55] text-xs px-3 py-2 text-center">
-                          <p>{m.content}</p>
-                          <p className="text-[9px] text-[#5a7a55]/60 mt-0.5">{formatTime(m.created_at)}</p>
+                      <div key={`m-${m.id}`} className={`flex ${fromMe ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[75%] px-3 py-2 text-sm ${
+                          fromMe ? 'bg-black text-white' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {attachments.length > 0 && (
+                            <div className={`grid gap-1 mb-1.5 ${attachments.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                              {attachments.map(a => (
+                                <a key={a.id} href={a.url} target="_blank" rel="noreferrer" className="block w-32 h-32 relative overflow-hidden bg-black/10">
+                                  <Image src={a.url} alt="Foto enviada en el chat" fill className="object-cover" unoptimized />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          {m.content && <p className="whitespace-pre-line">{m.content}</p>}
+                          <p className={`text-[9px] mt-1 ${fromMe ? 'text-gray-300' : 'text-gray-400'}`}>
+                            {formatTime(m.created_at)}
+                          </p>
                         </div>
                       </div>
                     )
-                  }
-
-                  const fromMe = m.sender_id === user.id
-                  return (
-                    <div key={`m-${m.id}`} className={`flex ${fromMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[75%] px-3 py-2 text-sm ${
-                        fromMe ? 'bg-black text-white' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        <p className="whitespace-pre-line">{m.content}</p>
-                        <p className={`text-[9px] mt-1 ${fromMe ? 'text-gray-300' : 'text-gray-400'}`}>
-                          {formatTime(m.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  )
                 }
 
                 const o = item.data
@@ -253,5 +295,7 @@ export default async function MessageThreadPage({
         </div>
       </div>
     </div>
+  </div>
   )
 }
+

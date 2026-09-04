@@ -2,9 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendEmail, emailLayout } from '@/lib/email'
 import { moderateMessage, MODERATION_MESSAGE, REPEAT_OFFENDER_THRESHOLD, repeatOffenderMessage } from '@/lib/messageModeration'
+import { ALLOWED_ATTACHMENT_MIME_TYPES, MAX_ATTACHMENTS_PER_MESSAGE, MAX_ATTACHMENT_BYTES } from '@/lib/chatAttachments'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL!
 const MAX_LENGTH = 2000
+
+type IncomingAttachment = { storage_path: string; mime_type: string; size_bytes: number }
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -14,14 +17,29 @@ export async function POST(request: Request) {
   let listingId: string
   let receiverId: string
   let content: string
+  let attachments: IncomingAttachment[]
   try {
     const body = await request.json()
     listingId = body.listing_id
     receiverId = body.receiver_id
     content = String(body.content ?? '').trim()
-    if (!listingId || !receiverId || !content) throw new Error()
+    attachments = Array.isArray(body.attachments) ? body.attachments : []
+    if (!listingId || !receiverId) throw new Error()
+    if (!content && attachments.length === 0) throw new Error()
     if (content.length > MAX_LENGTH) {
       return Response.json({ error: `El mensaje no puede superar los ${MAX_LENGTH} caracteres` }, { status: 400 })
+    }
+    if (attachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
+      return Response.json({ error: `Puedes adjuntar hasta ${MAX_ATTACHMENTS_PER_MESSAGE} fotos por mensaje` }, { status: 400 })
+    }
+    for (const a of attachments) {
+      if (
+        typeof a.storage_path !== 'string' || !a.storage_path ||
+        !(ALLOWED_ATTACHMENT_MIME_TYPES as readonly string[]).includes(a.mime_type) ||
+        typeof a.size_bytes !== 'number' || a.size_bytes <= 0 || a.size_bytes > MAX_ATTACHMENT_BYTES
+      ) {
+        throw new Error()
+      }
     }
   } catch {
     return Response.json({ error: 'Solicitud inválida' }, { status: 400 })
@@ -114,6 +132,22 @@ export async function POST(request: Request) {
 
   if (error || !message) return Response.json({ error: error?.message ?? 'Error al enviar el mensaje' }, { status: 500 })
 
+  if (attachments.length > 0) {
+    const { error: attachmentsError } = await supabase.from('message_attachments').insert(
+      attachments.map(a => ({
+        message_id: message.id,
+        storage_path: a.storage_path,
+        mime_type: a.mime_type,
+        size_bytes: a.size_bytes,
+      }))
+    )
+    // Las fotos ya están subidas a Storage y el mensaje ya existe — si esto
+    // falla (ej. migración de message_attachments todavía no corrida en
+    // prod) no tiene sentido devolver error al remitente, el mensaje de
+    // todos modos se mandó. Se loguea para poder diagnosticarlo.
+    if (attachmentsError) console.error('Error al guardar adjuntos del mensaje:', attachmentsError.message)
+  }
+
   // Antes solo se avisaba por correo — nunca creaba notificación in-app
   // (a diferencia de ofertas, que sí lo intentaban aunque venían fallando
   // por falta de policy de insert, ver migración 20260902000000).
@@ -138,7 +172,10 @@ export async function POST(request: Request) {
           Hola ${receiver.name ?? ''}, ${sender?.name || 'una usuaria'} te escribió sobre <strong>${listing.title}</strong>:
         </p>
         <p style="font-size: 14px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px; border-radius: 4px;">
-          “${content.length > 200 ? content.slice(0, 200) + '…' : content}”
+          ${content
+            ? `“${content.length > 200 ? content.slice(0, 200) + '…' : content}”`
+            : `📷 ${attachments.length === 1 ? 'Te mandó una foto' : `Te mandó ${attachments.length} fotos`}`
+          }
         </p>
         <p style="text-align: center; margin-top: 24px;">
           <a href="${SITE_URL}/dashboard/messages/${listingId}/${user.id}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
