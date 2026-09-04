@@ -376,6 +376,14 @@ export default async function ListingPage({
                         ¡Tu oferta de ${myOffer!.offered_price.toLocaleString('es-CL')} fue aceptada! Cómprala antes de que venza.
                       </p>
                     )}
+                    {/* Con una oferta pendiente (sin aceptar todavía), "Comprar"
+                        sigue cobrando el precio de lista completo — se avisa acá
+                        para que nadie pague de más por error mientras negocia. */}
+                    {myOffer?.status === 'pending' && (
+                      <p className="text-xs text-amber-700 bg-amber-50 text-center py-2 px-3">
+                        Tenés una oferta pendiente por ${myOffer.offered_price.toLocaleString('es-CL')}. Si comprás ahora, pagás el precio completo (${listing.price.toLocaleString('es-CL')}).
+                      </p>
+                    )}
                     <BuyButton listingId={listing.id} total={buyPrice + buyerProtectionFee(buyPrice)} />
 
                     {/* Sin negociación de precio en productos internacionales — el
