@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function AdminListingActions({ listingId, status }: { listingId: string; status: string }) {
+export default function AdminListingActions({ listingId, status, sellerDeprioritized }: { listingId: string; status: string; sellerDeprioritized?: boolean }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -13,6 +13,17 @@ export default function AdminListingActions({ listingId, status }: { listingId: 
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
+    })
+    router.refresh()
+    setLoading(false)
+  }
+
+  async function toggleDeprioritized() {
+    setLoading(true)
+    await fetch(`/api/admin/listings/${listingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ seller_deprioritized: !sellerDeprioritized }),
     })
     router.refresh()
     setLoading(false)
@@ -38,6 +49,12 @@ export default function AdminListingActions({ listingId, status }: { listingId: 
         <button onClick={() => setStatus('active')} disabled={loading}
           className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black disabled:opacity-50">
           Reactivar
+        </button>
+      )}
+      {sellerDeprioritized !== undefined && (
+        <button onClick={toggleDeprioritized} disabled={loading}
+          className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black disabled:opacity-50">
+          {sellerDeprioritized ? 'Sacar esta prenda del final' : 'Mandar esta prenda al final'}
         </button>
       )}
       <button onClick={handleDelete} disabled={loading}

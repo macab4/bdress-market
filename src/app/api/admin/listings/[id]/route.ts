@@ -14,7 +14,7 @@ export async function PATCH(
   if (!(await checkAdmin())) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   const { id } = await params
 
-  const update: { status?: string; photos?: string[]; product_category?: string; product_type?: string; pending_review?: boolean } = {}
+  const update: { status?: string; photos?: string[]; product_category?: string; product_type?: string; pending_review?: boolean; seller_deprioritized?: boolean } = {}
   try {
     const body = await request.json()
     if (body.status !== undefined) {
@@ -36,6 +36,15 @@ export async function PATCH(
     if (body.pending_review !== undefined) {
       if (typeof body.pending_review !== 'boolean') throw new Error()
       update.pending_review = body.pending_review
+    }
+    // Override por prenda del flag de la vendedora (ver
+    // profiles.deprioritized) — permite excluir del "final del catálogo" a
+    // una prenda puntual sin afectar el resto de sus prendas. No se
+    // sobreescribe salvo que cambie seller_id o el flag de la vendedora
+    // (ver trigger sync_listing_seller_deprioritized / cascade_seller_deprioritized).
+    if (body.seller_deprioritized !== undefined) {
+      if (typeof body.seller_deprioritized !== 'boolean') throw new Error()
+      update.seller_deprioritized = body.seller_deprioritized
     }
     if (Object.keys(update).length === 0) throw new Error()
   } catch {

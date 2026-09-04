@@ -137,7 +137,7 @@ export default async function AdminListingsPage({
                       productType={listing.product_type}
                     />
                   )}
-                  <AdminListingActions listingId={listing.id} status={listing.status} />
+                  <AdminListingActions listingId={listing.id} status={listing.status} sellerDeprioritized={listing.seller_deprioritized} />
                 </div>
               )
             })}
