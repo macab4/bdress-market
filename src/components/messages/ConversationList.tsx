@@ -24,7 +24,7 @@ export default function ConversationList({
           <p className="text-sm text-gray-400">Todavía no tienes conversaciones.</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-100 md:h-[calc(100dvh-9rem)] md:overflow-y-auto">
+        <div className="divide-y divide-gray-100 md:h-[calc(100dvh_-_9rem)] md:overflow-y-auto">
           {conversations.map(c => {
             const key = `${c.listingId}:${c.otherId}`
             const selected = key === selectedKey

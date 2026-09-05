@@ -138,7 +138,7 @@ export default async function MessageThreadPage({
       <div className="md:max-w-5xl md:mx-auto md:flex md:gap-4 md:px-4 md:py-10">
         <ConversationList conversations={conversations} selectedKey={`${listingId}:${otherUserId}`} hiddenOnMobile />
 
-        <div className="flex-1 flex flex-col h-[calc(100dvh-4rem)] md:h-[calc(100dvh-5rem)]">
+        <div className="flex-1 flex flex-col h-[calc(100dvh_-_4rem)] md:h-[calc(100dvh_-_5rem)]">
           <p className="text-[10px] tracking-widest uppercase text-gray-400 px-4 pt-4 md:px-0 md:pt-0 mb-3 md:mb-3 flex-shrink-0">
             <Link href="/dashboard/messages" className="hover:text-black">← Mensajes</Link>
             {' · '}

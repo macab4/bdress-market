@@ -16,7 +16,7 @@ export default async function MessagesInboxPage() {
       <InboxRefresher />
       <div className="md:max-w-5xl md:mx-auto md:flex md:gap-4 md:px-4 md:py-10">
         <ConversationList conversations={conversations} />
-        <div className="hidden md:flex flex-1 bg-white items-center justify-center md:h-[calc(100dvh-5rem)]">
+        <div className="hidden md:flex flex-1 bg-white items-center justify-center md:h-[calc(100dvh_-_5rem)]">
           <p className="text-sm text-gray-400">Elegí una conversación para ver los mensajes.</p>
         </div>
       </div>
