@@ -46,21 +46,22 @@ export default async function OffersPage() {
     const counterpartyName = role === 'buyer' ? offer.seller?.name : offer.buyer?.name
     const otherUserId = role === 'buyer' ? offer.seller_id : offer.buyer_id
     const myTurn = offer.status === 'pending' && offer.proposed_by !== role
+    const chatHref = `/dashboard/messages/${offer.listing_id}/${otherUserId}`
 
     return (
       <div key={offer.id} className="bg-white p-5">
         <div className="flex gap-4">
-          <div className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
+          <Link href={chatHref} className="w-16 h-20 bg-gray-100 relative flex-shrink-0 overflow-hidden">
             {photo ? (
               <Image src={photo} alt={offer.listing?.title ?? ''} fill className="object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">Sin foto</div>
             )}
-          </div>
+          </Link>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <p className="text-sm font-medium truncate">{offer.listing?.title ?? 'Prenda'}</p>
+              <Link href={chatHref} className="text-sm font-medium truncate hover:underline">{offer.listing?.title ?? 'Prenda'}</Link>
               <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 whitespace-nowrap flex-shrink-0 ${status.color}`}>
                 {status.label}
               </span>
@@ -69,10 +70,7 @@ export default async function OffersPage() {
             <p className="text-xs text-gray-400 mb-1">
               {role === 'buyer' ? 'Vendedora' : 'Compradora'}: {counterpartyName ?? '—'} · Ronda {offer.round}/{OFFER_MAX_ROUNDS}
               {' · '}
-              <Link
-                href={`/dashboard/messages/${offer.listing_id}/${otherUserId}`}
-                className="underline underline-offset-2 hover:text-black"
-              >
+              <Link href={chatHref} className="underline underline-offset-2 hover:text-black">
                 Ir al chat
               </Link>
             </p>
