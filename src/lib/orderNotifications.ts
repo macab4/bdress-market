@@ -213,7 +213,12 @@ export async function executeOrderRefund(admin: AdminClient, order: {
     })
     if (!refundRes.ok) {
       const errBody = await refundRes.json().catch(() => ({}))
-      return { ok: false, error: errBody.message || 'Error al reembolsar en Mercado Pago' }
+      // El mensaje crudo de la API de Mercado Pago (a veces texto genérico
+      // de su portal de desarrolladores, nada útil para la vendedora) no
+      // debe llegar nunca a la UI — se loguea para diagnóstico y se muestra
+      // un mensaje fijo en español.
+      console.error(`executeOrderRefund(${order.orderId}): error de Mercado Pago al reembolsar:`, JSON.stringify(errBody))
+      return { ok: false, error: 'No pudimos procesar el reembolso automático en Mercado Pago. Contacta a soporte.' }
     }
   }
 
