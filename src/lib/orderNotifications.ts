@@ -50,20 +50,28 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
   processingFee: number
   shippingCost: number
 }): Promise<void> {
-  const [{ data: listing }, { data: buyer }, { data: seller }] = await Promise.all([
+  const [
+    { data: listing, error: listingError },
+    { data: buyer, error: buyerError },
+    { data: seller, error: sellerError },
+  ] = await Promise.all([
     admin.from('listings').update({ status: 'sold' }).eq('id', order.listingId)
       .select('title, source_type, international_lead_time_min_days, international_lead_time_max_days').single(),
     admin.from('profiles').select('email, name').eq('id', order.buyerId).single(),
     admin.from('profiles').select('email, name').eq('id', order.sellerId).single(),
   ])
+  if (listingError) console.error(`finalizeOrderPaid(${order.orderId}): error al marcar la prenda vendida:`, listingError.message)
+  if (buyerError) console.error(`finalizeOrderPaid(${order.orderId}): error al leer perfil de compradora:`, buyerError.message)
+  if (sellerError) console.error(`finalizeOrderPaid(${order.orderId}): error al leer perfil de vendedora:`, sellerError.message)
 
   // Alerta en la campanita para la vendedora — hasta ahora solo se enteraba
   // por correo, y si ese correo no llegaba (bug intermitente de Supabase
   // Auth visto en otros casos) no había ninguna otra señal dentro del sitio
   // de que tenía una venta nueva.
-  await admin.from('notifications').insert({
+  const { error: notificationError } = await admin.from('notifications').insert({
     user_id: order.sellerId, type: 'sale_paid', actor_id: order.buyerId, listing_id: order.listingId,
   })
+  if (notificationError) console.error(`finalizeOrderPaid(${order.orderId}): error al crear notificación sale_paid:`, notificationError.message)
 
   const listingTitle = listing?.title ?? 'tu prenda'
   // "amount" (prenda + Protección Bdress) es la base de la comisión y del

@@ -152,18 +152,31 @@ async function handleNotification(request: Request) {
       }
     }
 
-    // Solo marcamos la prenda vendida la primera vez que la orden pasa a pagada
-    // (evita reprocesar si Mercado Pago reenvía el mismo webhook).
-    if (updatedOrder) {
+    // finalizeOrderPaid (notificación, emails, mensaje de sistema) se
+    // intenta SIEMPRE que la orden esté 'paid' — no solo cuando updatedOrder
+    // hizo la transición — por el mismo motivo que el acreditado de saldo de
+    // arriba: si un intento anterior del webhook cambió el status pero se
+    // cayó antes de terminar de avisar, este intento tiene que poder
+    // completarlo. El update "where finalized_at is null" es el guard
+    // atómico que evita mandar los avisos dos veces si ya se habían mandado.
+    const { data: claimedOrder } = await supabase
+      .from('orders')
+      .update({ finalized_at: new Date().toISOString() })
+      .eq('id', orderId)
+      .is('finalized_at', null)
+      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost')
+      .maybeSingle()
+
+    if (claimedOrder) {
       await finalizeOrderPaid(supabase, {
         orderId,
-        listingId: updatedOrder.listing_id,
-        buyerId: updatedOrder.buyer_id,
-        sellerId: updatedOrder.seller_id,
-        amount: updatedOrder.amount,
-        commission: updatedOrder.commission,
-        processingFee: updatedOrder.processing_fee,
-        shippingCost: updatedOrder.shipping_cost,
+        listingId: claimedOrder.listing_id,
+        buyerId: claimedOrder.buyer_id,
+        sellerId: claimedOrder.seller_id,
+        amount: claimedOrder.amount,
+        commission: claimedOrder.commission,
+        processingFee: claimedOrder.processing_fee,
+        shippingCost: claimedOrder.shipping_cost,
       })
     }
   } else if ((payment.status === 'rejected' || payment.status === 'cancelled') && orderId) {

@@ -1,0 +1,13 @@
+-- finalizeOrderPaid (notificación sale_paid, emails a compradora/vendedora/
+-- admin, mensaje de sistema en el chat) solo se llamaba cuando ESE webhook
+-- de Mercado Pago era el que hacía la transición pending_payment -> paid.
+-- Si esa ejecución puntual fallaba después de actualizar el status (timeout,
+-- cold start, cualquier excepción) pero antes de terminar finalizeOrderPaid,
+-- Mercado Pago reintenta el webhook — pero como el status ya es 'paid', el
+-- reintento nunca vuelve a intentar finalizeOrderPaid: la venta queda pagada
+-- para siempre sin avisarle a nadie. El acreditado de saldo (recordSalePending)
+-- ya tenía este mismo problema resuelto con un fallback idempotente; esta
+-- columna hace lo mismo para finalizeOrderPaid, vía update atómico
+-- "where finalized_at is null" para que cualquier reintento pueda
+-- completarlo sin arriesgarse a mandar los avisos dos veces.
+alter table public.orders add column if not exists finalized_at timestamptz;
