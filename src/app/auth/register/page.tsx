@@ -45,8 +45,19 @@ function RegisterForm() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError('')
+
+    // Nombre y apellido (no verificamos identidad real, solo que tenga dos
+    // palabras) — antes se aceptaba cualquier apodo de una sola palabra, y
+    // ese mismo campo es el que se le muestra al courier en "Retiro
+    // (vendedora)" al generar la etiqueta de envío, donde un nombre
+    // incompleto no sirve para el retiro físico del paquete.
+    if (form.name.trim().split(/\s+/).length < 2) {
+      setError('Ingresa tu nombre y apellido — lo necesitamos para las etiquetas de envío cuando vendas.')
+      return
+    }
+
+    setLoading(true)
 
     const supabase = createClient()
     const { data, error } = await supabase.auth.signUp({
@@ -132,18 +143,18 @@ function RegisterForm() {
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
-              Nombre visible
+              Nombre y apellido
             </label>
             <input
               type="text"
               value={form.name}
               onChange={e => set('name', e.target.value)}
               required
-              placeholder="Como quieras que te vean otras usuarias"
+              placeholder="Ej: María Pérez"
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
             />
             <p className="text-[10px] text-gray-400 mt-1">
-              No tiene que ser tu nombre real — puedes cambiarlo después desde tu perfil.
+              Lo necesitamos completo para las etiquetas de envío cuando vendas una prenda.
             </p>
           </div>
 
