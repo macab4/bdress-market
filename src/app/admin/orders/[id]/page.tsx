@@ -115,6 +115,7 @@ export default async function AdminOrderDetailPage({
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Retiro (vendedora)</p>
               <p>{order.seller?.name} · {order.seller?.phone ?? 'sin teléfono'}</p>
+              <p className="text-gray-500">{order.seller?.email}</p>
               <p className="text-gray-500">{order.seller?.address ?? '—'}{order.seller?.comuna ? `, ${order.seller.comuna}` : ''}</p>
             </div>
 
