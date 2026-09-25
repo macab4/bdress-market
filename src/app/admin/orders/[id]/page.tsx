@@ -17,7 +17,7 @@ import MarkReturnReceivedForm from '@/components/admin/MarkReturnReceivedForm'
 type AdminOrderDetail = Order & {
   listing: { title: string; photos: string[]; shipping_size: string } | null
   buyer: { name: string; email: string } | null
-  seller: { name: string; email: string; phone: string | null; address: string | null; comuna: string | null }
+  seller: { name: string; legal_name: string | null; email: string; phone: string | null; address: string | null; comuna: string | null }
 }
 
 function formatDate(iso: string | null) {
@@ -40,7 +40,7 @@ export default async function AdminOrderDetailPage({
 
   const { data: order } = await admin
     .from('orders')
-    .select('*, listing:listings(title, photos, shipping_size), buyer:profiles!orders_buyer_id_fkey(name, email), seller:profiles!orders_seller_id_fkey(name, email, phone, address, comuna)')
+    .select('*, listing:listings(title, photos, shipping_size), buyer:profiles!orders_buyer_id_fkey(name, email), seller:profiles!orders_seller_id_fkey(name, legal_name, email, phone, address, comuna)')
     .eq('id', id)
     .single() as unknown as { data: AdminOrderDetail | null }
 
@@ -114,7 +114,7 @@ export default async function AdminOrderDetailPage({
 
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Retiro (vendedora)</p>
-              <p>{order.seller?.name} · {order.seller?.phone ?? 'sin teléfono'}</p>
+              <p>{order.seller?.legal_name ?? order.seller?.name} · {order.seller?.phone ?? 'sin teléfono'}</p>
               <p className="text-gray-500">{order.seller?.email}</p>
               <p className="text-gray-500">{order.seller?.address ?? '—'}{order.seller?.comuna ? `, ${order.seller.comuna}` : ''}</p>
             </div>

@@ -41,7 +41,7 @@ export async function POST(
   }
 
   const [{ data: seller }, { data: buyer }, { data: listing }] = await Promise.all([
-    supabase.from('profiles').select('name, email, phone, address, comuna').eq('id', order.seller_id).single(),
+    supabase.from('profiles').select('name, legal_name, email, phone, address, comuna').eq('id', order.seller_id).single(),
     supabase.from('profiles').select('name, email').eq('id', order.buyer_id).single(),
     supabase.from('listings').select('title, price, shipping_size').eq('id', order.listing_id).single(),
   ])
@@ -50,6 +50,12 @@ export async function POST(
     return Response.json({ error: 'Completa tu dirección de despacho en tu perfil antes de generar la etiqueta' }, { status: 409 })
   }
   if (!listing) return Response.json({ error: 'Prenda no encontrada' }, { status: 404 })
+
+  // El courier necesita el nombre y apellido real para el retiro, no el
+  // apodo que la vendedora eligió como "nombre visible" — pero como
+  // legal_name recién se pide en el registro, las cuentas viejas todavía no
+  // lo tienen cargado, así que cae de vuelta al name mientras tanto.
+  const senderName = seller.legal_name ?? seller.name
 
   // MVP mientras Chilexpress/Starken no entregan credenciales de producción
   // (ver MANUAL_LABEL_MODE en catalog.ts): en vez de llamar a la API del
@@ -70,7 +76,7 @@ export async function POST(
           </p>
           <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
             <strong>Retiro (origen)</strong><br/>
-            ${seller.name} · ${seller.phone}${seller.email ? ` · ${seller.email}` : ''}<br/>
+            ${senderName} · ${seller.phone}${seller.email ? ` · ${seller.email}` : ''}<br/>
             ${seller.address}, ${seller.comuna}
           </p>
           <p style="font-size: 13px; color: #666; line-height: 1.6; background: #f7f7f7; padding: 12px 16px;">
@@ -115,7 +121,7 @@ export async function POST(
     destStreetName: order.shipping_address,
     destStreetNumber: '',
     destSupplement: order.shipping_address_extra,
-    senderName: seller.name,
+    senderName,
     senderPhone: seller.phone,
     senderEmail: seller.email,
     recipientName: order.shipping_name,

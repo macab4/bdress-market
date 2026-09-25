@@ -63,6 +63,7 @@ export interface Profile {
   id: string
   email: string
   name: string
+  legal_name: string | null
   avatar_url: string | null
   city: string | null
   bio: string | null

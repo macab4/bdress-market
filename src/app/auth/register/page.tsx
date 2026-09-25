@@ -33,7 +33,7 @@ function RegisterForm() {
   // emailRedirectTo: el link de confirmación va a traer de vuelta a esta
   // misma URL con la sesión ya en el hash (ver AuthHashHandler).
   const next = searchParams.get('next')
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', city: '', comuna: '' })
+  const [form, setForm] = useState({ name: '', legalName: '', email: '', password: '', phone: '', city: '', comuna: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -47,12 +47,12 @@ function RegisterForm() {
     e.preventDefault()
     setError('')
 
-    // Nombre y apellido (no verificamos identidad real, solo que tenga dos
-    // palabras) — antes se aceptaba cualquier apodo de una sola palabra, y
-    // ese mismo campo es el que se le muestra al courier en "Retiro
-    // (vendedora)" al generar la etiqueta de envío, donde un nombre
-    // incompleto no sirve para el retiro físico del paquete.
-    if (form.name.trim().split(/\s+/).length < 2) {
+    // Nombre y apellido real (no verificamos identidad, solo que tenga dos
+    // palabras) — separado del "nombre visible" (que sí puede ser cualquier
+    // apodo). Este es el que se le muestra al courier en "Retiro
+    // (vendedora)" al generar la etiqueta de envío, donde un apodo de una
+    // sola palabra no sirve para el retiro físico del paquete.
+    if (form.legalName.trim().split(/\s+/).length < 2) {
       setError('Ingresa tu nombre y apellido — lo necesitamos para las etiquetas de envío cuando vendas.')
       return
     }
@@ -65,7 +65,7 @@ function RegisterForm() {
       password: form.password,
       options: {
         data: {
-          name: form.name, phone: form.phone, city: form.city, comuna: form.comuna,
+          name: form.name, legal_name: form.legalName.trim(), phone: form.phone, city: form.city, comuna: form.comuna,
           ...(referralCode ? { referral_code: referralCode } : {}),
         },
         emailRedirectTo: `${window.location.origin}${next || '/'}`,
@@ -143,18 +143,35 @@ function RegisterForm() {
         <form onSubmit={handleRegister} className="space-y-4">
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
-              Nombre y apellido
+              Nombre visible
             </label>
             <input
               type="text"
               value={form.name}
               onChange={e => set('name', e.target.value)}
               required
+              placeholder="Como quieras que te vean otras usuarias"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
+            />
+            <p className="text-[10px] text-gray-400 mt-1">
+              No tiene que ser tu nombre real — puedes cambiarlo después desde tu perfil.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">
+              Nombre y apellido (para envíos)
+            </label>
+            <input
+              type="text"
+              value={form.legalName}
+              onChange={e => set('legalName', e.target.value)}
+              required
               placeholder="Ej: María Pérez"
               className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400"
             />
             <p className="text-[10px] text-gray-400 mt-1">
-              Lo necesitamos completo para las etiquetas de envío cuando vendas una prenda.
+              No es público — solo lo usamos en la etiqueta de envío cuando vendas una prenda.
             </p>
           </div>
 

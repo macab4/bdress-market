@@ -841,3 +841,28 @@ begin
   return new;
 end;
 $$ language plpgsql security definer;
+
+-- ============================================================
+-- Migración: separa nombre visible (apodo) de nombre y apellido real
+-- (para retiro/envío). Mismo contenido que
+-- supabase/migrations/20260925000000_profiles_legal_name.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.profiles add column if not exists legal_name text;
+
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, name, legal_name, phone, city, comuna)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'name', ''),
+    nullif(new.raw_user_meta_data->>'legal_name', ''),
+    nullif(new.raw_user_meta_data->>'phone', ''),
+    nullif(new.raw_user_meta_data->>'city', ''),
+    nullif(new.raw_user_meta_data->>'comuna', '')
+  );
+  return new;
+end;
+$$ language plpgsql security definer;

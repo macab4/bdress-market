@@ -12,6 +12,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name: profile.name,
+    legal_name: profile.legal_name ?? '',
     city: profile.city ?? '',
     bio: profile.bio ?? '',
     phone: profile.phone ?? '',
@@ -37,6 +38,10 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.name.trim()) { setError('El nombre no puede estar vacío'); return }
+    if (form.legal_name.trim() && form.legal_name.trim().split(/\s+/).length < 2) {
+      setError('El nombre y apellido para envíos necesita las dos palabras')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -60,6 +65,7 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
       .from('profiles')
       .update({
         name: form.name.trim(),
+        legal_name: form.legal_name.trim() || null,
         city: form.city.trim() || null,
         bio: form.bio.trim() || null,
         phone: form.phone.trim() || null,
@@ -134,6 +140,16 @@ export default function EditProfileForm({ profile }: { profile: Profile }) {
         </p>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Nombre y apellido (para envíos)</label>
+            <input value={form.legal_name} onChange={e => set('legal_name', e.target.value)}
+              placeholder="Ej: María Pérez"
+              className="w-full border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+            <p className="text-[10px] text-gray-400 mt-1">
+              No es público — solo lo ve el courier al retirar el paquete cuando vendas.
+            </p>
+          </div>
+
           <div>
             <label className="block text-xs tracking-widest uppercase text-gray-500 mb-1">Teléfono</label>
             <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
