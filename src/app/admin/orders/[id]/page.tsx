@@ -114,14 +114,28 @@ export default async function AdminOrderDetailPage({
 
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Retiro (vendedora)</p>
-              <p>{order.seller?.legal_name ?? order.seller?.name} · {order.seller?.phone ?? 'sin teléfono'}</p>
+              <p>
+                {order.seller?.legal_name ?? order.seller?.name} ·{' '}
+                {order.seller?.phone ? (
+                  <a href={`https://wa.me/${order.seller.phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
+                    className="text-[#5a7a55] underline underline-offset-2">
+                    {order.seller.phone}
+                  </a>
+                ) : 'sin teléfono'}
+              </p>
               <p className="text-gray-500">{order.seller?.email}</p>
               <p className="text-gray-500">{order.seller?.address ?? '—'}{order.seller?.comuna ? `, ${order.seller.comuna}` : ''}</p>
             </div>
 
             <div>
               <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Entrega (compradora)</p>
-              <p>{order.shipping_name} · {order.shipping_phone}</p>
+              <p>
+                {order.shipping_name} ·{' '}
+                <a href={`https://wa.me/${order.shipping_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
+                  className="text-[#5a7a55] underline underline-offset-2">
+                  {order.shipping_phone}
+                </a>
+              </p>
               <p className="text-gray-500">
                 {order.shipping_address}{order.shipping_address_extra ? `, ${order.shipping_address_extra}` : ''}, {order.shipping_comuna}
               </p>
