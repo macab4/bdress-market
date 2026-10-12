@@ -39,7 +39,7 @@ export default function TerminosPage() {
       <div className="max-w-2xl mx-auto px-4 py-12">
         <p className="text-xs tracking-[6px] uppercase text-[#7fab87] mb-3">Bdress Market</p>
         <h1 className="text-2xl font-light tracking-widest uppercase mb-2">Términos y condiciones</h1>
-        <p className="text-xs text-gray-400 mb-8">Última actualización: 11 de octubre de 2026</p>
+        <p className="text-xs text-gray-400 mb-8">Última actualización: 12 de octubre de 2026</p>
 
         {/* Menú */}
         <nav className="bg-white p-5 mb-6">
@@ -91,6 +91,12 @@ export default function TerminosPage() {
               <li>El pago se realiza a través de Mercado Pago (tarjetas de crédito, débito y otros medios habilitados).</li>
               <li>Una vez confirmado el pago, la vendedora recibe aviso para despachar tu prenda dentro de los próximos días.</li>
               <li>Puedes seguir el estado de tu compra en «Mis compras»: pagada → despachada → confirmada → completada.</li>
+              <li>
+                También puedes agregar prendas de distintas vendedoras a tu <strong>carrito</strong> y pagarlas todas
+                juntas en un solo pago — cada vendedora sigue despachando su propio paquete por separado, con su
+                propio costo de envío, y cada prenda queda como una venta independiente para todos los efectos
+                (despacho, disputas, reseñas).
+              </li>
               <li>
                 Cuando te llegue la prenda, confirma la recepción desde «Mis compras». Desde ese momento tienes{' '}
                 <strong>2 días</strong> para reportar un problema antes de que el pago se libere a la vendedora. Si

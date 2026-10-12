@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Heart, MessageCircle, Bell } from 'lucide-react'
+import { Heart, MessageCircle, Bell, ShoppingBag } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function Navbar() {
@@ -9,8 +9,13 @@ export default async function Navbar() {
 
   let unreadCount = 0
   let unreadNotifications = 0
+  let cartCount = 0
   if (user) {
-    const [{ count: messagesCount, error: messagesError }, { count: notifCount, error: notifError }] = await Promise.all([
+    const [
+      { count: messagesCount, error: messagesError },
+      { count: notifCount, error: notifError },
+      { count: cartItemsCount, error: cartError },
+    ] = await Promise.all([
       supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
@@ -21,11 +26,17 @@ export default async function Navbar() {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
         .is('read_at', null),
+      supabase
+        .from('cart_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id),
     ])
     if (messagesError) console.error('Error al contar mensajes no leídos:', messagesError.message)
     if (notifError) console.error('Error al contar notificaciones no leídas:', notifError.message)
+    if (cartError) console.error('Error al contar prendas en el carrito:', cartError.message)
     unreadCount = messagesCount ?? 0
     unreadNotifications = notifCount ?? 0
+    cartCount = cartItemsCount ?? 0
   }
 
   return (
@@ -71,6 +82,14 @@ export default async function Navbar() {
               </Link>
               <Link href="/favorites" aria-label="Favoritos" className="text-gray-500 hover:text-black">
                 <Heart size={18} />
+              </Link>
+              <Link href="/cart" aria-label="Carrito" className="relative text-gray-500 hover:text-black">
+                <ShoppingBag size={18} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#7fab87] text-white text-[9px] flex items-center justify-center">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
               </Link>
               <Link href="/notifications" aria-label="Notificaciones" className="relative text-gray-500 hover:text-black">
                 <Bell size={18} />

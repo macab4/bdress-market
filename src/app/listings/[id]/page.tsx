@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Listing } from '@/types'
 import PhotoGallery from '@/components/listings/PhotoGallery'
 import BuyButton from '@/components/listings/BuyButton'
+import AddToCartButton from '@/components/listings/AddToCartButton'
 import FavoriteButton from '@/components/listings/FavoriteButton'
 import ShareButton from '@/components/listings/ShareButton'
 import { CONDITIONS, CATEGORIES, conditionGroupLabel, conditionGroupColor, colorLabel, colorHex, buyerProtectionFee, minOfferPrice, formatRelativeTime, productCategoryLabel, brandSlug } from '@/lib/catalog'
@@ -105,14 +106,14 @@ export default async function ListingPage({
   const sellerRating = sellerRatings[listing.seller_id]
 
   let isFavorited = false
+  let isInCart = false
   if (user) {
-    const { data: favorite } = await supabase
-      .from('favorites')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('listing_id', id)
-      .maybeSingle()
+    const [{ data: favorite }, { data: cartItem }] = await Promise.all([
+      supabase.from('favorites').select('id').eq('user_id', user.id).eq('listing_id', id).maybeSingle(),
+      supabase.from('cart_items').select('id').eq('user_id', user.id).eq('listing_id', id).maybeSingle(),
+    ])
     isFavorited = favorite !== null
+    isInCart = cartItem !== null
   }
 
   // "Reservado" visible para la compradora — el hold interno de
@@ -385,6 +386,13 @@ export default async function ListingPage({
                       </p>
                     )}
                     <BuyButton listingId={listing.id} total={buyPrice + buyerProtectionFee(buyPrice)} />
+
+                    {/* El carrito no soporta envío internacional por encargo —
+                        ese flujo exige su propio consentimiento y plazos,
+                        se compra directo con "Comprar" de arriba. */}
+                    {listing.source_type !== 'international_on_demand' && (
+                      <AddToCartButton listingId={listing.id} initialInCart={isInCart} isLoggedIn={user !== null} />
+                    )}
 
                     {/* Sin negociación de precio en productos internacionales — el
                         precio ya refleja un margen ajustado a un costo de compra que

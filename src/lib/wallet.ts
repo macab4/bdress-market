@@ -581,6 +581,28 @@ export function prorateMercadoPagoItems(args: {
   return items.filter(item => item.unitPrice > 0)
 }
 
+// Checkout de carrito: el saldo/crédito se aplica UNA vez sobre el total
+// general (misma computeWalletApplication que una compra directa), pero
+// como cada vendedora del carrito termina con su propia orden, ese monto
+// aplicado hay que repartirlo entre las órdenes individuales para que cada
+// una pueda guardar su propio wallet_amount_applied/promo_amount_applied
+// (son los que después recordPurchaseHold/recordPromoPurchaseHold tratan
+// por order_id). Resta secuencial en el mismo orden de la lista — mismo
+// patrón que prorateMercadoPagoItems, pero a nivel de órdenes en vez de a
+// nivel de líneas Prenda/Protección/Envío de una sola orden.
+export function prorateWalletAcrossOrders(args: {
+  orderTotals: { listingId: string; total: number }[]; amountApplied: number
+}): Map<string, number> {
+  let remaining = args.amountApplied
+  const result = new Map<string, number>()
+  for (const { listingId, total } of args.orderTotals) {
+    const take = Math.min(remaining, total)
+    remaining -= take
+    result.set(listingId, take)
+  }
+  return result
+}
+
 export async function getWalletSummary(admin: AdminClient, userId: string) {
   const { data } = await admin
     .from('wallet_accounts')

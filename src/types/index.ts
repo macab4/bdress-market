@@ -218,6 +218,7 @@ export interface Order {
   international_terms_version: string | null
   international_user_agent: string | null
   delay_notice_sent_at: string | null
+  cart_checkout_id: string | null
   created_at: string
   listing?: Listing
   buyer?: Profile
@@ -331,6 +332,14 @@ export interface Offer {
 }
 
 export interface Favorite {
+  id: string
+  user_id: string
+  listing_id: string
+  created_at: string
+  listing?: Listing
+}
+
+export interface CartItem {
   id: string
   user_id: string
   listing_id: string

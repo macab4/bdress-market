@@ -84,162 +84,175 @@ async function handleNotification(request: Request) {
     return Response.json({ status: 'ok' })
   }
 
+  // externalRef es, según el flujo: el id de una orden (compra directa) o un
+  // cart_checkout_id compartido por varias órdenes (checkout de carrito) —
+  // nunca ambos a la vez, así que matchear por cualquiera de las dos
+  // columnas cubre los dos casos con el mismo código, sin necesitar saber
+  // de antemano cuál es. Es un UUID generado por nosotras mismas (nunca
+  // texto libre de Mercado Pago), así que es seguro interpolarlo en .or().
   const orderId = externalRef
 
   if (payment.status === 'approved' && orderId) {
     const supabase = createAdminClient()
-    const { data: updatedOrder } = await supabase
+    const { data: updatedOrders } = await supabase
       .from('orders')
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
-      .eq('id', orderId)
+      .or(`id.eq.${orderId},cart_checkout_id.eq.${orderId}`)
       .eq('status', 'pending_payment')
-      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
-      .maybeSingle()
+      .select('id, listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
 
     // Solo si este webhook hizo la transición (evita duplicar el histórico
     // en un reintento del mismo webhook de Mercado Pago).
-    if (updatedOrder) {
-      await supabase.from('order_status_history').insert({
-        order_id: orderId,
-        previous_status: 'pending_payment',
-        new_status: 'paid',
-      })
+    if (updatedOrders && updatedOrders.length > 0) {
+      await supabase.from('order_status_history').insert(
+        updatedOrders.map(o => ({ order_id: o.id, previous_status: 'pending_payment', new_status: 'paid' }))
+      )
+      // Saca del carrito lo que se acaba de pagar — si vino de /cart, ya
+      // cumplió su función ahí.
+      await supabase.from('cart_items').delete().eq('user_id', updatedOrders[0].buyer_id).in('listing_id', updatedOrders.map(o => o.listing_id))
     }
 
-    // El saldo pendiente se intenta acreditar SIEMPRE que la orden esté
-    // 'paid', sin depender de si este webhook hizo la transición — Mercado
-    // Pago reintenta webhooks, y si un intento anterior cambió el status
-    // pero se cayó antes de acreditar el saldo, este intento debe poder
-    // completarlo. Idempotente por (order_id, type), así que no hay riesgo
-    // de duplicar si ya se había acreditado.
-    const orderForWallet = updatedOrder ?? (
+    // El saldo pendiente se intenta acreditar SIEMPRE que la(s) orden(es)
+    // estén 'paid', sin depender de si este webhook hizo la transición —
+    // Mercado Pago reintenta webhooks, y si un intento anterior cambió el
+    // status pero se cayó antes de acreditar el saldo, este intento debe
+    // poder completarlo. Idempotente por (order_id, type), así que no hay
+    // riesgo de duplicar si ya se había acreditado.
+    const ordersForWallet = updatedOrders && updatedOrders.length > 0 ? updatedOrders : (
       await supabase
         .from('orders')
-        .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
-        .eq('id', orderId)
+        .select('id, listing_id, buyer_id, seller_id, amount, commission, processing_fee, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
+        .or(`id.eq.${orderId},cart_checkout_id.eq.${orderId}`)
         .eq('status', 'paid')
-        .maybeSingle()
-    ).data
-    if (orderForWallet) {
+    ).data ?? []
+
+    for (const order of ordersForWallet) {
       const pending = await recordSalePending(supabase, {
-        id: orderId,
-        seller_id: orderForWallet.seller_id,
-        listing_id: orderForWallet.listing_id,
-        amount: orderForWallet.amount,
-        commission: orderForWallet.commission,
-        processing_fee: orderForWallet.processing_fee,
+        id: order.id,
+        seller_id: order.seller_id,
+        listing_id: order.listing_id,
+        amount: order.amount,
+        commission: order.commission,
+        processing_fee: order.processing_fee,
       })
-      if (!pending.ok) await sendWalletAlertEmail({ orderId, reason: pending.error })
+      if (!pending.ok) await sendWalletAlertEmail({ orderId: order.id, reason: pending.error })
 
       // Pago mixto (fase 3, y ahora también referidos): si la compradora
       // aplicó saldo y/o Crédito B-Dress al momento de armar la preferencia
       // de Mercado Pago, esos holds se vuelven gasto definitivo recién
       // ahora que el pago se confirmó de verdad — idempotente por
       // (order_id, type), un reintento del webhook no duplica nada.
-      if (orderForWallet.promo_amount_applied > 0) {
+      if (order.promo_amount_applied > 0) {
         const promoCompleted = await recordPromoPurchaseCompleted(supabase, {
-          orderId, userId: orderForWallet.buyer_id, amount: orderForWallet.promo_amount_applied,
-          holdTransactionId: orderForWallet.promo_transaction_id,
+          orderId: order.id, userId: order.buyer_id, amount: order.promo_amount_applied,
+          holdTransactionId: order.promo_transaction_id,
         })
-        if (!promoCompleted.ok) await sendWalletAlertEmail({ orderId, reason: promoCompleted.error })
+        if (!promoCompleted.ok) await sendWalletAlertEmail({ orderId: order.id, reason: promoCompleted.error })
       }
-      if (orderForWallet.wallet_amount_applied > 0) {
+      if (order.wallet_amount_applied > 0) {
         const completed = await recordPurchaseCompleted(supabase, {
-          orderId, userId: orderForWallet.buyer_id, amount: orderForWallet.wallet_amount_applied,
-          holdTransactionId: orderForWallet.wallet_transaction_id,
+          orderId: order.id, userId: order.buyer_id, amount: order.wallet_amount_applied,
+          holdTransactionId: order.wallet_transaction_id,
         })
-        if (!completed.ok) await sendWalletAlertEmail({ orderId, reason: completed.error })
+        if (!completed.ok) await sendWalletAlertEmail({ orderId: order.id, reason: completed.error })
       }
     }
 
     // finalizeOrderPaid (notificación, emails, mensaje de sistema) se
-    // intenta SIEMPRE que la orden esté 'paid' — no solo cuando updatedOrder
-    // hizo la transición — por el mismo motivo que el acreditado de saldo de
-    // arriba: si un intento anterior del webhook cambió el status pero se
-    // cayó antes de terminar de avisar, este intento tiene que poder
-    // completarlo. El update "where finalized_at is null" es el guard
-    // atómico que evita mandar los avisos dos veces si ya se habían mandado.
-    const { data: claimedOrder } = await supabase
-      .from('orders')
-      .update({ finalized_at: new Date().toISOString() })
-      .eq('id', orderId)
-      .is('finalized_at', null)
-      .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost')
-      .maybeSingle()
+    // intenta SIEMPRE que cada orden esté 'paid' — no solo cuando este
+    // webhook hizo la transición — por el mismo motivo que el acreditado de
+    // saldo de arriba: si un intento anterior del webhook cambió el status
+    // pero se cayó antes de terminar de avisar, este intento tiene que
+    // poder completarlo. El update "where finalized_at is null" es el guard
+    // atómico, por orden, que evita mandar los avisos dos veces si ya se
+    // habían mandado — en un carrito, cada vendedora recibe su propio aviso
+    // de venta individual, como siempre.
+    for (const order of ordersForWallet) {
+      const { data: claimedOrder } = await supabase
+        .from('orders')
+        .update({ finalized_at: new Date().toISOString() })
+        .eq('id', order.id)
+        .is('finalized_at', null)
+        .select('listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost')
+        .maybeSingle()
 
-    if (claimedOrder) {
-      await finalizeOrderPaid(supabase, {
-        orderId,
-        listingId: claimedOrder.listing_id,
-        buyerId: claimedOrder.buyer_id,
-        sellerId: claimedOrder.seller_id,
-        amount: claimedOrder.amount,
-        commission: claimedOrder.commission,
-        processingFee: claimedOrder.processing_fee,
-        shippingCost: claimedOrder.shipping_cost,
-      })
+      if (claimedOrder) {
+        await finalizeOrderPaid(supabase, {
+          orderId: order.id,
+          listingId: claimedOrder.listing_id,
+          buyerId: claimedOrder.buyer_id,
+          sellerId: claimedOrder.seller_id,
+          amount: claimedOrder.amount,
+          commission: claimedOrder.commission,
+          processingFee: claimedOrder.processing_fee,
+          shippingCost: claimedOrder.shipping_cost,
+        })
+      }
     }
   } else if ((payment.status === 'rejected' || payment.status === 'cancelled') && orderId) {
     const supabase = createAdminClient()
-    const { data: order } = await supabase
+    const { data: orders } = await supabase
       .from('orders')
-      .select('listing_id, buyer_id, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
-      .eq('id', orderId)
+      .select('id, listing_id, buyer_id, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
+      .or(`id.eq.${orderId},cart_checkout_id.eq.${orderId}`)
       .eq('status', 'pending_payment')
-      .maybeSingle()
 
-    if (order) {
+    if (orders && orders.length > 0) {
       // Registramos el evento de rechazo aunque orders.status no cambie
       // todavía en este momento (sin hold de saldo aplicado, queda en
       // pending_payment hasta que el cron expire-pending-orders lo cancele)
       // — es el equivalente al "Pendiente → Rechazado" que muestra Mercado
       // Pago, para el panel de carritos abandonados.
-      await supabase.from('order_status_history').insert({
-        order_id: orderId,
-        previous_status: 'pending_payment',
-        new_status: 'payment_rejected',
-        public_note: 'Mercado Pago rechazó el pago',
-      })
+      await supabase.from('order_status_history').insert(
+        orders.map(o => ({ order_id: o.id, previous_status: 'pending_payment', new_status: 'payment_rejected', public_note: 'Mercado Pago rechazó el pago' }))
+      )
 
-      // Si la compradora había aplicado saldo B-Dress y/o Crédito B-Dress a
-      // esta orden, el rechazo de la tarjeta no debe dejarlos atrapados
-      // hasta la próxima corrida del cron (una vez al día) — se liberan de
-      // inmediato, igual que cuando falla la creación de la preferencia en
-      // payment/create.
-      if (order.wallet_amount_applied > 0 || order.promo_amount_applied > 0) {
-        await supabase.from('orders').update({ status: 'cancelled' }).eq('id', orderId)
-      }
-      if (order.promo_amount_applied > 0) {
-        const promoCancelled = await recordPromoPurchaseCancelled(supabase, {
-          orderId, userId: order.buyer_id, amount: order.promo_amount_applied,
-          reason: 'mercadopago_payment_rejected', holdTransactionId: order.promo_transaction_id,
-        })
-        if (!promoCancelled.ok) await sendWalletAlertEmail({ orderId, reason: promoCancelled.error })
-      }
-      if (order.wallet_amount_applied > 0) {
-        const cancelled = await recordPurchaseCancelled(supabase, {
-          orderId, userId: order.buyer_id, amount: order.wallet_amount_applied,
-          reason: 'mercadopago_payment_rejected', holdTransactionId: order.wallet_transaction_id,
-        })
-        if (!cancelled.ok) await sendWalletAlertEmail({ orderId, reason: cancelled.error })
+      for (const order of orders) {
+        // Si la compradora había aplicado saldo B-Dress y/o Crédito B-Dress
+        // a esta orden, el rechazo de la tarjeta no debe dejarlos atrapados
+        // hasta la próxima corrida del cron (una vez al día) — se liberan
+        // de inmediato, igual que cuando falla la creación de la
+        // preferencia en payment/create.
+        if (order.wallet_amount_applied > 0 || order.promo_amount_applied > 0) {
+          await supabase.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+        }
+        if (order.promo_amount_applied > 0) {
+          const promoCancelled = await recordPromoPurchaseCancelled(supabase, {
+            orderId: order.id, userId: order.buyer_id, amount: order.promo_amount_applied,
+            reason: 'mercadopago_payment_rejected', holdTransactionId: order.promo_transaction_id,
+          })
+          if (!promoCancelled.ok) await sendWalletAlertEmail({ orderId: order.id, reason: promoCancelled.error })
+        }
+        if (order.wallet_amount_applied > 0) {
+          const cancelled = await recordPurchaseCancelled(supabase, {
+            orderId: order.id, userId: order.buyer_id, amount: order.wallet_amount_applied,
+            reason: 'mercadopago_payment_rejected', holdTransactionId: order.wallet_transaction_id,
+          })
+          if (!cancelled.ok) await sendWalletAlertEmail({ orderId: order.id, reason: cancelled.error })
+        }
       }
 
-      const [{ data: listing }, { data: buyer }] = await Promise.all([
-        supabase.from('listings').select('title').eq('id', order.listing_id).single(),
-        supabase.from('profiles').select('email, name').eq('id', order.buyer_id).single(),
+      // Un solo email a la compradora, listando todas las prendas del
+      // intento de pago — evita mandarle N correos de "pago rechazado"
+      // separados cuando el rechazo fue de un carrito de varias vendedoras.
+      const [{ data: listings }, { data: buyer }] = await Promise.all([
+        supabase.from('listings').select('id, title').in('id', orders.map(o => o.listing_id)),
+        supabase.from('profiles').select('email, name').eq('id', orders[0].buyer_id).single(),
       ])
+      const titles = (listings ?? []).map(l => l.title)
+      const retryUrl = orders.length === 1 ? `${SITE_URL}/listings/${orders[0].listing_id}/checkout` : `${SITE_URL}/cart`
 
       if (buyer?.email) {
         await sendEmail({
           to: buyer.email,
-          subject: `No pudimos procesar tu pago — ${listing?.title ?? 'tu compra'}`,
+          subject: `No pudimos procesar tu pago — ${titles[0] ?? 'tu compra'}${titles.length > 1 ? ` y ${titles.length - 1} más` : ''}`,
           html: emailLayout('Pago rechazado', `
             <p style="font-size: 14px; color: #444; line-height: 1.6;">
-              Hola ${buyer.name ?? ''}, Mercado Pago rechazó el pago de <strong>${listing?.title ?? 'esta prenda'}</strong>.
-              No te cobramos nada. La prenda sigue disponible — puedes intentarlo de nuevo con otro medio de pago.
+              Hola ${buyer.name ?? ''}, Mercado Pago rechazó el pago de <strong>${titles.join(', ') || 'tu compra'}</strong>.
+              No te cobramos nada. ${titles.length > 1 ? 'Las prendas siguen' : 'La prenda sigue'} disponible — puedes intentarlo de nuevo con otro medio de pago.
             </p>
             <p style="text-align: center; margin-top: 24px;">
-              <a href="${SITE_URL}/listings/${order.listing_id}/checkout" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
+              <a href="${retryUrl}" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
                 Intentar de nuevo
               </a>
             </p>
