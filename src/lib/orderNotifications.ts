@@ -161,6 +161,10 @@ export async function finalizeOrderPaid(admin: AdminClient, order: {
           <p style="font-size: 13px; color: #888; line-height: 1.6;">
             Ve a <strong>Mis ventas</strong> y genera la etiqueta de envío — te la mandamos por correo lista para imprimir.
           </p>
+          <p style="font-size: 12px; color: #a33; line-height: 1.6; background: #fdf3f3; padding: 10px 14px; margin-top: 8px;">
+            Importante: si no despachas dentro de esos 5 días hábiles, la venta se cancela automáticamente, se
+            reembolsa a la compradora y tu prenda queda pausada con una calificación de 1 estrella.
+          </p>
           <p style="text-align: center; margin-top: 24px;">
             <a href="${SITE_URL}/dashboard/sales" style="display: inline-block; background: #000; color: #fff; text-decoration: none; padding: 12px 24px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;">
               Ir a Mis ventas
