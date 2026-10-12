@@ -5,7 +5,7 @@ import {
   PROCESSING_FEE_PCT, PROCESSING_FEE_FIXED, COMMISSION_PCT,
   OFFER_MIN_PCT, OFFER_MAX_ROUNDS, OFFER_EXPIRY_HOURS, OFFER_ACCEPTED_HOLD_HOURS,
   REFERRAL_REWARD_AMOUNT, REFERRAL_MONTHLY_LIMIT, GIFTCARD_REDEMPTION_BONUS_PCT,
-  BOOST_PRICE, BOOST_DURATION_DAYS,
+  BOOST_PRICE, BOOST_DURATION_DAYS, MIN_WITHDRAWAL_AMOUNT,
 } from '@/lib/catalog'
 import {
   INTERNATIONAL_MODE_NAME, INTERNATIONAL_AVAILABILITY_MESSAGE, internationalDeliveryEstimateMessage,
@@ -17,6 +17,7 @@ const EXAMPLE_PRICE = 100000
 
 const SECTIONS = [
   { id: 'que-es', label: 'Qué es Bdress Market' },
+  { id: 'naturaleza', label: 'Cómo administramos tu pago' },
   { id: 'comprar', label: 'Cómo comprar' },
   { id: 'ofertas', label: 'Ofertas y negociación' },
   { id: 'vender', label: 'Cómo vender' },
@@ -28,6 +29,7 @@ const SECTIONS = [
   { id: 'seguridad', label: 'Seguridad y estafas' },
   { id: 'disputas', label: 'Devoluciones y disputas' },
   { id: 'cuentas', label: 'Cuentas y conducta' },
+  { id: 'legal', label: 'Responsabilidad y privacidad' },
   { id: 'contacto', label: 'Contacto' },
 ]
 
@@ -60,6 +62,23 @@ export default function TerminosPage() {
               Bdress Market es una plataforma donde personas de la comunidad Bdress pueden comprar y vender prendas
               de segunda mano entre ellas. Nosotras facilitamos el pago, el cálculo del envío y la resolución de
               problemas, pero cada prenda pertenece y es publicada directamente por la persona que la vende.
+            </p>
+          </section>
+
+          <section id="naturaleza" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Cómo administramos tu pago</h2>
+            <p className="mb-2">
+              Bdress Market es un intermediario tecnológico: no es dueña de las prendas que se publican ni es parte
+              vendedora en la transacción. Al aceptar estos Términos, la vendedora nos da un mandato para, por su
+              cuenta y a su nombre: publicar la prenda, cobrarle a la compradora a través de Mercado Pago, retener
+              el precio de la prenda durante el período de confirmación, descontar el costo de procesamiento del
+              pago, y abonarle el resto a su Saldo B-Dress una vez liberada la venta.
+            </p>
+            <p>
+              La plata que recaudamos por una venta no es un ingreso propio de Bdress Market — es dinero que
+              administramos por cuenta de la vendedora hasta que se libera a su saldo o se reembolsa a la
+              compradora. Solo la Protección BDress (la comisión que paga la compradora) es ingreso de Bdress
+              Market.
             </p>
           </section>
 
@@ -233,12 +252,20 @@ export default function TerminosPage() {
             </p>
 
             <p className="font-medium text-gray-800 mb-1 mt-4">Retira tu saldo o canjéalo por Gift Card</p>
-            <p>
-              El Saldo B-Dress que acumulas por tus ventas lo puedes transferir a tu cuenta bancaria cuando quieras
-              (sobre el mínimo de retiro). Si en cambio prefieres canjearlo como <strong>Gift Card</strong> para
-              gastarlo dentro de Bdress Market, te acreditamos un{' '}
-              <strong>{Math.round(GIFTCARD_REDEMPTION_BONUS_PCT * 100)}% extra</strong> sobre ese saldo. Hoy este
-              canje lo procesamos manualmente a pedido tuyo — escríbenos y lo coordinamos.
+            <p className="mb-4">
+              El Saldo B-Dress que acumulas por tus ventas lo puedes transferir a tu cuenta bancaria cuando quieras,
+              desde <strong>${MIN_WITHDRAWAL_AMOUNT.toLocaleString('es-CL')}</strong> de saldo disponible. Si en
+              cambio prefieres canjearlo como <strong>Gift Card</strong> para gastarlo dentro de Bdress Market, te
+              acreditamos un <strong>{Math.round(GIFTCARD_REDEMPTION_BONUS_PCT * 100)}% extra</strong> sobre ese
+              saldo. Hoy este canje lo procesamos manualmente a pedido tuyo — escríbenos y lo coordinamos.
+            </p>
+
+            <p className="font-medium text-gray-800 mb-1">Impuestos</p>
+            <p className="text-xs text-gray-500">
+              Vender tu ropa usada de forma ocasional entre privados generalmente no está afecto a IVA (artículo 2°
+              del DL 825). Si vendes de forma habitual o como actividad comercial, es tu responsabilidad cumplir con
+              las obligaciones tributarias que correspondan (inicio de actividades, boletas/facturas, declaración de
+              impuestos) — Bdress Market no te asesora ni te representa ante el SII en esta materia.
             </p>
           </section>
 
@@ -343,6 +370,12 @@ export default function TerminosPage() {
                 devolver, por ejemplo si la prenda nunca fue despachada.
               </li>
               <li>
+                <strong>Compensamos parcialmente en Crédito B-Dress</strong> — cuando el problema es menor (por
+                ejemplo, una mancha chica no informada) y no amerita devolver la prenda. La compradora recibe
+                Crédito B-Dress como compensación y la vendedora igual recibe su pago, descontando de ahí el monto
+                de la compensación.
+              </li>
+              <li>
                 <strong>Aprobamos la devolución</strong> — si la compradora ya tiene la prenda en sus manos y no
                 corresponde a lo publicado o llegó dañada. En este caso te enviamos una etiqueta para devolverla
                 (el envío de vuelta corre por cuenta de Bdress, no pagas nada) y el reembolso se procesa recién
@@ -359,12 +392,39 @@ export default function TerminosPage() {
           <section id="cuentas" className="bg-white p-6 scroll-mt-4">
             <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Cuentas y conducta</h2>
             <p className="mb-2">
+              Para registrarte necesitas ser mayor de 18 años y tener una cuenta bancaria a tu nombre en Chile para
+              poder retirar tu Saldo B-Dress. Cada persona puede mantener solo <strong>una cuenta</strong> en Bdress
+              Market — nos reservamos el derecho de suspender o fusionar cuentas que detectemos que pertenecen a la
+              misma persona, por ejemplo si se usan para esquivar una calificación baja o una suspensión.
+            </p>
+            <p className="mb-2">
               Cada persona es responsable de la veracidad de la información de sus prendas publicadas: estado,
               talla, marca y fotos deben corresponder a la realidad.
             </p>
             <p>
               Nos reservamos el derecho de eliminar publicaciones que no cumplan con nuestras políticas, y de
               suspender cuentas ante conductas fraudulentas o incumplimientos reiterados.
+            </p>
+          </section>
+
+          <section id="legal" className="bg-white p-6 scroll-mt-4">
+            <h2 className="text-sm font-medium text-black tracking-widest uppercase mb-3">Responsabilidad y privacidad</h2>
+            <p className="mb-2">
+              Bdress Market es un intermediario entre compradoras y vendedoras — no somos responsables por la
+              calidad, autenticidad o estado real de una prenda publicada, ni por el actuar de una usuaria fuera de
+              lo que podemos mediar razonablemente a través de la Protección BDress y la resolución de disputas
+              descrita más arriba.
+            </p>
+            <p className="mb-2">
+              Tus datos personales (nombre, dirección, teléfono y los que entregues al registrarte o comprar) se
+              usan únicamente para operar la plataforma — generar etiquetas de envío, procesar pagos y
+              comunicarnos contigo — y nunca se venden a terceros. Más detalle en nuestra{' '}
+              <Link href="/politica-de-privacidad" className="text-black underline underline-offset-2">Política de Privacidad</Link>.
+            </p>
+            <p>
+              Podemos modificar estos Términos cuando lo necesitemos para reflejar cómo funciona la plataforma; si
+              el cambio es significativo, lo vas a ver anunciado en el sitio o por correo. Seguir usando Bdress
+              Market después de un cambio implica que lo aceptas.
             </p>
           </section>
 

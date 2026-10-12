@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendReviewReminderEmail, sendWalletBalanceChangedEmail } from '@/lib/email'
-import { recordSaleRelease, orderNetAmount, sendWalletAlertEmail } from '@/lib/wallet'
-import { executeOrderRefund } from '@/lib/orderNotifications'
+import { recordSaleRelease, recordAdminAdjustment, orderNetAmount, sendWalletAlertEmail } from '@/lib/wallet'
+import { executeOrderRefund, sendSystemMessage } from '@/lib/orderNotifications'
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -19,10 +19,15 @@ export async function POST(
   const { id } = await params
 
   let action: string
+  let partialCreditAmount: number | null = null
   try {
     const body = await request.json()
     action = body.action
-    if (!['refund', 'release'].includes(action)) throw new Error()
+    if (!['refund', 'release', 'partial_credit'].includes(action)) throw new Error()
+    if (action === 'partial_credit') {
+      partialCreditAmount = Number(body.amount)
+      if (!Number.isFinite(partialCreditAmount) || partialCreditAmount <= 0) throw new Error()
+    }
   } catch {
     return Response.json({ error: 'action inválido' }, { status: 400 })
   }
@@ -36,10 +41,13 @@ export async function POST(
 
   if (!order) return Response.json({ error: 'Orden no encontrada' }, { status: 404 })
 
-  // "release" solo tiene sentido resolviendo una disputa.
+  // "release" y "partial_credit" solo tienen sentido resolviendo una disputa.
   // "refund" también se usa para cancelar envíos atrasados que nunca se disputaron.
-  if (action === 'release' && order.status !== 'disputed') {
+  if ((action === 'release' || action === 'partial_credit') && order.status !== 'disputed') {
     return Response.json({ error: 'Esta orden no está en disputa' }, { status: 409 })
+  }
+  if (action === 'partial_credit' && partialCreditAmount! > orderNetAmount(order)) {
+    return Response.json({ error: 'El crédito no puede ser mayor al pago que recibiría la vendedora' }, { status: 409 })
   }
   if (action === 'refund' && !['disputed', 'paid'].includes(order.status)) {
     return Response.json({ error: 'Esta orden no se puede reembolsar en su estado actual' }, { status: 409 })
@@ -79,6 +87,52 @@ export async function POST(
           })
         : Promise.resolve(),
     ])
+
+    return Response.json({ ok: true })
+  }
+
+  // action === 'partial_credit' — punto medio entre liberar todo y
+  // reembolsar todo: la venta se mantiene (la vendedora sí despachó y la
+  // compradora se queda con la prenda), pero se compensa un problema menor
+  // (ej. una mancha chica no informada) con Crédito B-Dress para la
+  // compradora, descontado del pago de la vendedora — nunca más de lo que
+  // la vendedora iba a recibir (ver validación arriba).
+  if (action === 'partial_credit') {
+    const amount = partialCreditAmount!
+    const { error } = await admin
+      .from('orders')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .eq('id', id)
+    if (error) return Response.json({ error: error.message }, { status: 500 })
+
+    const release = await recordSaleRelease(admin, id, {
+      source: 'admin_dispute_partial_credit',
+      description: 'Venta liberada — disputa resuelta con compensación parcial a la compradora',
+      createdBy: adminUser.id,
+    })
+    if (!release.ok) await sendWalletAlertEmail({ orderId: id, reason: release.error })
+
+    const debit = await recordAdminAdjustment(admin, {
+      userId: order.seller_id, type: 'admin_debit', amount, balanceType: 'real',
+      reason: `Compensación a la compradora por disputa — orden ${id}`,
+      idempotencyKey: `partial_credit_debit:${id}`, createdBy: adminUser.id,
+    })
+    if (!debit.ok) await sendWalletAlertEmail({ orderId: id, reason: debit.error })
+
+    const credit = await recordAdminAdjustment(admin, {
+      userId: order.buyer_id, type: 'admin_credit', amount, balanceType: 'promotional',
+      reason: `Compensación por disputa — orden ${id}`,
+      idempotencyKey: `partial_credit_credit:${id}`, createdBy: adminUser.id,
+    })
+    if (!credit.ok) await sendWalletAlertEmail({ orderId: id, reason: credit.error })
+
+    const [{ data: listing }] = await Promise.all([
+      admin.from('listings').select('title').eq('id', order.listing_id).single(),
+    ])
+    await sendSystemMessage(admin, {
+      listingId: order.listing_id, buyerId: order.buyer_id, sellerId: order.seller_id,
+      content: `Revisamos la disputa de "${listing?.title ?? 'esta prenda'}" — la venta se mantiene y le dimos a la compradora $${amount.toLocaleString('es-CL')} de Crédito B-Dress como compensación, descontado del pago de la vendedora.`,
+    })
 
     return Response.json({ ok: true })
   }
