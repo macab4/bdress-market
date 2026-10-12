@@ -29,6 +29,10 @@
       "schedule": "0 17 * * *"
     },
     {
+      "path": "/api/cron/auto-cancel-late-shipments",
+      "schedule": "30 17 * * *"
+    },
+    {
       "path": "/api/cron/international-availability-reminder",
       "schedule": "0 11 * * 1"
     },

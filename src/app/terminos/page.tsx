@@ -37,7 +37,7 @@ export default function TerminosPage() {
       <div className="max-w-2xl mx-auto px-4 py-12">
         <p className="text-xs tracking-[6px] uppercase text-[#7fab87] mb-3">Bdress Market</p>
         <h1 className="text-2xl font-light tracking-widest uppercase mb-2">Términos y condiciones</h1>
-        <p className="text-xs text-gray-400 mb-8">Última actualización: 18 de agosto de 2026</p>
+        <p className="text-xs text-gray-400 mb-8">Última actualización: 11 de octubre de 2026</p>
 
         {/* Menú */}
         <nav className="bg-white p-5 mb-6">
@@ -123,6 +123,16 @@ export default function TerminosPage() {
               </li>
             </ol>
 
+            <p className="font-medium text-gray-800 mb-1 mt-4">Si no despachas a tiempo o cancelas una venta</p>
+            <p>
+              Si no despachas dentro de los 5 días hábiles, la venta se cancela automáticamente: se reembolsa el
+              pago completo a la compradora, tu prenda queda pausada y recibe una calificación automática de{' '}
+              <strong>1 estrella</strong> en tu perfil. Lo mismo pasa si tú misma cancelas una venta antes de
+              despacharla desde «Mis ventas» (por ejemplo, porque la publicaste por error) — se reembolsa todo a la
+              compradora, pero igual queda esa calificación de 1 estrella, así que resérvalo para cuando realmente
+              no puedas cumplir con la venta.
+            </p>
+
             <p className="font-medium text-gray-800 mb-1 mt-4">Modo vacaciones</p>
             <p>
               Si te vas de viaje o necesitas pausar tu tienda, activa el <strong>Modo vacaciones</strong> desde «Mis
@@ -152,8 +162,9 @@ export default function TerminosPage() {
             </p>
             <p>
               La vendedora es responsable de despachar la prenda en la sucursal Starken dentro de los{' '}
-              <strong>5 días hábiles</strong> siguientes a recibir el pago. Si no lo hace a tiempo, la compradora
-              puede solicitar el reembolso completo.
+              <strong>5 días hábiles</strong> siguientes a recibir el pago. Si no lo hace a tiempo, la venta se
+              cancela automáticamente: se reembolsa el pago completo a la compradora y la vendedora recibe una
+              calificación automática de 1 estrella.
             </p>
           </section>
 

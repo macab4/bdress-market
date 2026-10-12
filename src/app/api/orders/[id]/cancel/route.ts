@@ -45,6 +45,7 @@ export async function POST(
     createdBy: user.id,
     reversalDescription: 'Reverso por cancelación de la vendedora',
     walletRefundReason: 'seller_cancelled',
+    sellerAtFault: { reviewComment: 'Calificación automática: la vendedora canceló la venta antes de despacharla.' },
   })
 
   if (!result.ok) return Response.json({ error: result.error }, { status: 502 })

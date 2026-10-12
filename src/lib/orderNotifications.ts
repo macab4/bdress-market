@@ -202,7 +202,16 @@ export async function executeOrderRefund(admin: AdminClient, order: {
   orderId: string; listingId: string; buyerId: string; sellerId: string
   paymentRef: string | null; walletAmountApplied: number; walletTransactionId: string | null
   promoAmountApplied?: number; promoTransactionId?: string | null
-}, opts: { createdBy: string; reversalDescription: string; walletRefundReason: string; returnReceivedAt?: string }): Promise<{ ok: true } | { ok: false; error: string }> {
+}, opts: {
+  createdBy: string | null; reversalDescription: string; walletRefundReason: string; returnReceivedAt?: string
+  // Solo para cuando el reembolso pasa por culpa de la vendedora (canceló
+  // antes de despachar, o dejó vencer el plazo sin despachar) — deja una
+  // review automática de 1 estrella y PAUSA la prenda en vez de reactivarla
+  // (fuerza a la vendedora a reactivarla a propósito). Nunca se pasa desde
+  // admin/orders/[id]/resolve ni mark-return-received: esos son reembolsos
+  // por disputa/devolución, no necesariamente culpa de la vendedora.
+  sellerAtFault?: { reviewComment: string }
+}): Promise<{ ok: true } | { ok: false; error: string }> {
   if (order.paymentRef) {
     const refundRes = await fetch(`https://api.mercadopago.com/v1/payments/${order.paymentRef}/refunds`, {
       method: 'POST',
@@ -226,7 +235,7 @@ export async function executeOrderRefund(admin: AdminClient, order: {
     status: 'cancelled',
     ...(opts.returnReceivedAt ? { return_received_at: opts.returnReceivedAt } : {}),
   }).eq('id', order.orderId)
-  await admin.from('listings').update({ status: 'active' }).eq('id', order.listingId)
+  await admin.from('listings').update({ status: opts.sellerAtFault ? 'paused' : 'active' }).eq('id', order.listingId)
 
   const reversal = await recordSaleReversal(admin, order.orderId, {
     description: opts.reversalDescription,
@@ -260,6 +269,17 @@ export async function executeOrderRefund(admin: AdminClient, order: {
     admin.from('profiles').select('email, name').eq('id', order.sellerId).single(),
   ])
   const listingTitle = listing?.title ?? 'esta prenda'
+
+  if (opts.sellerAtFault) {
+    const { error: reviewError } = await admin.from('reviews').insert({
+      reviewer_id: order.buyerId, reviewed_id: order.sellerId, order_id: order.orderId,
+      rating: 1, comment: opts.sellerAtFault.reviewComment,
+    })
+    if (reviewError) {
+      console.error(`executeOrderRefund(${order.orderId}): error al crear review automática de 1 estrella:`, reviewError.message)
+    }
+  }
+
   await Promise.all([
     buyer?.email
       ? sendOrderRefundedEmail({ to: buyer.email, name: buyer.name, listingTitle, role: 'buyer' })
