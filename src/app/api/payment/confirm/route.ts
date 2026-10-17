@@ -94,12 +94,23 @@ async function handleNotification(request: Request) {
 
   if (payment.status === 'approved' && orderId) {
     const supabase = createAdminClient()
-    const { data: updatedOrders } = await supabase
+    const { data: updatedOrders, error: updateOrdersErr } = await supabase
       .from('orders')
       .update({ status: 'paid', payment_ref: String(payment.id), paid_at: new Date().toISOString() })
       .or(`id.eq.${orderId},cart_checkout_id.eq.${orderId}`)
       .eq('status', 'pending_payment')
       .select('id, listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
+
+    // Si esto falla (ej. columna/tabla que no existe por una migración no
+    // corrida todavía), NUNCA hay que devolver 200 — eso le dice a Mercado
+    // Pago "recibido, no reintentes" y el pago real queda confirmado del
+    // lado de MP pero invisible acá para siempre (pasó de verdad: ver
+    // incidente del 17 oct 2026, pago 184647951906). Mejor romper fuerte y
+    // dejar que MP reintente hasta que funcione.
+    if (updateOrdersErr) {
+      console.error(`payment/confirm: error crítico actualizando orden(es) para payment ${payment.id} (external_reference=${orderId}):`, updateOrdersErr.message)
+      return Response.json({ error: 'Error interno al confirmar el pago' }, { status: 500 })
+    }
 
     // Solo si este webhook hizo la transición (evita duplicar el histórico
     // en un reintento del mismo webhook de Mercado Pago).
@@ -108,8 +119,10 @@ async function handleNotification(request: Request) {
         updatedOrders.map(o => ({ order_id: o.id, previous_status: 'pending_payment', new_status: 'paid' }))
       )
       // Saca del carrito lo que se acaba de pagar — si vino de /cart, ya
-      // cumplió su función ahí.
-      await supabase.from('cart_items').delete().eq('user_id', updatedOrders[0].buyer_id).in('listing_id', updatedOrders.map(o => o.listing_id))
+      // cumplió su función ahí. No crítico (la orden ya quedó 'paid' arriba):
+      // si falla, solo se loguea, nunca se bloquea la confirmación del pago.
+      const { error: cartCleanupErr } = await supabase.from('cart_items').delete().eq('user_id', updatedOrders[0].buyer_id).in('listing_id', updatedOrders.map(o => o.listing_id))
+      if (cartCleanupErr) console.error(`payment/confirm: error al limpiar cart_items tras pagar (no bloqueante):`, cartCleanupErr.message)
     }
 
     // El saldo pendiente se intenta acreditar SIEMPRE que la(s) orden(es)
@@ -118,13 +131,19 @@ async function handleNotification(request: Request) {
     // status pero se cayó antes de acreditar el saldo, este intento debe
     // poder completarlo. Idempotente por (order_id, type), así que no hay
     // riesgo de duplicar si ya se había acreditado.
-    const ordersForWallet = updatedOrders && updatedOrders.length > 0 ? updatedOrders : (
-      await supabase
+    let ordersForWallet = updatedOrders ?? []
+    if (ordersForWallet.length === 0) {
+      const fallback = await supabase
         .from('orders')
-        .select('id, listing_id, buyer_id, seller_id, amount, commission, processing_fee, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
+        .select('id, listing_id, buyer_id, seller_id, amount, commission, processing_fee, shipping_cost, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
         .or(`id.eq.${orderId},cart_checkout_id.eq.${orderId}`)
         .eq('status', 'paid')
-    ).data ?? []
+      if (fallback.error) {
+        console.error(`payment/confirm: error crítico releyendo orden(es) 'paid' para payment ${payment.id} (external_reference=${orderId}):`, fallback.error.message)
+        return Response.json({ error: 'Error interno al confirmar el pago' }, { status: 500 })
+      }
+      ordersForWallet = fallback.data ?? []
+    }
 
     for (const order of ordersForWallet) {
       const pending = await recordSalePending(supabase, {
@@ -191,11 +210,15 @@ async function handleNotification(request: Request) {
     }
   } else if ((payment.status === 'rejected' || payment.status === 'cancelled') && orderId) {
     const supabase = createAdminClient()
-    const { data: orders } = await supabase
+    const { data: orders, error: rejectedOrdersErr } = await supabase
       .from('orders')
       .select('id, listing_id, buyer_id, wallet_amount_applied, wallet_transaction_id, promo_amount_applied, promo_transaction_id')
       .or(`id.eq.${orderId},cart_checkout_id.eq.${orderId}`)
       .eq('status', 'pending_payment')
+    // No crítico (un pago rechazado que no se procesa acá igual termina
+    // cancelado por el cron expire-pending-orders) pero se loguea para no
+    // repetir el mismo tipo de falla silenciosa que el camino 'approved'.
+    if (rejectedOrdersErr) console.error(`payment/confirm: error leyendo orden(es) para pago rechazado/cancelado ${payment.id} (external_reference=${orderId}):`, rejectedOrdersErr.message)
 
     if (orders && orders.length > 0) {
       // Registramos el evento de rechazo aunque orders.status no cambie
