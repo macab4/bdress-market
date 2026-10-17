@@ -92,6 +92,7 @@ export default function CartCheckoutForm({ items, walletAvailableBalance = 0, pr
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!quotesReady || quoteErrors.length > 0) { setError('Esperá a que se cotice el envío de todas las prendas antes de continuar'); return }
+    if (form.shipping_name.trim().split(/\s+/).length < 2) { setError('Ingresa nombre y apellido de quien recibe la prenda'); return }
     setLoading(true)
     setError('')
     try {

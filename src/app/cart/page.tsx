@@ -22,7 +22,7 @@ export default async function CartPage() {
   const rows = (cartRows ?? []).filter((r): r is typeof r & { listing: NonNullable<typeof r.listing> } => r.listing !== null)
 
   const [{ data: profile }, { data: walletAccount }, { data: acceptedOffers }] = await Promise.all([
-    supabase.from('profiles').select('name, phone, address, comuna, city').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, legal_name, phone, address, comuna, city').eq('id', user.id).single(),
     supabase.from('wallet_accounts').select('available_balance, promo_balance').eq('user_id', user.id).maybeSingle(),
     rows.length > 0
       ? supabase.from('offers').select('listing_id, offered_price, accepted_expires_at')
@@ -113,7 +113,7 @@ export default async function CartPage() {
                 walletAvailableBalance={walletAccount?.available_balance ?? 0}
                 promoBalance={walletAccount?.promo_balance ?? 0}
                 initialValues={{
-                  shipping_name: profile?.name ?? '',
+                  shipping_name: profile?.legal_name ?? profile?.name ?? '',
                   shipping_phone: profile?.phone ?? '',
                   shipping_address: profile?.address ?? '',
                   shipping_comuna: profile?.comuna ?? '',

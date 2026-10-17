@@ -16,7 +16,7 @@ import MarkReturnReceivedForm from '@/components/admin/MarkReturnReceivedForm'
 
 type AdminOrderDetail = Order & {
   listing: { title: string; photos: string[]; shipping_size: string } | null
-  buyer: { name: string; email: string } | null
+  buyer: { name: string; legal_name: string | null; email: string } | null
   seller: { name: string; legal_name: string | null; email: string; phone: string | null; address: string | null; comuna: string | null }
 }
 
@@ -40,7 +40,7 @@ export default async function AdminOrderDetailPage({
 
   const { data: order } = await admin
     .from('orders')
-    .select('*, listing:listings(title, photos, shipping_size), buyer:profiles!orders_buyer_id_fkey(name, email), seller:profiles!orders_seller_id_fkey(name, legal_name, email, phone, address, comuna)')
+    .select('*, listing:listings(title, photos, shipping_size), buyer:profiles!orders_buyer_id_fkey(name, legal_name, email), seller:profiles!orders_seller_id_fkey(name, legal_name, email, phone, address, comuna)')
     .eq('id', id)
     .single() as unknown as { data: AdminOrderDetail | null }
 
@@ -97,7 +97,7 @@ export default async function AdminOrderDetailPage({
           {/* Compra */}
           <section className="bg-white p-5 space-y-2 text-sm">
             <p className="text-[10px] tracking-widest uppercase text-gray-400 mb-2">Compra</p>
-            <div className="flex justify-between"><span className="text-gray-400">Compradora</span><span>{order.buyer?.name ?? '—'}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Compradora</span><span>{order.buyer?.legal_name ?? order.buyer?.name ?? '—'}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Email</span><span className="truncate ml-2">{order.buyer?.email ?? '—'}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Vendedora</span><span>{order.seller?.name ?? '—'}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Prenda + Protección</span><span>${order.amount.toLocaleString('es-CL')}</span></div>

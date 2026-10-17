@@ -23,7 +23,7 @@ export default async function CheckoutPage({
   if (listing.seller_id === user.id) redirect(`/listings/${id}`)
 
   const [{ data: profile }, { data: acceptedOffer }, { data: walletAccount }] = await Promise.all([
-    supabase.from('profiles').select('name, phone, address, comuna, city').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, legal_name, phone, address, comuna, city').eq('id', user.id).single(),
     supabase
       .from('offers')
       .select('offered_price, accepted_expires_at')
@@ -82,7 +82,7 @@ export default async function CheckoutPage({
           internationalLeadTimeMinDays={listing.international_lead_time_min_days}
           internationalLeadTimeMaxDays={listing.international_lead_time_max_days}
           initialValues={{
-            shipping_name: profile?.name ?? '',
+            shipping_name: profile?.legal_name ?? profile?.name ?? '',
             shipping_phone: profile?.phone ?? '',
             shipping_address: profile?.address ?? '',
             shipping_comuna: profile?.comuna ?? '',

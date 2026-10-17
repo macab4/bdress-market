@@ -90,6 +90,13 @@ export default function CheckoutForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!quote) { setError('Esperá a que se cotice el envío antes de continuar'); return }
+    // Nombre y apellido de quien recibe (no verificamos identidad real,
+    // solo que tenga dos palabras) — el courier necesita identificar a la
+    // persona en la entrega, un nombre de una sola palabra no alcanza.
+    if (form.shipping_name.trim().split(/\s+/).length < 2) {
+      setError('Ingresa nombre y apellido de quien recibe la prenda')
+      return
+    }
     if (isInternational && !internationalConsent) {
       setError('Debes aceptar las condiciones del encargo internacional antes de pagar')
       return
