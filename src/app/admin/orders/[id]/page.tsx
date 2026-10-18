@@ -136,6 +136,7 @@ export default async function AdminOrderDetailPage({
                   {order.shipping_phone}
                 </a>
               </p>
+              <p className="text-gray-500">{order.buyer?.email}</p>
               <p className="text-gray-500">
                 {order.shipping_address}{order.shipping_address_extra ? `, ${order.shipping_address_extra}` : ''}, {order.shipping_comuna}
               </p>
