@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAdminUser } from '@/lib/admin-auth'
 import { Order } from '@/types'
-import { ORDER_STATUS_CONFIG } from '@/lib/catalog'
+import { ORDER_STATUS_CONFIG, shipDeadline, daysUntilRelease } from '@/lib/catalog'
 import AdminNav from '@/components/admin/AdminNav'
 import RefundOrderButton from '@/components/admin/RefundOrderButton'
 
@@ -16,6 +16,35 @@ type AdminOrder = Order & {
   listing: { title: string } | null
   buyer: { name: string } | null
   seller: { name: string } | null
+}
+
+const PROGRESS_STEPS = ['Pagado', 'Etiqueta', 'Despachado', 'Entregado', 'Completado']
+
+function fechaCorta(iso: string | Date): string {
+  return new Date(iso).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })
+}
+
+// Barra de etapas para las órdenes en curso (pedido 2026-10-18: con solo
+// el badge "Pagado" no se veía en qué parte del proceso iba cada una ni
+// qué faltaba). Devuelve null para estados finales — ahí basta el badge.
+function orderProgress(order: Order): { step: number; detail: string; alert: boolean } | null {
+  const tieneEtiqueta = !!(order.label_url || order.courier_tracking_number || order.label_tracking_number)
+  switch (order.status) {
+    case 'paid': {
+      const deadline = order.paid_at ? shipDeadline(order.paid_at) : null
+      const vencido = !!deadline && deadline.getTime() < Date.now()
+      const plazo = deadline ? ` · despachar antes del ${fechaCorta(deadline)}${vencido ? ' (vencido)' : ''}` : ''
+      return tieneEtiqueta
+        ? { step: 1, detail: `Etiqueta lista, falta despachar${plazo}`, alert: vencido }
+        : { step: 0, detail: `${order.label_requested_at ? 'Etiqueta pedida, falta generarla' : 'Falta etiqueta'}${plazo}`, alert: vencido }
+    }
+    case 'shipped':
+      return { step: 2, detail: `En camino${order.shipped_at ? ` desde el ${fechaCorta(order.shipped_at)}` : ''}`, alert: false }
+    case 'delivered':
+      return { step: 3, detail: `Entregado · pago a la vendedora en ${daysUntilRelease(order.confirmed_at)}`, alert: false }
+    default:
+      return null
+  }
 }
 
 export default async function AdminPage() {
@@ -175,6 +204,7 @@ export default async function AdminPage() {
                 <tbody>
                   {allOrders.map(order => {
                     const status = ORDER_STATUS_CONFIG[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-500' }
+                    const progress = orderProgress(order)
                     return (
                       <tr key={order.id} className="border-b border-gray-50 last:border-0">
                         <td className="px-4 py-3 truncate max-w-[160px]">{order.listing?.title ?? 'Prenda eliminada'}</td>
@@ -183,9 +213,26 @@ export default async function AdminPage() {
                         <td className="px-4 py-3 text-right font-medium">${(order.amount + order.shipping_cost).toLocaleString('es-CL')}</td>
                         <td className="px-4 py-3 text-right text-gray-500">${order.commission.toLocaleString('es-CL')}</td>
                         <td className="px-4 py-3">
-                          <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 whitespace-nowrap ${status.color}`}>
-                            {status.label}
-                          </span>
+                          {progress ? (
+                            <div className="min-w-[220px]">
+                              <div className="flex gap-1 mb-1">
+                                {PROGRESS_STEPS.map((s, i) => (
+                                  <div key={s} title={s}
+                                    className={`h-1.5 flex-1 rounded-full ${i <= progress.step ? 'bg-[#7fab87]' : 'bg-gray-200'}`} />
+                                ))}
+                              </div>
+                              <p className="text-[10px] tracking-widest uppercase text-[#5a7a55]">
+                                {PROGRESS_STEPS[progress.step]}
+                              </p>
+                              <p className={`text-[11px] leading-tight ${progress.alert ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+                                {progress.detail}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className={`text-[9px] tracking-widest uppercase px-2 py-0.5 whitespace-nowrap ${status.color}`}>
+                              {status.label}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
                           {new Date(order.created_at).toLocaleDateString('es-CL', { timeZone: 'America/Santiago', day: 'numeric', month: 'short' })}
