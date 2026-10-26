@@ -44,6 +44,9 @@ export default function AdminListingForm({ sellerId, sellerName }: AdminListingF
   })
   const { brandInput, setBrandInput, resolveBrand, brandOptions } = useBrandField('')
   const [photos, setPhotos] = useState<PhotoItem[]>([])
+  const [shopifyUrl, setShopifyUrl] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState('')
   const [uploading, setUploading] = useState(false)
   const [enhancingId, setEnhancingId] = useState<string | null>(null)
   const [enhanceErrors, setEnhanceErrors] = useState<Record<string, string>>({})
@@ -76,6 +79,65 @@ export default function AdminListingForm({ sellerId, sellerName }: AdminListingF
       preview: URL.createObjectURL(file),
     }))
     setPhotos(prev => [...prev, ...newItems])
+  }
+
+  async function handleImportFromShopify() {
+    if (!shopifyUrl.trim()) return
+    setImporting(true)
+    setImportError('')
+
+    try {
+      const res = await fetch('/api/admin/shopify-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: shopifyUrl.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setImportError(data.error || 'Error al importar desde Shopify')
+        return
+      }
+
+      setForm(prev => ({
+        ...prev,
+        title: data.title || prev.title,
+        description: data.description || prev.description,
+        condition: 'nuevo_con_etiquetas',
+        price: data.price ? String(data.price) : prev.price,
+      }))
+      if (data.brand) setBrandInput(data.brand)
+
+      const availableSlots = MAX_PHOTOS - photos.length
+      const urls: string[] = Array.isArray(data.photos) ? data.photos.slice(0, availableSlots) : []
+      const fetched = await Promise.all(urls.map(async (url: string) => {
+        try {
+          const imgRes = await fetch(url)
+          if (!imgRes.ok) return null
+          const blob = await imgRes.blob()
+          return new File([blob], 'shopify.jpg', { type: blob.type || 'image/jpeg' })
+        } catch {
+          return null
+        }
+      }))
+      const validFiles = fetched.filter((f): f is File => f !== null)
+      if (validFiles.length > 0) {
+        const compressedFiles = await Promise.all(validFiles.map(file => compressImage(file)))
+        const newItems: PhotoItem[] = compressedFiles.map(file => ({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          kind: 'new',
+          file,
+          preview: URL.createObjectURL(file),
+        }))
+        setPhotos(prev => [...prev, ...newItems])
+      }
+      if (validFiles.length < urls.length) {
+        setImportError('Se importaron los datos, pero alguna fotografía no se pudo traer — revisa y agrégala a mano si falta.')
+      }
+    } catch {
+      setImportError('Error de conexión al importar desde Shopify')
+    } finally {
+      setImporting(false)
+    }
   }
 
   function movePhoto(index: number, direction: -1 | 1) {
@@ -279,6 +341,24 @@ export default function AdminListingForm({ sellerId, sellerName }: AdminListingF
       </div>
 
       {error && <p className="bg-red-50 text-red-600 text-xs p-3">{error}</p>}
+
+      <section className="bg-white p-6 space-y-3">
+        <h2 className="text-[10px] tracking-widest uppercase text-gray-400">Importar desde Shopify</h2>
+        <p className="text-xs text-gray-400">
+          Pega la URL del producto en el admin de Shopify (b-dress-shop) — trae título, descripción,
+          marca, precio y fotos. Categoría, talla, color y envío los eliges igual a mano.
+        </p>
+        <div className="flex gap-2">
+          <input value={shopifyUrl} onChange={e => setShopifyUrl(e.target.value)}
+            placeholder="https://admin.shopify.com/store/b-dress-shop/products/..."
+            className="flex-1 border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:border-gray-400" />
+          <button type="button" onClick={handleImportFromShopify} disabled={importing || !shopifyUrl.trim()}
+            className="bg-gray-800 text-white text-xs tracking-widest uppercase px-4 hover:bg-gray-700 transition disabled:opacity-50">
+            {importing ? 'Importando…' : 'Traer datos'}
+          </button>
+        </div>
+        {importError && <p className="text-xs text-red-500">{importError}</p>}
+      </section>
 
       <section className="bg-white p-6 space-y-4">
         <h2 className="text-[10px] tracking-widest uppercase text-gray-400">Producto</h2>

@@ -57,6 +57,12 @@ export default async function AdminListingsPage({
           <AdminNav active="/admin/listings" />
         </div>
 
+        <div className="flex justify-end mb-4">
+          <Link href="/admin/listings/new" className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">
+            + Publicar prenda propia (Shopify)
+          </Link>
+        </div>
+
         <div className="flex gap-6 mb-6">
           {TABS.map(tab => {
             const inTab = tab.value === 'pending_review'
