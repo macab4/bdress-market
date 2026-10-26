@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function AdminListingActions({ listingId, status, sellerDeprioritized }: { listingId: string; status: string; sellerDeprioritized?: boolean }) {
+export default function AdminListingActions({ listingId, status, sellerDeprioritized, featuredUntil }: { listingId: string; status: string; sellerDeprioritized?: boolean; featuredUntil?: string | null }) {
+  const isFeatured = !!featuredUntil && new Date(featuredUntil) > new Date()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
@@ -24,6 +25,17 @@ export default function AdminListingActions({ listingId, status, sellerDepriorit
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ seller_deprioritized: !sellerDeprioritized }),
+    })
+    router.refresh()
+    setLoading(false)
+  }
+
+  async function toggleFeatured() {
+    setLoading(true)
+    await fetch(`/api/admin/listings/${listingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ featured: !isFeatured }),
     })
     router.refresh()
     setLoading(false)
@@ -57,6 +69,10 @@ export default function AdminListingActions({ listingId, status, sellerDepriorit
           {sellerDeprioritized ? 'Sacar esta prenda del final' : 'Mandar esta prenda al final'}
         </button>
       )}
+      <button onClick={toggleFeatured} disabled={loading}
+        className="text-[10px] tracking-widest uppercase text-gray-500 hover:text-black disabled:opacity-50">
+        {isFeatured ? 'Quitar de Destacadas' : 'Destacar gratis'}
+      </button>
       <button onClick={handleDelete} disabled={loading}
         className="text-[10px] tracking-widest uppercase text-red-500 hover:text-red-700 disabled:opacity-50">
         Eliminar

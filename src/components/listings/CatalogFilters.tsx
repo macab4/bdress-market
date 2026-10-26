@@ -13,10 +13,11 @@ import CategoryPicker, { type CategoryPickerValue } from '@/components/listings/
 import ColorFilterPopover from '@/components/listings/ColorFilterPopover'
 
 const SORT_OPTIONS = [
+  { value: 'recomendados', label: 'Recomendados' },
   { value: 'recientes', label: 'Más recientes' },
-  { value: 'antiguas', label: 'Más antiguas' },
   { value: 'precio_asc', label: 'Precio: menor a mayor' },
   { value: 'precio_desc', label: 'Precio: mayor a menor' },
+  { value: 'populares', label: 'Más populares' },
 ] as const
 
 // max-w acá no es solo estético: sin tope, un <select> nativo con muchas
@@ -112,7 +113,7 @@ export default function CatalogFilters() {
   const material = searchParams.get('material') ?? ''
   const occasion = searchParams.get('occasion') ?? ''
   const length = searchParams.get('length') ?? ''
-  const sort = searchParams.get('sort') ?? 'recientes'
+  const sort = searchParams.get('sort') ?? 'recomendados'
 
   const sizeOptions = department && productCategory ? sizeOptionsFor(department, productCategory) : ALL_SIZES
   const showLength = LENGTH_APPLICABLE_TYPES.includes(productType)

@@ -111,7 +111,7 @@ export default async function HomePage({
   if (params.min) query = query.gte('price', parseInt(params.min))
   if (params.max) query = query.lte('price', parseInt(params.max))
 
-  // "Más guardados" no tiene una columna que ordenar directamente en la base
+  // "Más populares" no tiene una columna que ordenar directamente en la base
   // de datos — se resuelve trayendo los ids que matchean el resto de los
   // filtros, contando sus favoritos aparte (getFavoriteCounts, solo lectura)
   // y paginando en memoria. Con el tamaño actual del catálogo esto es
@@ -121,7 +121,7 @@ export default async function HomePage({
   let listings: ListingWithSeller[] | null = null
   let totalCount = 0
 
-  if (params.sort === 'guardados') {
+  if (params.sort === 'populares') {
     const { data: matchRows } = await query.select('id, seller_deprioritized')
     const rows = matchRows ?? []
     const ids = rows.map(r => r.id)
@@ -149,14 +149,17 @@ export default async function HomePage({
     } else {
       listings = []
     }
-  } else {
+  } else if (params.sort === 'recientes' || params.sort === 'precio_asc' || params.sort === 'precio_desc') {
     // seller_deprioritized siempre manda primero: una vendedora marcada así
     // (ver /admin/users/[id]) queda al final del catálogo sin importar el
     // orden elegido, y sin que "Renovar" (bumped_at) se lo salte.
     query = query.order('seller_deprioritized', { ascending: true })
     switch (params.sort) {
-      case 'antiguas':
-        query = query.order('created_at', { ascending: true })
+      case 'recientes':
+        // Estrictamente fecha de publicación — a diferencia de "Recomendados"
+        // (el default), acá no entra ningún otro criterio. created_at, no
+        // bumped_at: "Renovar" no debe alterar este orden en particular.
+        query = query.order('created_at', { ascending: false })
         break
       case 'precio_asc':
         query = query.order('price', { ascending: true })
@@ -164,18 +167,54 @@ export default async function HomePage({
       case 'precio_desc':
         query = query.order('price', { ascending: false })
         break
-      default:
-        query = query.order('bumped_at', { ascending: false })
     }
     const from = (page - 1) * PAGE_SIZE
     const { data, count } = await query.range(from, from + PAGE_SIZE - 1)
     listings = data as typeof listings
     totalCount = count ?? 0
+  } else {
+    // "Recomendados" — default (sin params.sort, o sort=recomendados
+    // explícito, o cualquier valor viejo/desconocido como el "antiguas" que
+    // se sacó del selector). Sin columna de relevancia en la base, así que
+    // en vez de traer todo el catálogo que matchea el filtro (la trampa de
+    // performance que ya advertía el comentario de "populares" arriba), se
+    // trae un pool ACOTADO — ordenado por fecha — y se reordena en memoria
+    // solo ese pool, nunca el catálogo completo.
+    query = query.order('seller_deprioritized', { ascending: true }).order('bumped_at', { ascending: false })
+    const POOL_MULTIPLIER = 3
+    const poolLimit = Math.min(page * PAGE_SIZE * POOL_MULTIPLIER, 480)
+    const { data, count } = await query.limit(poolLimit)
+    totalCount = count ?? 0
+    const pool = (data ?? []) as ListingWithSeller[]
+
+    // Sin un tag inequívoco de "vestido de fiesta" en la taxonomía (ver
+    // diagnóstico), se prioriza product_type = 'Vestidos' en general, de
+    // forma suave — nunca se excluye el resto, solo se reordena dentro de
+    // ventanas chicas (WINDOW) para no enterrar categorías enteras en vez
+    // de simplemente mejorar su visibilidad. Una prenda claramente pobre
+    // (pocas fotos, sin descripción ni marca) se corre al final de su
+    // propia ventana, nunca sale de ella.
+    function isVestido(l: ListingWithSeller) { return l.product_type === 'Vestidos' }
+    function isSparse(l: ListingWithSeller) {
+      return (l.photos?.length ?? 0) < 2 && !l.description?.trim() && !l.brand?.trim()
+    }
+    function rank(l: ListingWithSeller) {
+      return (isVestido(l) ? 0 : 2) + (isSparse(l) ? 1 : 0)
+    }
+    const WINDOW = 6
+    const ranked: ListingWithSeller[] = []
+    for (let i = 0; i < pool.length; i += WINDOW) {
+      const chunk = pool.slice(i, i + WINDOW)
+      chunk.sort((a, b) => rank(a) - rank(b)) // sort estable — empates mantienen el orden por bumped_at ya traído
+      ranked.push(...chunk)
+    }
+    const from = (page - 1) * PAGE_SIZE
+    listings = ranked.slice(from, from + PAGE_SIZE)
   }
 
   const isDefaultView = page === 1 && !params.q && !params.category && !params.productCategory && !params.productType &&
     !params.size && !params.brand && !params.condition && !params.color && !params.material && !params.occasion &&
-    !params.length && !params.min && !params.max && !params.sort
+    !params.length && !params.min && !params.max && (!params.sort || params.sort === 'recomendados')
 
   const [{ data: { user } }, { data: featuredListings }] = await Promise.all([
     supabase.auth.getUser(),

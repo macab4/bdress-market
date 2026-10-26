@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { BOOST_DURATION_DAYS } from '@/lib/catalog'
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -14,7 +15,7 @@ export async function PATCH(
   if (!(await checkAdmin())) return Response.json({ error: 'Sin permiso' }, { status: 403 })
   const { id } = await params
 
-  const update: { status?: string; photos?: string[]; product_category?: string; product_type?: string; pending_review?: boolean; seller_deprioritized?: boolean } = {}
+  const update: { status?: string; photos?: string[]; product_category?: string; product_type?: string; pending_review?: boolean; seller_deprioritized?: boolean; featured_until?: string | null } = {}
   try {
     const body = await request.json()
     if (body.status !== undefined) {
@@ -45,6 +46,16 @@ export async function PATCH(
     if (body.seller_deprioritized !== undefined) {
       if (typeof body.seller_deprioritized !== 'boolean') throw new Error()
       update.seller_deprioritized = body.seller_deprioritized
+    }
+    // Destacar gratis desde admin — mismo campo que el Boost pagado
+    // (featured_until), solo que acá no pasa por Mercado Pago. Mismo
+    // período que el boost pagado (BOOST_DURATION_DAYS) para no tener dos
+    // duraciones distintas sin motivo.
+    if (body.featured !== undefined) {
+      if (typeof body.featured !== 'boolean') throw new Error()
+      update.featured_until = body.featured
+        ? new Date(Date.now() + BOOST_DURATION_DAYS * 24 * 60 * 60 * 1000).toISOString()
+        : null
     }
     if (Object.keys(update).length === 0) throw new Error()
   } catch {
