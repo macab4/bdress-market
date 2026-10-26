@@ -892,3 +892,24 @@ create policy "Usuaria quita de su carrito" on public.cart_items
 
 alter table public.orders add column if not exists cart_checkout_id uuid;
 create index if not exists orders_cart_checkout_id_idx on public.orders (cart_checkout_id) where cart_checkout_id is not null;
+
+-- ============================================================
+-- Migración: contador de vistas por prenda (Etapa 2 del ranking de
+-- catálogo). Mismo contenido que
+-- supabase/migrations/20261026000000_listing_view_count.sql
+-- Pegar y correr en Supabase Dashboard → SQL Editor.
+-- ============================================================
+alter table public.listings add column if not exists view_count integer not null default 0;
+
+create or replace function public.increment_listing_view(p_listing_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.listings set view_count = view_count + 1 where id = p_listing_id;
+end;
+$$;
+
+grant execute on function public.increment_listing_view(uuid) to authenticated, anon;

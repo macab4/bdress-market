@@ -100,6 +100,7 @@ export interface Listing {
   bumped_at: string
   seller_deprioritized: boolean
   featured_until: string | null
+  view_count: number
   boost_reminder_sent_at: string | null
   product_category: string | null
   product_type: string | null

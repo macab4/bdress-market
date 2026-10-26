@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { after } from 'next/server'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ShieldCheck } from 'lucide-react'
@@ -148,6 +149,22 @@ export default async function ListingPage({
   // inicia sesión como esa cuenta, ve exactamente la misma vista de dueña,
   // sin lógica aparte).
   const isOwner = user !== null && user.id === listing.seller_id
+
+  // Vista para el contador de popularidad (Etapa 2 del ranking de
+  // catálogo) — después de responder, no retrasa el render. Se excluye a
+  // la propia dueña para que mirar su propia publicación no infle el
+  // contador. RPC security definer porque un visitante sin sesión también
+  // tiene que poder sumar vista (la política de UPDATE de listings solo
+  // deja editar a la propia vendedora).
+  if (!isOwner) {
+    after(async () => {
+      try {
+        await supabase.rpc('increment_listing_view', { p_listing_id: id })
+      } catch (err) {
+        console.error(`Error al incrementar view_count de ${id}:`, err instanceof Error ? err.message : err)
+      }
+    })
+  }
 
   const canBuy =
     listing.status === 'active' &&

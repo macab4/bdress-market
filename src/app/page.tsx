@@ -201,11 +201,21 @@ export default async function HomePage({
     function rank(l: ListingWithSeller) {
       return (isVestido(l) ? 0 : 2) + (isSparse(l) ? 1 : 0)
     }
+    // Popularidad (Etapa 2) — view_count (propio de la prenda) + favoritos
+    // (los favoritos pesan más: son una señal de intención más fuerte que
+    // una vista de paso). Solo desempata DENTRO de cada bucket de rank(),
+    // nunca saca nada de su ventana ni le gana a la categoría/completitud.
+    const poolFavoriteCounts = await getFavoriteCounts(pool.map(l => l.id))
+    function popularity(l: ListingWithSeller) {
+      return l.view_count + (poolFavoriteCounts[l.id] ?? 0) * 3
+    }
     const WINDOW = 6
     const ranked: ListingWithSeller[] = []
     for (let i = 0; i < pool.length; i += WINDOW) {
       const chunk = pool.slice(i, i + WINDOW)
-      chunk.sort((a, b) => rank(a) - rank(b)) // sort estable — empates mantienen el orden por bumped_at ya traído
+      // Sort estable: a igual rank() Y popularity(), mantiene el orden por
+      // bumped_at ya traído de la base.
+      chunk.sort((a, b) => rank(a) - rank(b) || popularity(b) - popularity(a))
       ranked.push(...chunk)
     }
     const from = (page - 1) * PAGE_SIZE
