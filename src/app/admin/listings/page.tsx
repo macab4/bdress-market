@@ -57,7 +57,10 @@ export default async function AdminListingsPage({
           <AdminNav active="/admin/listings" />
         </div>
 
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end gap-4 mb-4">
+          <a href="/api/admin/shopify-oauth/start" className="text-[10px] tracking-widest uppercase text-gray-400 hover:underline">
+            Conectar con Shopify
+          </a>
           <Link href="/admin/listings/new" className="text-[10px] tracking-widest uppercase text-[#7fab87] hover:underline">
             + Publicar prenda propia (Shopify)
           </Link>
